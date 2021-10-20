@@ -1,0 +1,85 @@
+<div class="row" style="margin:20px 0px 0px; ">
+  <div class="col-md-6 col-sm-12">
+    <h3 style="line-height: 40px;" class="main_heading">Imports & Data Management</h3>
+  </div>
+  <div class="col-md-6 col-sm-12 heading_buttons_container">
+      <div class="btn-group" role="group" aria-label="Basic example">
+        <button type="button" class="btn btn-default btn-sm" style="width:100px; color:#000000;" onclick="show_adduser_modal()">
+          <i class="la la-plus"></i> <strong>Add</strong>
+        </button>
+        <button type="button" class="btn btn-default btn-sm" style="width:100px; color:#000000;" onclick="delete_selected_users()">
+          <i class="la la-trash"></i> <strong>Delete</strong>
+        </button>
+      </div>
+  </div>
+</div>
+<hr style="margin-top:0px;" />
+
+<div class="row">
+  <!-- Nav Tabs Start -->
+
+  <div class="col-sm-12">
+
+    {% include 'base/alert_components.html' %}
+
+    <ul class="nav nav-tabs" role="tablist">
+      <li class="nav-item">
+        <a class="nav-link" href="{% url 'manage_imports' 'master' %}" id="tab_master">Master</a>
+      </li>
+      <li class="nav-item">
+        <a class="nav-link" href="{% url 'manage_imports' 'pd' %}" id="tab_pd">PD</a>
+      </li>
+      <li class="nav-item">
+        <a class="nav-link" href="{% url 'manage_imports' 'lgd' %}" id="tab_lgd">LGD</a>
+      </li>
+      <li class="nav-item">
+        <a class="nav-link active" href="{% url 'manage_imports' 'ecl' %}" id="tab_ecl">ECL</a>
+      </li>
+      <li class="nav-item">
+        <a class="nav-link" href="{% url 'manage_imports' 'stage' %}" id="tab_stage">Stage</a>
+      </li>
+      <li class="nav-item">
+        <a class="nav-link" href="{% url 'manage_imports' 'eir' %}" id="tab_eir">EIR</a>
+      </li>
+    </ul>
+
+    <!-- Tab panes start -->
+    <div class="tab-content" style="padding:10px 0px;">
+
+
+    </div>
+
+    <!-- Tab panes end -->
+  </div>
+  <!-- Nav Tabs End -->
+
+</div>
+
+
+<!-- -->
+<div class="modal fade" id="uploaderModal" tabindex="-1" role="dialog">
+  <div class="modal-dialog">
+    <div class="modal-content">
+      <form method="post" action="#">
+        {% csrf_token %}
+        <input type="hidden" value="{{tab_status}}">
+        <div class="modal-header text-white">
+          <h5 class="modal-title" id="exampleModalLabel">Upload CSV File</h5>
+        </div>
+        <div class="modal-body">
+            <div class="mb-3">
+              <label for="formFile" class="form-label">ECL</label>
+              <input class="form-control" type="file" id="formFile">
+            </div>
+        </div>
+        <div class="modal-footer">
+          <button type="button" class="btn btn-secondary" data-bs-dismiss="modal">Close</button>
+          <button type="button" class="btn btn-primary">Upload</button>
+        </div>
+      </form>
+    </div>
+  </div>
+</div>
+<script>
+  var status = {{tab_active}};
+</script>

@@ -1,0 +1,172 @@
+<div class="row" style="margin:20px 0px 0px; ">
+  <div class="col-md-6 col-sm-12">
+    <h3 style="line-height: 40px;" class="main_heading">Imports & Data Management</h3>
+  </div>
+  <div class="col-md-6 col-sm-12 heading_buttons_container">
+      <div class="btn-group" role="group" aria-label="Basic example">
+        <button type="button" class="btn btn-default btn-sm" style="width:100px; color:#000000;" onclick="show_modal('#uploaderModal')">
+          <i class="la la-plus"></i> <strong>Add</strong>
+        </button>
+        <button type="button" class="btn btn-default btn-sm" style="width:100px; color:#000000;">
+          <i class="la la-trash"></i> <strong>Delete</strong>
+        </button>
+        <a href="{% url 'download_missing_accounts_csv' %}" class="btn btn-default btn-sm" style= color:#000000;" download>
+          <i class="la la-download"></i> <strong>Missing Account No.</strong>
+        </a>
+      </div>
+  </div>
+</div>
+<hr style="margin-top:0px;" />
+
+<div class="row">
+  <!-- Nav Tabs Start -->
+
+  <div class="col-sm-12">
+
+    {% include 'base/alert_components.html' %}
+
+    <ul class="nav nav-tabs" role="tablist">
+      <li class="nav-item">
+        <a class="nav-link active" href="{% url 'manage_imports' 'master' %}" id="tab_master">Master</a>
+      </li>
+      <li class="nav-item">
+        <a class="nav-link" href="{% url 'manage_imports' 'pd' %}" id="tab_pd">PD</a>
+      </li>
+      <li class="nav-item">
+        <a class="nav-link" href="{% url 'manage_imports' 'lgd' %}" id="tab_lgd">LGD</a>
+      </li>
+      <li class="nav-item">
+        <a class="nav-link" href="{% url 'manage_imports' 'stage' %}" id="tab_stage">Stage</a>
+      </li>
+      <li class="nav-item">
+        <a class="nav-link" href="{% url 'manage_imports' 'eir' %}" id="tab_eir">EIR</a>
+      </li>
+      <li class="nav-item">
+        <a class="nav-link" href="{% url 'manage_imports' 'ecl' %}" id="tab_ecl">ECL</a>
+      </li>
+    </ul>
+
+    <!-- Tab panes start -->
+    <div class="tab-content" style="padding:10px 0px;">
+      <div class="table-responsive">
+        <form method="post" action="">
+          <table class="table table-bordered" style="background-color: #dee2e6;">
+            <tr>
+              <td style="font-size:13px;line-height: 38px; text-align:right; font-weight:bold;">Account No</td>
+              <td style="line-height: 38px;">
+                <input type="text" name="account_no" class="form-control">
+              </td>
+              <td style="font-size:13px;line-height: 38px; text-align:right; font-weight:bold;">Edited</td>
+              <td style="line-height: 38px;">
+                <input type="checkbox" name="edited">
+              </td>
+              <td style="font-size:13px;line-height: 38px; text-align:right; font-weight:bold;">Start Date</td>
+              <td>
+                <input type="date" name="start_date" class="form-control">
+              </td>
+              <td style="font-size:13px;line-height: 38px; text-align:right; font-weight:bold;">End Date</td>
+              <td>
+                <input type="date" name="end_date" class="form-control">
+              </td>
+              <td>
+                <input type="submit" value="Submit" name="submit" class="btn btn-primary">
+              </td>
+            </tr>
+          </table>
+        </form>
+      </div>
+
+      <div class="table-responsive">
+        <table class="table table-bordered">
+          <thead class="text-center" style="background-color:#ddd; font-size:13px; white-space: nowrap;">
+            <th><input type="checkbox" id="check_all"></th>
+            <th>Date</th>
+            <th>Account No.</th>
+            <th>Account Type</th>
+            <th>CIN</th>
+            <th>Product Name</th>
+            <th>Sectors</th>
+            <th>Customer Name</th>
+            <th>Contact No.</th>
+            <th>Email</th>
+            <th>PAN</th>
+            <th>Aadhar No</th>
+            <th>Customer Address</th>
+            <th>PIN</th>
+            <th>Created On</th>
+            <th>Action</th>
+          </thead>
+          <tbody style="font-size:12px; white-space: nowrap;">
+            {% for row in items_list %}
+              <tr>
+                <td class="text-center">
+                  <input type="checkbox" value="{{row.id}}" class="checkbox_one" name="checkbox_one">
+                </td>
+                <td>{{row.date|default_if_none:''}}</td>
+                <td>{{row.account_no|default_if_none:''}}</td>
+                <td>{{row.account_type|default_if_none:''}}</td>
+                <td>{{row.cin|default_if_none:''}}</td>
+                <td>{{row.product_name|default_if_none:''}}</td>
+                <td>{{row.sectors|default_if_none:''}}</td>
+                <td>{{row.customer_name|default_if_none:''}}</td>
+                <td>{{row.contact_no|default_if_none:''}}</td>
+                <td>{{row.email|default_if_none:''}}</td>
+                <td>{{row.pan|default_if_none:''}}</td>
+                <td>{{row.aadhar_no|default_if_none:''}}</td>
+                <td>{{row.customer_addr|default_if_none:''}}</td>
+                <td>{{row.pin|default_if_none:''}}</td>
+                <td>{{row.created_on|default_if_none:''}}</td>
+                <td class="text-center p-0">
+                  <div class="btn-group" role="group" aria-label="Basic example">
+                    <button type="button" onclick="load_edit_data({{row.id}})" class="btn btn-icon btn-sm" data-toggle="modal" data-target="#EditUserModalForm">
+                      <i class="la la-pencil" aria-hidden="true" style="font-size: 25px;line-height: 30px;"></i>
+                    </button>
+                    <a href="{% url 'delete_record' 'master' row.id %}" class="btn btn-icon btn-sm">
+                      <i class="la la-trash" aria-hidden="true" style="font-size: 25px;line-height: 30px; color:#FF0000;"></i>
+                    </a>
+                  </div>
+                </td>
+              </tr>
+            {% endfor %}
+          </tbody>
+        </table>
+
+      </div>
+
+
+    </div>
+
+    <!-- Tab panes end -->
+  </div>
+  <!-- Nav Tabs End -->
+
+</div>
+
+<!-- -->
+<div class="modal fade" id="uploaderModal" tabindex="-1" role="dialog">
+  <div class="modal-dialog">
+    <div class="modal-content">
+      <form method="post" action="{% url 'import_data_from_file' %}" enctype="multipart/form-data">
+        {% csrf_token %}
+        <input type="hidden" value="{{tab_status}}" name="import_type">
+        <div class="modal-header text-white">
+          <h5 class="modal-title" id="exampleModalLabel">Upload CSV File</h5>
+        </div>
+        <div class="modal-body">
+            <div class="mb-3">
+              <label for="formFile" class="form-label">Account Master</label>
+              <input class="form-control" required type="file" name="formFile" accept=".csv">
+            </div>
+        </div>
+        <div class="modal-footer">
+          <button type="button" class="btn btn-secondary" data-bs-dismiss="modal">Close</button>
+          <button type="submit" class="btn btn-primary">Upload</button>
+        </div>
+      </form>
+    </div>
+  </div>
+</div>
+
+<script>
+  var status = {{tab_active}};
+</script>

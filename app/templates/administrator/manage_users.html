@@ -1,0 +1,278 @@
+<div class="row" style="margin:20px 0px 0px; ">
+  <div class="col-md-6 col-sm-12">
+    <h3 style="line-height: 40px;" class="main_heading">User Management</h3>
+  </div>
+  <div class="col-md-6 col-sm-12 heading_buttons_container">
+      <div class="btn-group" role="group" aria-label="Basic example">
+        <button type="button" class="btn btn-default btn-sm" style="width:100px; color:#000000;" onclick="show_adduser_modal()">
+          <i class="la la-plus"></i> <strong>Add</strong>
+        </button>
+        <button type="button" class="btn btn-default btn-sm" style="width:100px; color:#000000;" onclick="delete_selected_users()">
+          <i class="la la-trash"></i> <strong>Delete</strong>
+        </button>
+        <a type="button" href="{% url 'manage_new_users' %}" class="btn btn-default btn-sm" style="width:150px; color:#000000;">
+          <i class="la la-users"></i> <strong>New Users</strong>
+        </a>
+      </div>
+  </div>
+</div>
+<hr style="margin-top:0px;" />
+
+{% include 'base/alert_components.html' %}
+
+<div class="row row_counter">
+  <span>No.of Records{% if search_view %} Searched{% endif %} : {{ users|length }}</span>
+</div>
+
+<form method="post" action="#" id="manage_users_form">
+{% csrf_token %}
+<div class="row table-responsive" style="overflow:scroll; margin:1px;">
+  <table class="table table-bordered" id="manage_user_table" style="margin-top:10px;">
+    <thead style="background-color:#eeeeee;">
+      <th class="text-center no-sort"> <input type="checkbox" name="checkbox_all" class="checkbox_all"/></th>
+      <th style="width:80px; !important;" class="text-center sorting_asc">Sl. No</th>
+      <th class="text-center">Username</th>
+      <th class="text-center">Firstname</th>
+      <th class="text-center">Lastname</th>
+      <th class="text-center">Email</th>
+      <th class="text-center">Usertype</th>
+      <th style="width:100px !important;" class="text-center no-sort">Action</th>
+    </thead>
+    <tbody style="font-size:13px;">
+        {% for row in users %}
+          <tr>
+            <td class="text-center">
+              <input type="checkbox" name="checkbox_one" class="checkbox_one" value="{{row.id}}" />
+            </td>
+            <td>{{ forloop.counter }}</td>
+            <td>{{ row.username|default_if_none:'' }}</td>
+            <td>{{ row.first_name|default_if_none:'' }}</td>
+            <td>{{ row.last_name|default_if_none:'' }}</td>
+            <td>{{ row.email|default_if_none:'' }}</td>
+            <td>
+              {% if row.is_superuser  %}
+                Super Admin
+              {% elif row.is_staff %}
+                Admin
+              {% else %}
+                User
+              {% endif %}
+            </td>
+            <td class="text-center p-0">
+              <div class="btn-group" role="group" aria-label="Basic example">
+                <button type="button" onclick="load_edit_data({{row.id}})" class="btn btn-icon btn-sm" data-toggle="modal" data-target="#EditUserModalForm">
+                  <i class="la la-pencil" aria-hidden="true" style="font-size: 25px;line-height: 30px;"></i>
+                </button>
+                <button type="button" onclick="reset_password({{row.id}})" class="btn btn-icon btn-sm">
+                  <i class="la la-key" aria-hidden="true" style="font-size: 25px;line-height: 30px;"></i>
+                </button>
+                <a href="{% url 'delete_user' row.id %}" class="btn btn-icon btn-sm">
+                  <i class="la la-trash" aria-hidden="true" style="font-size: 25px;line-height: 30px; color:#FF0000;"></i>
+                </a>
+              </div>
+            </td>
+          </tr>
+        {% endfor %}
+
+    </tbody>
+  </table>
+</div>
+</form>
+
+<!-- ADD USER MODAL START -->
+<div class="modal {% if model_show %} show {% endif %}"  {% if model_show %} style="display:block;" {% endif %} id="AddUserModalForm" tabindex="-1" role="dialog">
+  <div class="modal-dialog modal-lg">
+    <div class="modal-content">
+      <form action="" method="post" id="form-AddUserModalForm">
+        {% csrf_token %}
+        <div class="modal-header text-white">
+          <h5 class="modal-title">Add User</h5>
+        </div>
+        <div class="modal-body">
+          <div class="row mb-3">
+            <div class="col">
+              <div class="form-group">
+                <label style="font-weight:700;">Username</label>
+                {{add_user_form.username}}
+                <span class="helptext">
+                  Required. 150 characters or fewer. Letters, digits and @/./+/-/_ only.
+                </span>
+              </div>
+            </div>
+            <div class="col">
+              <div class="form-group">
+                <label style="font-weight:700;">Email</label>
+                {{add_user_form.email}}
+              </div>
+            </div>
+          </div>
+
+          <div class="row mb-3">
+            <div class="col">
+              <div class="form-group">
+                <label style="font-weight:700;">First name</label>
+                  {{add_user_form.first_name}}
+              </div>
+            </div>
+            <div class="col">
+              <div class="form-group">
+                <label style="font-weight:700;">Last name</label>
+                {{add_user_form.last_name}}
+              </div>
+            </div>
+          </div>
+
+          <div class="row mb-3">
+            <div class="col">
+              <div class="form-group">
+                <label style="font-weight:700;">Superuser</label>
+                  {{add_user_form.is_superuser}}
+                  <span class="helptext" style="display:block;">Designates that this user has all permissions without explicitly assigning them.</span>
+              </div>
+            </div>
+            <div class="col">
+              <div class="form-group">
+                <label style="font-weight:700;">Is Staff</label>
+                {{add_user_form.is_staff}}
+                <span class="helptext" style="display:block;">Designates whether the user can log into this admin site.</span>
+              </div>
+            </div>
+          </div>
+
+          <div class="row mb-3">
+            <div class="col">
+              <div class="form-group">
+                <label style="font-weight:700;">Password</label>
+                {{add_user_form.password1}}
+                <span class="helptext">
+                  <ul>
+                    <li>Your password can’t be too similar to your other personal information.</li>
+                    <li>Your password must contain at least 8 characters.</li>
+                  <li>Your password can’t be a commonly used password.</li>
+                    <li>Your password can’t be entirely numeric.</li>
+                  </ul>
+                </span>
+              </div>
+            </div>
+            <div class="col">
+              <div class="form-group">
+                <label style="font-weight:700;">Confirm Password</label>
+                {{add_user_form.password2}}
+                <span class="helptext">
+                  Enter the same password as before, for verification
+                </span>
+              </div>
+            </div>
+          </div>
+          {% if messages %}
+            {% if message.tags == 'error' %}
+              <div class="alert bg-red-alert d-flex align-items-center alert-dismissible fade show" role="alert" style="margin-top: 10px; margin-bottom: 20px;">
+                <div class="col">{{message|safe}}</div>
+                <button type="button" class="btn-close" data-bs-dismiss="alert" aria-label="Close"></button>
+              </div>
+            {% endif %}
+          {% endif %}
+        </div>
+        <div class="modal-footer">
+          <button type="button" class="btn btn-secondary" data-dismiss="modal" onclick="modal_close('#AddUserModalForm')">Close</button>
+          <button type="submit" class="btn btn-primary">Save changes</button>
+        </div>
+      </form>
+    </div>
+  </div>
+</div>
+<!-- ADD USER MODAL END -->
+
+<!-- EDIT USER -->
+
+<div class="modal" id="EditUserModalForm" tabindex="-1" role="dialog">
+  <div class="modal-dialog modal-lg">
+    <form method="post" action="{% url 'edit_user' %}">
+      {% csrf_token %}
+      <input type="hidden" name="id" value="" id="edit_id">
+      <div class="modal-content">
+        <div class="modal-header text-white">
+          <h5 class="modal-title">Edit User</h5>
+        </div>
+        <div class="modal-body">
+
+          <div class="row mb-3">
+            <div class="col">
+              <div class="form-group">
+                <label style="font-weight:700;">Username</label>
+                {{edit_user_form.username}}
+              </div>
+            </div>
+            <div class="col">
+              <div class="form-group">
+                <label style="font-weight:700;">Email</label>
+                {{edit_user_form.email}}
+              </div>
+            </div>
+          </div>
+
+          <div class="row mb-3">
+            <div class="col">
+              <div class="form-group">
+                <label style="font-weight:700;">First name</label>
+                  {{edit_user_form.first_name}}
+              </div>
+            </div>
+            <div class="col">
+              <div class="form-group">
+                <label style="font-weight:700;">Last name</label>
+                {{edit_user_form.last_name}}
+              </div>
+            </div>
+          </div>
+
+          <div class="row mb-3">
+            <div class="col">
+              <div class="form-group">
+                <label style="font-weight:700;">Superuser</label>
+                  {{edit_user_form.is_superuser}}
+                  <span class="helptext" style="display:block;">Designates that this user has all permissions without explicitly assigning them.</span>
+              </div>
+            </div>
+            <div class="col">
+              <div class="form-group">
+                <label style="font-weight:700;">Is Staff</label>
+                {{edit_user_form.is_staff}}
+                <span class="helptext" style="display:block;">Designates whether the user can log into this admin site.</span>
+              </div>
+            </div>
+          </div>
+        </div>
+        <div class="modal-footer">
+          <button type="button" class="btn btn-secondary" data-dismiss="modal" onclick="modal_close('#EditUserModalForm')">Close</button>
+          <button type="submit" class="btn btn-primary">Save changes</button>
+        </div>
+      </div>
+    </form>
+  </div>
+</div>
+
+<div id="reset_password" class="modal" tabindex="-1" role="dialog">
+    <div class="modal-dialog" role="document">
+        <div class="modal-content">
+    			<div class="modal-header" style="background-color:#00dbff">
+            <div class="modal-header text-white">
+              <h5 class="modal-title">Password Reset</h5>
+            </div>
+    			</div>
+    			<div class="modal-body">
+    				<h6>New Password : <span id="reset_password_data" style="color:#FF0000"></span></h6>
+    			</div>
+        </div>
+        <div class="modal-footer">
+          <button type="button" class="btn btn-secondary" data-dismiss="modal" onclick="modal_close('#reset_password')">Close</button>
+        </div>
+    </div>
+</div>
+
+
+<script>
+  var users_json = {{users_json|safe}};
+
+  console.log(users_json);
+</script>

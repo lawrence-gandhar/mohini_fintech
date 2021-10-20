@@ -1,0 +1,320 @@
+{% load custom_tags %}
+<div class="row" style="margin:20px 0px 0px; ">
+  <div class="col-md-6 col-sm-12">
+    <h3 style="line-height: 40px;" class="main_heading">Imports & Data Management</h3>
+  </div>
+  <div class="col-md-6 col-sm-12 heading_buttons_container">
+      <div class="btn-group" role="group" aria-label="Basic example">
+        <button type="button" class="btn btn-default btn-sm" style="width:100px; color:#000000;" onclick="show_modal('#uploaderModal')">
+          <i class="la la-plus"></i> <strong>Add</strong>
+        </button>
+        <button type="button" class="btn btn-default btn-sm" style="width:100px; color:#000000;">
+          <i class="la la-trash"></i> <strong>Delete</strong>
+        </button>
+        <a href="" class="btn btn-default btn-sm" style="width:100px; color:#000000;">
+          <i class="la la-sync"></i> <strong>Reset</strong>
+        </a>
+        <div class="dropdown">
+          <button class="btn btn-default btn-sm dropdown-toggle" type="button" data-bs-toggle="dropdown" aria-expanded="false">
+            <i class="la la-exchange-alt"></i>  <strong>Move Data</strong>
+          </button>
+          <ul class="dropdown-menu">
+            <li>
+              <span style="color:#000000; width:200px; padding:10px; display:block; cursor:pointer; font-size:80%; font-weight:bold; " onclick="$('#move_all_to_final').submit()">
+                Move Selected To Final
+              </span>
+            </li>
+            <li>
+              <span style="color:#000000; width:200px; padding:10px; display:block; cursor:pointer; font-size:80%; font-weight:bold; " onclick="move_data_bg_process()">
+                Move All To Final
+              </span>
+            </li>
+          </ul>
+        </div>
+        <a href="{% url 'pd_report' %}" class="btn btn-default btn-sm" style="color:#000000;">
+          <i class="la la-sync"></i> <strong>Run PD Reports</strong>
+        </a>
+      </div>
+  </div>
+</div>
+<hr style="margin-top:0px;" />
+
+<div class="row">
+  <!-- Nav Tabs Start -->
+
+  <div class="col-sm-12">
+
+    {% include 'base/alert_components.html' %}
+
+    <ul class="nav nav-tabs" role="tablist">
+      <li class="nav-item">
+        <a class="nav-link" href="{% url 'manage_imports' 'master' %}" id="tab_master">Master</a>
+      </li>
+      <li class="nav-item">
+        <a class="nav-link active" href="{% url 'manage_imports' 'pd' %}" id="tab_pd">PD</a>
+      </li>
+      <li class="nav-item">
+        <a class="nav-link" href="{% url 'manage_imports' 'lgd' %}" id="tab_lgd">LGD</a>
+      </li>
+      <li class="nav-item">
+        <a class="nav-link" href="{% url 'manage_imports' 'stage' %}" id="tab_stage">Stage</a>
+      </li>
+      <li class="nav-item">
+        <a class="nav-link" href="{% url 'manage_imports' 'eir' %}" id="tab_eir">EIR</a>
+      </li>
+      <li class="nav-item">
+        <a class="nav-link" href="{% url 'manage_imports' 'ecl' %}" id="tab_ecl">ECL</a>
+      </li>
+    </ul>
+
+    <!-- Tab panes start -->
+    <div class="tab-content" style="padding:10px 0px;">
+
+      <div class="table-responsive" style="overflow:auto;">
+        <form method="post" action="">
+          {% csrf_token %}
+          <table class="table table-bordered" style="background-color: #dee2e6;">
+            <tr>
+              <td style="font-size:13px;line-height: 38px; text-align:right; font-weight:bold;">Account No</td>
+              <td style="line-height: 38px;">
+                <input type="text" name="account_no" class="form-control">
+              </td>
+              <td style="font-size:13px;line-height: 38px; text-align:right; font-weight:bold;">Edited</td>
+              <td style="line-height: 38px;">
+                <input type="checkbox" name="edited">
+              </td>
+              <td style="font-size:13px;line-height: 38px; text-align:right; font-weight:bold;">Account No Missing</td>
+              <td style="line-height: 38px;">
+                <input type="checkbox" name="acc_missing">
+              </td>
+              <td style="font-size:13px;line-height: 38px; text-align:right; font-weight:bold;">Start Date</td>
+              <td>
+                <input type="date" name="start_date" class="form-control">
+              </td>
+              <td style="font-size:13px;line-height: 38px; text-align:right; font-weight:bold;">End Date</td>
+              <td>
+                <input type="date" name="end_date" class="form-control">
+              </td>
+              <td>
+                <input type="submit" value="Submit" name="submit" class="btn btn-primary">
+              </td>
+            </tr>
+          </table>
+        </form>
+      </div>
+
+      <div class="table-responsive">
+        <form action="{% url 'move_all_to_final' 'pd' %}" method="post" id="move_all_to_final">
+          {% csrf_token %}
+          <table class="table table-bordered">
+            <thead class="text-center" style="background-color:#ddd; font-size:13px; white-space: nowrap;">
+              <th><input type="checkbox" class="checkbox_all"></th>
+              <th>Date</th>
+              <th>Account No.</th>
+              <th>Factor 1</th>
+              <th>Factor 2</th>
+              <th>Factor 3</th>
+              <th>Factor 4</th>
+              <th>Factor 5</th>
+              <th>Factor 6</th>
+              <th>Default</th>
+              <th>Management Overlay 1</th>
+              <th>Management Overlay 2</th>
+              <th>Created On</th>
+              <th>Edited By</th>
+              <th>Edited On</th>
+              <th>Action</th>
+            </thead>
+            <tbody style="font-size:12px; white-space: nowrap;">
+              {% for row in items_list %}
+                <tr {% if row.edited_by %} style="background-color:#d89e1b5c;" {% endif %}>
+                  <td class="text-center">
+                    <input type="checkbox" value="{{row.id}}" class="checkbox_one" name="checkbox_one">
+                  </td>
+                  <td>{{row.date|default_if_none:''}}</td>
+                  <td {% if row.account_no is None %} class="bg-danger text-white" {% endif %}>
+                    {% if row.account_no is None %} {{row.account_no_temp}}
+                    {% else %} {{row.account_no.account_no|default_if_none:''}}
+                    {% endif %}
+                  </td>
+                  <td>{{row.factor_1|default_if_none:''}}</td>
+                  <td>{{row.factor_2|default_if_none:''}}</td>
+                  <td>{{row.factor_3|default_if_none:''}}</td>
+                  <td>{{row.factor_4|default_if_none:''}}</td>
+                  <td>{{row.factor_5|default_if_none:''}}</td>
+                  <td>{{row.factor_6|default_if_none:''}}</td>
+                  <td>{{row.default_col|default_if_none:''}}</td>
+                  <td>{{row.mgmt_overlay_1|default_if_none:''}}</td>
+                  <td>{{row.mgmt_overlay_2|default_if_none:''}}</td>
+                  <td>{{row.created_on|default_if_none:''}}</td>
+                  <td>{{row.edited_by|default_if_none:''}}</td>
+                  <td>{{row.edited_on|default_if_none:''}}</td>
+                  <td class="text-center p-0">
+                    <div class="btn-group" role="group" aria-label="Basic example">
+                      <button type="button" onclick="load_edit_data({{row.id}})" class="btn btn-icon btn-sm">
+                        <i class="la la-pencil" aria-hidden="true" style="font-size: 25px;line-height: 30px;"></i>
+                      </button>
+                      <button type="button" params="{% url 'delete_record' 'pd' row.id %}" class="btn btn-icon btn-sm" onclick="delete_single_record(this)">
+                        <i class="la la-trash" aria-hidden="true" style="font-size: 25px;line-height: 30px; color:#FF0000;"></i>
+                      </button>
+                      {% if row.edited_by %}
+                        <button type="button" params="{% url 'move_to_final' 'pd' row.id %}" onclick="confirm_row_move(this)" class="btn btn-icon btn-sm" title="confirm">
+                          <i class="la la-list-alt" aria-hidden="true" style="font-size: 25px;line-height: 30px;"></i>
+                        </button>
+                      {% else %}
+                        <a href="{% url 'move_to_final' 'pd' row.id %}" class="btn btn-icon btn-sm">
+                          <i class="la la-cloud-upload-alt" aria-hidden="true" style="font-size: 25px;line-height: 30px; color:#0c7cb3;"></i>
+                        </a>
+                      {% endif %}
+                    </div>
+                  </td>
+                </tr>
+              {% endfor %}
+            </tbody>
+          </table>
+        </form>
+      </div>
+    </div>
+
+    <!-- Tab panes end -->
+  </div>
+  <!-- Nav Tabs End -->
+
+</div>
+
+
+<!-- UPLOAD MODAL -->
+<div class="modal fade" id="uploaderModal" tabindex="-1" role="dialog">
+  <div class="modal-dialog">
+    <div class="modal-content">
+      <form method="post" action="{% url 'import_data_from_file' %}" enctype="multipart/form-data">
+        {% csrf_token %}
+        <input type="hidden" value="{{tab_status}}" name="import_type">
+        <div class="modal-header text-white">
+          <h5 class="modal-title">Upload CSV File</h5>
+        </div>
+        <div class="modal-body">
+            <div class="mb-3">
+              <label for="formFile" class="form-label">PD Input</label>
+              <input class="form-control" type="file" name="formFile">
+            </div>
+        </div>
+        <div class="modal-footer">
+          <button type="button" class="btn btn-secondary" data-bs-dismiss="modal">Close</button>
+          <button type="submit" class="btn btn-primary">Upload</button>
+        </div>
+      </form>
+    </div>
+  </div>
+</div>
+
+
+<!-- EDIT MODAL -->
+<div class="modal fade" id="EditModal" tabindex="-1" role="dialog">
+  <div class="modal-dialog">
+    <div class="modal-content">
+      <form method="post" action="{% url 'edit_record' tab_status %}">
+        {% csrf_token %}
+        <input type="hidden" value="" name="id" id="edit_id">
+        <div class="modal-header text-white">
+          <h5 class="modal-title">Edit PD Record</h5>
+        </div>
+        <div class="modal-body">
+          <div class="row mb-3">
+            <div class="col">
+              <div class="form-group">
+                <label for="formFile" class="form-label">Account no.</label>
+                <input class="form-control" type="text" name="account_no" id="edit_account_no">
+              </div>
+            </div>
+          </div>
+          <div class="row mb-3">
+            <div class="col">
+              <div class="form-group">
+                <label for="formFile" class="form-label">Date</label>
+                <input class="form-control" type="date" name="date" id="edit_date">
+              </div>
+            </div>
+            <div class="col">
+              <div class="form-group">
+                <label for="formFile" class="form-label">Default</label>
+                <input class="form-control" type="text" name="default_col" id="edit_default_col">
+              </div>
+            </div>
+          </div>
+          <div class="row mb-3">
+            <div class="col">
+              <div class="form-group">
+                <label for="formFile" class="form-label">Factor 1</label>
+                <input class="form-control" type="text" name="factor_1" id="edit_factor_1">
+              </div>
+            </div>
+            <div class="col">
+              <div class="form-group">
+                <label for="formFile" class="form-label">Factor 2</label>
+                <input class="form-control" type="text" name="factor_2" id="edit_factor_2">
+              </div>
+            </div>
+          </div>
+          <div class="row mb-3">
+            <div class="col">
+              <div class="form-group">
+                <label for="formFile" class="form-label">Factor 3</label>
+                <input class="form-control" type="text" name="factor_3" id="edit_factor_3">
+              </div>
+            </div>
+            <div class="col">
+              <div class="form-group">
+                <label for="formFile" class="form-label">Factor 4</label>
+                <input class="form-control" type="text" name="factor_4" id="edit_factor_4">
+              </div>
+            </div>
+          </div>
+          <div class="row mb-3">
+            <div class="col">
+              <div class="form-group">
+                <label for="formFile" class="form-label">Factor 5</label>
+                <input class="form-control" type="text" name="factor_5" id="edit_factor_5">
+              </div>
+            </div>
+            <div class="col">
+              <div class="form-group">
+                <label for="formFile" class="form-label">Factor 6</label>
+                <input class="form-control" type="text" name="factor_6" id="edit_factor_6">
+              </div>
+            </div>
+          </div>
+
+          <div class="row mb-3">
+            <div class="col">
+              <div class="form-group">
+                <label for="formFile" class="form-label">Management Overlay 1</label>
+                <input class="form-control" type="text" name="mgmt_overlay_1" id="edit_mgmt_overlay_1">
+              </div>
+            </div>
+            <div class="col">
+              <div class="form-group">
+                <label for="formFile" class="form-label">Management Overlay 2</label>
+                <input class="form-control" type="text" name="mgmt_overlay_2" id="edit_mgmt_overlay_2">
+              </div>
+            </div>
+          </div>
+        </div>
+        <div class="modal-footer">
+          <button type="button" class="btn btn-secondary" data-bs-dismiss="modal">Close</button>
+          <button type="submit" class="btn btn-primary">Submit</button>
+        </div>
+      </form>
+    </div>
+  </div>
+</div>
+
+<script>
+  var status = {{tab_active}};
+
+  var jsdata = {{items_list_json|safe}};
+
+  var bg_data_url = '{% url "move_data_bg_process" "pd" %}';
+
+
+</script>

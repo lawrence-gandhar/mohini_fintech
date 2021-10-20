@@ -1,0 +1,76 @@
+<div class="row" style="margin:20px 0px 0px; ">
+  <div class="col-md-6 col-sm-12">
+    <h3 style="line-height: 40px;" class="main_heading">User Management :: New Users</h3>
+  </div>
+  <div class="col-md-6 col-sm-12 heading_buttons_container">
+      <div class="btn-group" role="group" aria-label="Basic example">
+        <button type="button" class="btn btn-default btn-sm" style="width:100px; color:#000000;" onclick="return false">
+          <i class="la la-check" aria-hidden="true"></i> <strong>Accept</strong>
+        </button>
+        <button type="button" class="btn btn-default btn-sm" style="width:100px; color:#000000;" onclick="return false">
+          <i class="la la-times" aria-hidden="true"></i> <strong>Reject</strong>
+        </button>
+        <button type="button" class="btn btn-default btn-sm" style="width:100px; color:#000000;" onclick="delete_selected_users()">
+          <i class="la la-trash"></i> <strong>Delete</strong>
+        </button>
+      </div>
+  </div>
+</div>
+<hr style="margin-top:0px;" />
+
+{% include 'base/alert_components.html' %}
+
+<div class="row row_counter">
+  <span>No.of Records{% if search_view %} Searched{% endif %} : {{ users|length }}</span>
+</div>
+
+<form method="post" action="#" id="manage_new_users_form">
+{% csrf_token %}
+<div class="row table-responsive" style="overflow:scroll; margin:1px;">
+  <table class="table table-bordered" id="manage_user_table" style="margin-top:10px;">
+    <thead style="background-color:#eeeeee;">
+      <th class="text-center no-sort"> <input type="checkbox" name="checkbox_all" class="checkbox_all"/></th>
+      <th style="width:80px; !important;" class="text-center sorting_asc">Sl. No</th>
+      <th class="text-center">Firstname</th>
+      <th class="text-center">Lastname</th>
+      <th class="text-center">Email</th>
+      <th class="text-center">Created On</th>
+      <th class="text-center">Email Sent On</th>
+      <th style="width:100px !important;" class="text-center no-sort">Action</th>
+    </thead>
+    <tbody style="font-size:13px;">
+        {% for row in users %}
+          <tr>
+            <td class="text-center">
+              <input type="checkbox" name="checkbox_one" class="checkbox_one" value="{{row.id}}" />
+            </td>
+            <td>{{ forloop.counter }}</td>
+            <td>{{ row.first_name|default_if_none:'' }}</td>
+            <td>{{ row.last_name|default_if_none:'' }}</td>
+            <td>{{ row.email|default_if_none:'' }}</td>
+            <td>{{ row.created_on|default_if_none:'' }}</td>
+            <td>{{ row.email_sent_on|default_if_none:'' }}</td>
+            <td class="text-center p-0">
+              <div class="btn-group" role="group" aria-label="Basic example">
+                <a href="{% url 'accept_new_users' row.id %}" class="btn btn-icon btn-sm">
+                  <i class="la la-check" aria-hidden="true" style="font-size: 25px;line-height: 30px;"></i>
+                </a>
+                <a href="{% url 'reject_new_users' row.id %}" class="btn btn-icon btn-sm">
+                  <i class="la la-times" aria-hidden="true" style="font-size: 25px;line-height: 30px;"></i>
+                </a>
+                <a href="{% url 'delete_new_users' row.id %}" class="btn btn-icon btn-sm">
+                  <i class="la la-trash" aria-hidden="true" style="font-size: 25px;line-height: 30px; color:#FF0000;"></i>
+                </a>
+              </div>
+            </td>
+          </tr>
+        {% endfor %}
+
+    </tbody>
+  </table>
+</div>
+</form>
+
+
+<script>
+</script>

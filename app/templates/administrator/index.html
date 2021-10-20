@@ -1,0 +1,391 @@
+{% load static %}
+{% load custom_tags %}
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <title>FinECL</title>
+
+    <link href="{% static 'bootstrap-5.0.1-dist/css/bootstrap.min.css' %}" rel="stylesheet">
+    <link rel="preconnect" href="https://fonts.gstatic.com">
+    <link href="https://fonts.googleapis.com/css2?family=Orbitron:wght@400&display=swap" rel="stylesheet">
+    <link rel="stylesheet" href="{% static 'line_awesome/css/line-awesome.min.css' %}">
+    <link href="https://cdn.datatables.net/1.11.1/css/dataTables.bootstrap5.min.css" rel="stylesheet" />
+
+
+    <script src="{% static 'js/jquery-3.6.0.min.js' %}"></script>
+    <script src="{% static 'js/popper.min.js' %}"></script>
+    <script src="{% static 'bootstrap-5.0.1-dist/js/bootstrap.min.js' %}"></script>
+    <script src="https://cdn.datatables.net/1.11.1/js/jquery.dataTables.min.js"></script>
+    <script src="https://cdn.datatables.net/1.11.1/js/dataTables.bootstrap5.min.js"></script>
+
+    <style>
+    /* TOOLTIP CUSTOM */
+
+    .tooltip-arrow{
+      visibility: hidden !important;
+    }
+
+    .tooltip-inner{
+      margin-left: -4px !important;
+      max-width: 600px !important;
+      margin-top: 12px;
+      white-space: nowrap;
+      padding:22px 25px 20px 25px;
+      background-color:#ffa500 !important;
+      opacity: 1.0 !important;
+      filter: alpha(opacity=100) !important;
+      border-radius: 0px !important;
+      color:#000000 !important;
+    }
+
+    .tooltip.show {
+      opacity: 1 !important;
+    }
+
+    .nav-link{
+      color: #000000 !important;
+      font-size: 15px !important;
+    }
+
+    a.nav-link.active {
+      color:#ffffff !important;
+      background-color: #4169e0 !important;
+      border-color: #4169e0 #4169e0 #fff !important;
+    }
+
+    .sidebar_active{
+      background-color: #ffa500;
+      border-radius: 0%;
+    }
+
+    .sidebar_active>i{
+      color:#000000;
+    }
+
+    ::-webkit-scrollbar {
+      width: 0px;
+    }
+
+
+    .tab-pane{
+      padding: 10px;
+      margin-top:-10px;
+      background-color:#333333;
+    }
+
+    .dataTables_length label, .dataTables_filter label{
+      color:#FFF;
+    }
+
+    #DataTables_Table_0_info{
+      color: #fff;
+    }
+    #DataTables_Table_0_wrapper{
+      margin-top:20px;
+    }
+
+    /*--------------------------------------------------------------------------
+        OTHER CSS
+    --------------------------------------------------------------------------*/
+
+    .row_counter{
+        color:#FFFFFF;
+        padding:0px 14px 20px 14px;
+    }
+
+    .row_counter span{
+        background-color:#4169e1; display:block;width: 100%; padding: 10px;
+    }
+
+    .helptext{
+        font-size:75%;
+    }
+
+    .form-group label{
+        font-size:90%;
+    }
+
+    .modal-header{
+        background-color:#4169e1;
+    }
+
+
+    .bg-green-alert{
+      background-image: linear-gradient(180deg, #58e855, #408a1f);
+      color: #FFFFFF;
+      border: 1px solid #286b0d;
+    }
+
+    .bg-red-alert{
+      background-image: linear-gradient(180deg, #f33f3f, #800a0a);
+      color: #FFFFFF;
+      border: 1px solid #e83e3e;
+    }
+
+    .bg-blue-alert{
+      background-image: linear-gradient(180deg, #1d9af3, #0a49b5);
+      color: #FFFFFF;
+      border: 1px solid #086398;
+    }
+
+    .bg-orange-alert{
+      background-image: linear-gradient(180deg, #fb9935, #9c4906);
+      color: #FFFFFF;
+      border: 1px solid #f77d00;
+    }
+
+    .heading_buttons_container{
+        text-align:right;
+    }
+
+    .nav-tabs .nav-link{
+      border:0px !important;
+    }
+
+    .nav-tabs {
+        border-bottom: 5px solid #4169e0;
+    }
+
+    .pagination li{
+      padding:8px 12px;
+      margin:0px 3px;
+      border:1px solid #eee;
+    }
+
+    .pagination li a {
+      text-decoration: none;
+    }
+
+    </style>
+</head>
+<body>
+
+<div class="row">
+  <nav class="navbar fixed-top navbar-expand-lg" style="background-color:#4169e1;">
+    <div class="container-fluid" style="padding-left:0px;">
+      <a class="navbar-brand" href="#">
+        <span style="color:#FFFFFF; font-size:25px; display:inline;">FinECL</span>
+      </a>
+
+      <button class="navbar-toggler" type="button" data-bs-toggle="collapse" data-bs-target="#navbarSupportedContent" aria-controls="navbarSupportedContent" aria-expanded="false" aria-label="Toggle navigation">
+        <span class="navbar-toggler-icon"></span>
+      </button>
+      <ul class="nav justify-content-end">
+        <li class="nav-item">
+          <a class="nav-link" aria-current="page" href="#" title="Change Password" onclick="show_modal('#change_password_modal')">
+            <i class="las la-key" style="font-size:32px; color:#FFFFFF"></i>
+          </a>
+        </li>
+        <li class="nav-item">
+          <a class="nav-link" aria-current="page" href="{% url 'logout' %}" title="Logout">
+            <i class="las la-power-off" style="font-size:32px; color:#FFFFFF"></i>
+          </a>
+        </li>
+      </ul>
+    </div>
+  </nav>
+</div>
+
+<div class="row" style="margin-top:65px;">
+  <div class="col-md-1" style="height:100%; background-color:#4169e1; text-align:center; position:fixed; overflow-y:scroll; width:95px; border-right: #ffa500 4px solid;">
+    <nav class="nav flex-column" style=" margin-top:25px;">
+      <a class="nav-link {% if sidebar_active == 1 %} sidebar_active {% endif %}" aria-current="page" href="{% url 'admin_dashboard' %}" data-toggle="tooltip" data-placement="right" title="Dashboard">
+        <i class="las la-tachometer-alt" style="font-size:48px; color:{% if sidebar_active == 1 %} #000000 {% else %} #FFFFFF {% endif %} !important;"></i>
+      </a>
+      <a class="nav-link {% if sidebar_active == 2 %} sidebar_active {% endif %}" aria-current="page" href="{% url 'manage_users' %}" data-toggle="tooltip" data-placement="right" title="User Management">
+        <i class="las la-user" style="font-size:48px; color:{% if sidebar_active == 2 %} #000000 {% else %} #FFFFFF {% endif %}  !important;"></i>
+      </a>
+      <a class="nav-link {% if sidebar_active == 3 %} sidebar_active {% endif %}" aria-current="page" href="{% url 'manage_imports' %}" data-toggle="tooltip" data-placement="right" title="Input - CSV Uploads & Management">
+        <i class="las la-cloud-upload-alt" style="font-size:48px; color:{% if sidebar_active == 3 %} #000000 {% else %} #FFFFFF {% endif %}  !important;"></i>
+      </a>
+      <a class="nav-link {% if sidebar_active == 4 %} sidebar_active {% endif %}" aria-current="page" href="{% url 'show_final_records' %}" data-toggle="tooltip" data-placement="right" title="Process Management">
+        <i class="las la-map-signs" style="font-size:48px; color:{% if sidebar_active == 4 %} #000000 {% else %} #FFFFFF {% endif %}  !important;"></i>
+      </a>
+      <a class="nav-link {% if sidebar_active == 5 %} sidebar_active {% endif %}" aria-current="page" href="{% url 'database_management' %}" data-toggle="tooltip" data-placement="right" title="Database Management">
+        <i class="las la-database" style="font-size:48px; color:{% if sidebar_active == 5 %} #000000 {% else %} #FFFFFF {% endif %}  !important;"></i>
+      </a>
+      <a class="nav-link {% if sidebar_active == 6 %} sidebar_active {% endif %}" aria-current="page" href="{% url 'manage_users' %}" data-toggle="tooltip" data-placement="right" title="Audit Trail">
+        <i class="las la-sitemap" style="font-size:48px; color:{% if sidebar_active == 6 %} #000000 {% else %} #FFFFFF {% endif %}  !important;"></i>
+      </a>
+      <a class="nav-link {% if sidebar_active == 7 %} sidebar_active {% endif %}" aria-current="page" href="{% url 'show_reports' %}" data-toggle="tooltip" data-placement="right" title="Reports">
+        <i class="las la-table" style="font-size:48px; color:{% if sidebar_active == 7 %} #000000 {% else %} #FFFFFF {% endif %}  !important;"></i>
+      </a>
+    </nav>
+  </div>
+  <div class="col-md-11" style="height:100%; width:95%; margin-left:80px; padding:20px 20px 10px 21px; overflow:auto;">
+    <div class="container-fluid">
+      {% include content_template %}
+    </div>
+  </div>
+</div>
+
+{% include 'auth_templates/forgot_password.html' %}
+
+</body>
+
+<script>
+  $(document).ready(function(){
+
+    //
+    $("[data-toggle=tooltip").tooltip();
+    //
+
+    //
+    $( "input:password" ).addClass('form-control');
+
+  });
+
+  //
+  //
+  //
+
+  $('.checkbox_all').click(function(){
+    if (this.checked) {
+       $(".checkbox_one").prop("checked", true);
+    } else {
+       $(".checkbox_one").prop("checked", false);
+    }
+  });
+
+  $(".checkbox_one").click(function(){
+    var numberOfCheckboxes = $(".checkbox_one").length;
+    var numberOfCheckboxesChecked = $('.checkbox_one:checked').length;
+    if(numberOfCheckboxes == numberOfCheckboxesChecked) {
+       $(".checkbox_all").prop("checked", true);
+    } else {
+       $(".checkbox_all").prop("checked", false);
+    }
+  });
+
+  //
+  // Show Modal Function
+  // param '#modalId' or '.modalClass'
+  //
+  function show_modal(elem){
+    $(elem).modal("show");
+  }
+
+  //
+  // Hide Modal Function
+  // param '#modalId' or '.modalClass'
+  //
+
+  function modal_close(elem){
+    $(elem).modal("hide");
+    $(elem).css("display", "none");
+  }
+
+
+//
+//
+//
+//***********************************************************************
+// Match Two Strings
+//***********************************************************************
+//
+
+function match_fields_data(input1, input2, elem=null){
+
+	var field1 = $(input1).val();
+	var field2 = $(input2).val();
+
+	if(field1 !== field2){
+		if(elem) $(elem).text("Both fields should match. It is case-sensitive");
+		$(input1).addClass("is-invalid");
+		$(input2).addClass("is-invalid");
+		alert("Did not match");
+	}else{
+		$(input1).removeClass("is-invalid");
+		$(input2).removeClass("is-invalid");
+	}
+}
+
+
+//***********************************************************************
+// Check Confirm Password
+//***********************************************************************
+//
+
+$("#id_password2").on("focusout", function(){
+
+	confirm_passwd = $(this).val();
+	main_passwd = $("#id_password1").val();
+
+	if(confirm_passwd!=""){
+		if(main_passwd !== confirm_passwd){
+			$("#passwd1_error").text("Password and Confirm Password does not match");
+			$(".save_button").prop("disabled", true);
+		}else{
+
+			if(main_passwd.length < 8){
+				$("#passwd1_error").text("This password must contain at least 8 characters.");
+			}else{
+				$("#passwd1_error").text("");
+				$(".save_button").prop("disabled", false);
+				$(".error").text("");
+			}
+		}
+	}else{
+		$("#passwd1_error").text("Confirm Password is required.");
+	}
+});
+
+
+//***********************************************************************
+// Validate Password
+//***********************************************************************
+//
+
+$("#id_password1").on("focusout", function(){
+	passwd = $(this).val();
+
+	if(passwd.length < 8){
+		$("#passwd1_error").text("This password must contain at least 8 characters.");
+	}else{
+
+		confirm_passwd = $("#id_password2").val();
+		main_passwd = $("#id_password1").val();
+
+		if(confirm_passwd!=""){
+			if(main_passwd !== confirm_passwd){
+				$("#passwd1_error").text("Password and Confirm Password does not match");
+				$(".save_button").prop("disabled", true);
+			}else{
+
+				if(main_passwd.length < 8){
+					$("#passwd1_error").text("This password must contain at least 8 characters.");
+				}else{
+					$("#passwd1_error").text("");
+					$(".save_button").prop("disabled", false);
+					$(".error").text("");
+				}
+			}
+		}else{
+			$("#passwd1_error").text("Confirm Password is required.");
+		}
+
+		$("#passwd1_error").text("");
+	}
+});
+
+//***********************************************************************
+// Change Password
+//***********************************************************************
+//
+
+function change_password(){
+	form_d = $("#change_password_form").serialize();
+
+	$("#change_password_modal").modal('hide');
+
+	$.post("/change_password/",form_d, function(data){
+		alert(data);
+	});
+}
+
+
+</script>
+
+{% load_javascript_files js_files %}
+</html>

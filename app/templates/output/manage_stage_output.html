@@ -1,0 +1,200 @@
+{% load custom_tags %}
+<div class="row" style="margin:20px 0px 0px; ">
+  <div class="col-md-6 col-sm-12">
+    <h3 style="line-height: 40px;" class="main_heading">Process Management</h3>
+  </div>
+</div>
+<hr style="margin-top:0px;" />
+
+<div class="row">
+  <!-- Nav Tabs Start -->
+
+  <div class="col-sm-12">
+
+    {% include 'base/alert_components.html' %}
+
+    <ul class="nav nav-tabs" role="tablist">
+      <li class="nav-item">
+        <a class="nav-link" href="{% url 'show_final_records' 'pd' %}" id="tab_pd">PD</a>
+      </li>
+      <li class="nav-item">
+        <a class="nav-link" href="{% url 'show_final_records' 'lgd' %}" id="tab_lgd">LGD</a>
+      </li>
+      <li class="nav-item">
+        <a class="nav-link active" href="{% url 'show_final_records' 'stage' %}" id="tab_stage">Stage</a>
+      </li>
+      <li class="nav-item">
+        <a class="nav-link" href="{% url 'show_final_records' 'eir' %}" id="tab_eir">EIR</a>
+      </li>
+      <li class="nav-item">
+        <a class="nav-link" href="{% url 'show_final_records' 'ecl' %}" id="tab_ecl">ECL</a>
+      </li>
+    </ul>
+
+    <!-- Tab panes start -->
+    <div class="tab-content" style="padding:10px 0px;">
+      <form method="post" action="{% url 'stage_report' %}">
+      <div class="table-responsive" style="overflow:auto;">
+
+          {% csrf_token %}
+          <table class="table table-bordered" style="background-color: #dee2e6;">
+            <tr>
+              <td style="font-size:13px;line-height: 38px; text-align:right; font-weight:bold;">Account No</td>
+              <td style="line-height: 38px;">
+                <input type="text" name="account_no" class="form-control">
+              </td>
+              <td style="font-size:13px;line-height: 38px; text-align:right; font-weight:bold;">Start Date</td>
+              <td>
+                <input type="date" name="start_date" class="form-control">
+              </td>
+              <td style="font-size:13px;line-height: 38px; text-align:right; font-weight:bold;">End Date</td>
+              <td>
+                <input type="date" name="end_date" class="form-control">
+              </td>
+              <td>
+                <button type="submit" class="btn btn-success">Run Report</button>
+              </td>
+            </tr>
+          </table>
+
+      </div>
+
+      <div class="table-responsive">
+          <table class="table table-bordered">
+            <thead class="text-center" style="background-color:#ddd; font-size:13px; white-space: nowrap;">
+              <th><input type="checkbox" class="checkbox_all"></th>
+              <th>Date</th>
+              <th>Account No.</th>
+              <th>Account Type</th>
+              <th>CIN</th>
+              <th>Product Name</th>
+              <th>Sectors</th>
+              <th>Old Rating</th>
+              <th>New Rating</th>
+              <th>Rating 3</th>
+              <th>Rating 4</th>
+              <th>Rating 5</th>
+              <th>Rating 6</th>
+              <th>Rating 7</th>
+              <th>Day Bucket 1</th>
+              <th>Day Bucket 2</th>
+              <th>Day Bucket 3</th>
+              <th>Day Bucket 4</th>
+              <th>Day Bucket 5</th>
+              <th>Day Bucket 6</th>
+              <th>Day Bucket 7</th>
+              <th>Day Bucket </th>
+              <th>Day Bucket 8</th>
+              <th>Day Bucket 9</th>
+              <th>Day Bucket 10</th>
+              <th>Day Bucket 11</th>
+              <th>Day Bucket 12</th>
+              <th>Day Bucket 13</th>
+              <th>Day Bucket 14</th>
+              <th>Day Bucket 15</th>
+              <th>Criteria</th>
+              <th>Cooling Period 1</th>
+              <th>Cooling Period 2</th>
+              <th>Cooling Period 3</th>
+              <th>Cooling Period 4</th>
+              <th>Cooling Period 5</th>
+              <th>RBI Window</th>
+              <th>Management Overlay 1</th>
+              <th>Management Overlay 2</th>
+              <th>Action</th>
+            </thead>
+            <tbody style="font-size:12px; white-space: nowrap;">
+              {% for row in items_list %}
+                <tr {% if row.edited_by %} style="background-color:#d89e1b5c;" {% endif %}>
+                  <td class="text-center">
+                    <input type="checkbox" value="{{row.id}}" class="checkbox_one" name="checkbox_one">
+                  </td>
+                  <td>{{row.date|default_if_none:''}}</td>
+                  <td>{{row.account_no__account_no|default_if_none:''}}</td>
+                  <td>{{row.account_type|default_if_none:''}}</td>
+                  <td>{{row.cin|default_if_none:''}}</td>
+                  <td>{{row.product_name|default_if_none:''}}</td>
+                  <td>{{row.sectors|default_if_none:''}}</td>
+                  <td>{{row.stage|default_if_none:''}}</td>
+                  <td>{{row.state|default_if_none:''}}</td>
+                  <td>{{row.old_rating|default_if_none:''}}</td>
+                  <td>{{row.new_rating|default_if_none:''}}</td>
+                  <td>{{row.rating_3|default_if_none:''}}</td>
+                  <td>{{row.rating_4|default_if_none:''}}</td>
+                  <td>{{row.rating_5|default_if_none:''}}</td>
+                  <td>{{row.rating_6|default_if_none:''}}</td>
+                  <td>{{row.rating_7|default_if_none:''}}</td>
+                  <td>{{row.day_bucket_1|default_if_none:''}}</td>
+                  <td>{{row.day_bucket_2|default_if_none:''}}</td>
+                  <td>{{row.day_bucket_3|default_if_none:''}}</td>
+                  <td>{{row.day_bucket_4|default_if_none:''}}</td>
+                  <td>{{row.day_bucket_5|default_if_none:''}}</td>
+                  <td>{{row.day_bucket_6|default_if_none:''}}</td>
+                  <td>{{row.day_bucket_7|default_if_none:''}}</td>
+                  <td>{{row.day_bucket_8|default_if_none:''}}</td>
+                  <td>{{row.day_bucket_9|default_if_none:''}}</td>
+                  <td>{{row.day_bucket_10|default_if_none:''}}</td>
+                  <td>{{row.day_bucket_11|default_if_none:''}}</td>
+                  <td>{{row.day_bucket_12|default_if_none:''}}</td>
+                  <td>{{row.day_bucket_13|default_if_none:''}}</td>
+                  <td>{{row.day_bucket_14|default_if_none:''}}</td>
+                  <td>{{row.day_bucket_15|default_if_none:''}}</td>
+                  <td>{{row.criteria|default_if_none:''}}</td>
+                  <td>{{row.cooling_period_1|default_if_none:''}}</td>
+                  <td>{{row.cooling_period_2|default_if_none:''}}</td>
+                  <td>{{row.cooling_period_3|default_if_none:''}}</td>
+                  <td>{{row.cooling_period_4|default_if_none:''}}</td>
+                  <td>{{row.cooling_period_5|default_if_none:''}}</td>
+                  <td>{{row.rbi_window|default_if_none:''}}</td>
+                  <td>{{row.mgmt_overlay_1|default_if_none:''}}</td>
+                  <td>{{row.mgmt_overlay_2|default_if_none:''}}</td>
+                  <td class="text-center p-0">
+                    <div class="btn-group" role="group" aria-label="Basic example">
+                      <button type="button" params="" class="btn btn-icon btn-sm" onclick="delete_single_record(this)">
+                        <i class="la la-trash" aria-hidden="true" style="font-size: 25px;line-height: 30px; color:#FF0000;"></i>
+                      </button>
+                    </div>
+                  </td>
+                </tr>
+              {% endfor %}
+            </tbody>
+          </table>
+      </div>
+      </form>
+
+      {% if items_list.has_other_pages %}
+        <ul class="pagination">
+          {% if items_list.has_previous %}
+            <li><a href="?page={{ users.previous_page_number }}">&laquo;</a></li>
+          {% else %}
+            <li class="disabled"><span>&laquo;</span></li>
+          {% endif %}
+          {% for i in items_list.paginator.page_range %}
+            {% if items_list.number == i %}
+              <li class="active"><span>{{ i }} <span class="sr-only">(current)</span></span></li>
+            {% else %}
+              <li><a href="?page={{ i }}">{{ i }}</a></li>
+            {% endif %}
+          {% endfor %}
+          {% if items_list.has_next %}
+            <li><a href="?page={{ users.next_page_number }}">&raquo;</a></li>
+          {% else %}
+            <li class="disabled"><span>&raquo;</span></li>
+          {% endif %}
+        </ul>
+      {% endif %}
+
+    </div>
+
+    <!-- Tab panes end -->
+  </div>
+  <!-- Nav Tabs End -->
+
+</div>
+
+
+<script>
+  var status = {{tab_active}};
+
+
+</script>

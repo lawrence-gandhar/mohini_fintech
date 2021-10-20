@@ -1,0 +1,103 @@
+{% load static %}
+<!DOCTYPE html>
+<html>
+<head>
+<title>AKTIV - Asset Management Tool</title>
+
+<link href="{% static 'bootstrap-5.0.1-dist/css/bootstrap.min.css' %}" rel="stylesheet">
+<link rel="preconnect" href="https://fonts.gstatic.com">
+<link href="https://fonts.googleapis.com/css2?family=Orbitron:wght@400&&family=Tangerine:wght@700&display=swap" rel="stylesheet">
+
+<style>
+  body {
+    margin: 0;
+    padding: 0;
+    background: linear-gradient(180deg, #424348, #000000);
+    height: 100vh;
+  }
+  
+  #login .container #login-row #login-column #login-box {
+    margin-top: 20px;
+    max-width: 600px;
+    border: 1px solid #9C9C9C;
+    background-color: #585858;
+  }
+
+  #login .container #login-row #login-column #login-box #login-form {
+    padding: 20px;
+  }
+
+  #login .container #login-row #login-column #login-box #login-form #register-link {
+    margin-top: -85px;
+  }
+
+  .bg-red-alert{
+    background-image: linear-gradient(180deg, #f33f3f, #800a0a);
+    color: #FFFFFF;
+    border: 1px solid #e83e3e;
+  }
+</style>
+
+</head>
+
+
+<body>
+    <div id="login">
+        <h3 class="text-center text-white pt-5">
+          <span style="display:block; font-family: Verdana, sans-serif; color:#00ff7f; font-size:90px;">Assets</span>
+          <span><small style="font-family: Verdana, sans-serif;">The Management Tool</small></span>
+            <div class="form-group text-center" style="margin-top:25px;">
+
+              <svg xmlns="http://www.w3.org/2000/svg" x="0px" y="0px" width="96" height="96" viewBox="0 0 226 226" style=" fill:#000000; margin-right:10px;"><defs>
+    <linearGradient x1="77.21667" y1="78.2825" x2="77.21667" y2="94.6866" gradientUnits="userSpaceOnUse" id="color-1_43629_gr1"><stop offset="0" stop-color="#8ab4ff"></stop><stop offset="1" stop-color="#e492ff"></stop></linearGradient><linearGradient x1="113" y1="57.19589" x2="113" y2="168.8859" gradientUnits="userSpaceOnUse" id="color-2_43629_gr2"><stop offset="0" stop-color="#1a6dff"></stop><stop offset="1" stop-color="#c822ff"></stop></linearGradient><linearGradient x1="113" y1="57.19589" x2="113" y2="168.8859" gradientUnits="userSpaceOnUse" id="color-3_43629_gr3"><stop offset="0" stop-color="#1a6dff"></stop><stop offset="1" stop-color="#c822ff"></stop></linearGradient><linearGradient x1="113" y1="57.19589" x2="113" y2="168.8859" gradientUnits="userSpaceOnUse" id="color-4_43629_gr4"><stop offset="0" stop-color="#1a6dff"></stop><stop offset="1" stop-color="#c822ff"></stop></linearGradient><linearGradient x1="113" y1="57.19589" x2="113" y2="168.8859" gradientUnits="userSpaceOnUse" id="color-5_43629_gr5"><stop offset="0" stop-color="#1a6dff"></stop><stop offset="1" stop-color="#c822ff"></stop></linearGradient><linearGradient x1="113" y1="57.19589" x2="113" y2="168.8859" gradientUnits="userSpaceOnUse" id="color-6_43629_gr6"><stop offset="0" stop-color="#1a6dff"></stop><stop offset="1" stop-color="#c822ff"></stop></linearGradient></defs><g fill="none" fill-rule="nonzero" stroke="none" stroke-width="1" stroke-linecap="butt" stroke-linejoin="miter" stroke-miterlimit="10" stroke-dasharray="" stroke-dashoffset="0" font-family="none" font-weight="none" font-size="none" text-anchor="none" style="mix-blend-mode: normal"><path d="M0,226v-226h226v226z" fill="none"></path><path d="M113,226c-62.40818,0 -113,-50.59182 -113,-113v0c0,-62.40818 50.59182,-113 113,-113v0c62.40818,0 113,50.59182 113,113v0c0,62.40818 -50.59182,113 -113,113z" fill="#000000"></path><g><path d="M69.54881,95.10833v-12.77976c0,-1.41089 1.14507,-2.55595 2.55595,-2.55595h12.77976z" fill="url(#color-1_43629_gr1)"></path><path d="M182.01071,146.22738h-5.1119v-74.12262c0,-7.04676 -5.733,-12.77976 -12.77976,-12.77976h-102.2381c-7.04676,0 -12.77976,5.733 -12.77976,12.77976v74.12262h-5.1119c-2.81922,0 -5.1119,2.29269 -5.1119,5.1119v2.55595c0,7.04676 5.733,12.77976 12.77976,12.77976h122.68571c7.04676,0 12.77976,-5.733 12.77976,-12.77976v-2.55595c0,-2.81922 -2.29269,-5.1119 -5.1119,-5.1119zM54.2131,72.10476c0,-4.22755 3.44031,-7.66786 7.66786,-7.66786h102.2381c4.22755,0 7.66786,3.44031 7.66786,7.66786v74.12262h-39.31566c-1.9553,0 -3.70613,1.08628 -4.57004,2.82433l-1.14507,2.28758l-27.51483,-0.00511l-1.1374,-2.2748c-0.86902,-1.74572 -2.62241,-2.832 -4.57515,-2.832h-39.31566zM182.01071,153.89524c0,4.22755 -3.44031,7.66786 -7.66786,7.66786h-122.68571c-4.22755,0 -7.66786,-3.44031 -7.66786,-7.66786v-2.55595l49.54202,0.00511l1.1374,2.2748c0.86902,1.74827 2.61985,2.832 4.57515,2.832h27.51227c1.9553,0 3.70613,-1.08628 4.57004,-2.82433l1.14507,-2.28758h49.53947z" fill="url(#color-2_43629_gr2)"></path><path d="M166.675,77.21667c0,-4.22755 -3.44031,-7.66786 -7.66786,-7.66786h-92.01429c-4.22755,0 -7.66786,3.44031 -7.66786,7.66786v63.89881h107.35zM161.5631,136.00357h-97.12619v-58.7869c0,-1.41089 1.14507,-2.55595 2.55595,-2.55595h92.01429c1.41089,0 2.55595,1.14507 2.55595,2.55595z" fill="url(#color-3_43629_gr3)"></path><path d="M128.33571,87.44048h-30.67143c-2.81922,0 -5.1119,2.29269 -5.1119,5.1119v25.55952c0,2.81922 2.29269,5.1119 5.1119,5.1119h30.67143c2.81922,0 5.1119,-2.29269 5.1119,-5.1119v-25.55952c0,-2.81922 -2.29269,-5.1119 -5.1119,-5.1119zM128.33571,118.1119h-30.67143v-25.55952h30.67143z" fill="url(#color-4_43629_gr4)"></path><path d="M102.77619,97.66429h20.44762v5.1119h-20.44762z" fill="url(#color-5_43629_gr5)"></path><path d="M102.77619,107.8881h20.44762v5.1119h-20.44762z" fill="url(#color-6_43629_gr6)"></path></g></g></svg>
+
+  <svg xmlns="http://www.w3.org/2000/svg" x="0px" y="0px"
+  width="96" height="96"
+  viewBox="0 0 226 226"
+  style=" fill:#000000; margin-right:10px;"><defs><linearGradient x1="113" y1="42.375" x2="113" y2="62.15" gradientUnits="userSpaceOnUse" id="color-1_97108_gr1"><stop offset="0" stop-color="#8ab4ff"></stop><stop offset="1" stop-color="#e492ff"></stop></linearGradient><linearGradient x1="113" y1="39.55" x2="113" y2="186.45" gradientUnits="userSpaceOnUse" id="color-2_97108_gr2"><stop offset="0" stop-color="#1a6dff"></stop><stop offset="1" stop-color="#c822ff"></stop></linearGradient></defs><g fill="none" fill-rule="nonzero" stroke="none" stroke-width="1" stroke-linecap="butt" stroke-linejoin="miter" stroke-miterlimit="10" stroke-dasharray="" stroke-dashoffset="0" font-family="none" font-weight="none" font-size="none" text-anchor="none" style="mix-blend-mode: normal"><path d="M0,226v-226h226v226z" fill="none"></path><path d="M113,226c-62.40818,0 -113,-50.59182 -113,-113v0c0,-62.40818 50.59182,-113 113,-113v0c62.40818,0 113,50.59182 113,113v0c0,62.40818 -50.59182,113 -113,113z" fill="#000000"></path><g><path d="M92.10065,62.15h41.7987c4.21773,0 7.79417,-3.10185 8.39025,-7.2772l1.7854,-12.4978h-62.15l1.7854,12.4978c0.59607,4.17535 4.17253,7.2772 8.39025,7.2772zM129.95,50.85c1.5594,0 2.825,1.2656 2.825,2.825c0,1.5594 -1.2656,2.825 -2.825,2.825c-1.5594,0 -2.825,-1.2656 -2.825,-2.825c0,-1.5594 1.2656,-2.825 2.825,-2.825zM107.35,50.85c1.0509,0 10.24062,0 11.3,0c1.5594,0 2.825,1.2656 2.825,2.825c0,1.5594 -1.2656,2.825 -2.825,2.825c-1.05938,0 -10.2491,0 -11.3,0c-1.5594,0 -2.825,-1.2656 -2.825,-2.825c0,-1.5594 1.2656,-2.825 2.825,-2.825z" fill="url(#color-1_97108_gr1)"></path><path d="M146.9,186.45h-67.8c-7.78852,0 -14.125,-6.33648 -14.125,-14.125v-118.65c0,-7.78852 6.33648,-14.125 14.125,-14.125h67.8c7.78852,0 14.125,6.33648 14.125,14.125v118.65c0,7.78852 -6.33648,14.125 -14.125,14.125zM79.1,45.2c-4.67255,0 -8.475,3.80245 -8.475,8.475v118.65c0,4.67255 3.80245,8.475 8.475,8.475h67.8c4.67255,0 8.475,-3.80245 8.475,-8.475v-118.65c0,-4.67255 -3.80245,-8.475 -8.475,-8.475z" fill="url(#color-2_97108_gr2)"></path></g></g></svg>
+
+  <svg xmlns="http://www.w3.org/2000/svg" x="0px" y="0px"
+  width="96" height="96"
+  viewBox="0 0 226 226"
+  style=" fill:#000000;"><defs><linearGradient x1="113" y1="39.90313" x2="113" y2="189.62813" gradientUnits="userSpaceOnUse" id="color-1_74763_gr1"><stop offset="0" stop-color="#1a6dff"></stop><stop offset="1" stop-color="#c822ff"></stop></linearGradient><linearGradient x1="100.2875" y1="65.32813" x2="100.2875" y2="73.80312" gradientUnits="userSpaceOnUse" id="color-2_74763_gr2"><stop offset="0" stop-color="#8ab4ff"></stop><stop offset="1" stop-color="#e492ff"></stop></linearGradient><linearGradient x1="125.7125" y1="65.32813" x2="125.7125" y2="73.80312" gradientUnits="userSpaceOnUse" id="color-3_74763_gr3"><stop offset="0" stop-color="#8ab4ff"></stop><stop offset="1" stop-color="#e492ff"></stop></linearGradient><linearGradient x1="113" y1="102.05313" x2="113" y2="124.65312" gradientUnits="userSpaceOnUse" id="color-4_74763_gr4"><stop offset="0" stop-color="#8ab4ff"></stop><stop offset="1" stop-color="#e492ff"></stop></linearGradient></defs><g fill="none" fill-rule="nonzero" stroke="none" stroke-width="1" stroke-linecap="butt" stroke-linejoin="miter" stroke-miterlimit="10" stroke-dasharray="" stroke-dashoffset="0" font-family="none" font-weight="none" font-size="none" text-anchor="none" style="mix-blend-mode: normal"><path d="M0,226v-226h226v226z" fill="none"></path><path d="M113,226c-62.40818,0 -113,-50.59182 -113,-113v0c0,-62.40818 50.59182,-113 113,-113v0c62.40818,0 113,50.59182 113,113v0c0,62.40818 -50.59182,113 -113,113z" fill="#000000"></path><g><path d="M144.075,87.92813v-42.375c0,-3.1075 -2.5425,-5.65 -5.65,-5.65h-50.85c-3.1075,0 -5.65,2.5425 -5.65,5.65v42.375c-6.215,0 -11.3,5.085 -11.3,11.3v50.85c0,11.0175 8.7575,19.775 19.775,19.775h11.3v14.125c0,3.1075 2.5425,5.65 5.65,5.65h11.3c3.1075,0 5.65,-2.5425 5.65,-5.65v-14.125h11.3c11.0175,0 19.775,-8.7575 19.775,-19.775v-50.85c0,-6.215 -5.085,-11.3 -11.3,-11.3zM87.575,45.55312h50.85v42.375h-50.85zM118.65,183.97812h-11.3v-14.125h11.3zM149.725,150.07813c0,7.91 -6.215,14.125 -14.125,14.125h-45.2c-7.91,0 -14.125,-6.215 -14.125,-14.125v-50.85c0,-3.1075 2.5425,-5.65 5.65,-5.65h62.15c3.1075,0 5.65,2.5425 5.65,5.65z" fill="url(#color-1_74763_gr1)"></path><path d="M93.225,65.32813h14.125v8.475h-14.125z" fill="url(#color-2_74763_gr2)"></path><path d="M118.65,65.32813h14.125v8.475h-14.125z" fill="url(#color-3_74763_gr3)"></path><path d="M113,102.05313c-6.24082,0 -11.3,5.05918 -11.3,11.3c0,6.24082 5.05918,11.3 11.3,11.3c6.24082,0 11.3,-5.05918 11.3,-11.3c0,-6.24082 -5.05918,-11.3 -11.3,-11.3z" fill="url(#color-4_74763_gr4)"></path></g></g></svg>
+            </div>
+        </h3>
+
+        <div class="container">
+            <div id="login-row" class="row justify-content-center align-items-center">
+                <div id="login-column" class="col-md-4 col-sm-6 col-xs-12">
+                    <div id="login-box" class="col-md-12">
+                        <form id="login-form" class="form" action="" method="post">
+                            {% csrf_token %}
+                            <h3 class="text-center" style="color:#FFFFFF; margin-bottom:20px;">Login</h3>
+                            {% for message in messages %}
+                              {% if message.tags == 'error' %}
+                                <div class="alert bg-red-alert d-flex align-items-center alert-dismissible fade show" role="alert" style="margin-top: 10px; margin-bottom: 20px; background-color:red">
+                                  <svg class="bi flex-shrink-0 me-2" width="24" height="24" role="img" aria-label="Error:">
+                                    <use xlink:href="#exclamation-triangle-fill"/>
+                                  </svg>
+                                  <div>{{message|safe}}</div>
+                                </div>
+                              {% endif %}
+                            {% endfor %}
+                            <div class="form-floating mb-3">
+                              <input type="text" class="form-control" id="floatingInput1" name="username">
+                              <label for="floatingInput1">Username</label>
+                            </div>
+                            <div class="form-floating mb-3">
+                              <input type="password" class="form-control" id="floatingInput2" name="password">
+                              <label for="floatingInput2">Password</label>
+                            </div>
+                            <div class="form-group" style="text-align:right;">
+                                <input type="submit" name="submit" class="btn btn-info btn-md" value="Submit">
+                            </div>
+                        </form>
+                    </div>
+                </div>
+            </div>
+
+        </div>
+    </div>
+</body>
+<script src="{% static 'bootstrap-5.0.1-dist/js/bootstrap.min.js' %}"></script>
+</html>

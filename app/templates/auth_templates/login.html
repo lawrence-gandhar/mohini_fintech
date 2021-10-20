@@ -1,0 +1,127 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <title>FinECL::Login</title>
+    <!-- Font Awesome -->
+    <link
+      href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/5.15.1/css/all.min.css"
+      rel="stylesheet"
+    />
+    <!-- Google Fonts -->
+    <link
+      href="https://fonts.googleapis.com/css?family=Roboto:300,400,500,700&display=swap"
+      rel="stylesheet"
+    />
+    <!-- MDB -->
+    <link
+      href="https://cdnjs.cloudflare.com/ajax/libs/mdb-ui-kit/3.6.0/mdb.min.css"
+      rel="stylesheet"
+    />
+
+    <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.0.2/dist/css/bootstrap.min.css" rel="stylesheet" integrity="sha384-EVSTQN3/azprG1Anm3QDgpJLIm9Nao0Yz1ztcQTwFspd3yD65VohhpuuCOmLASjC" crossorigin="anonymous">
+
+    <!-- MDB -->
+    <script
+      type="text/javascript"
+      src="https://cdnjs.cloudflare.com/ajax/libs/mdb-ui-kit/3.6.0/mdb.min.js"
+    ></script>
+
+    <script src="https://cdn.jsdelivr.net/npm/@popperjs/core@2.9.2/dist/umd/popper.min.js" integrity="sha384-IQsoLXl5PILFhosVNubq5LC7Qb9DXgDA9i+tQ8Zj3iwWAwPtgFTxbJ8NT4GN1R8p" crossorigin="anonymous"></script>
+    <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.0.2/dist/js/bootstrap.min.js" integrity="sha384-cVKIPhGWiC2Al4u+LWgxfKTRIcfu0JTxR+EQDz/bgldoEyl4H0zUF0QKbrJ0EcQF" crossorigin="anonymous"></script>
+
+</head>
+<body>
+    <div class="d-flex justify-content-center align-items-center justify-content-center" style="height: 100%;">
+        <form id="login-form" class="form" action="" method="post">
+            <div class="card" style="width:400px; margin-top:150px;">
+                <div class="card-header text-center bg-primary text-white">
+                    <h5 class="p-3" style="margin-bottom:0px;">FinECL</h5>
+                </div>
+                <div class="card-body">
+                    {% for message in messages %}
+                      {% if message.tags == 'error' %}
+                        <div class="alert bg-red-alert d-flex align-items-center alert-dismissible fade show text-white" role="alert"
+                             style="margin-top: 10px; margin-bottom: 20px; background-color:red; color:#fff;">
+                          <div>{{message|safe}}</div>
+                        </div>
+                      {% else %}
+                      <div class="alert d-flex align-items-center alert-dismissible fade show text-white" role="alert"
+                           style="margin-top: 10px; margin-bottom: 20px; background-color:#157a34f7; color:#fff;">
+                        <div>{{message|safe}}</div>
+                      </div>
+                      {% endif %}
+                    {% endfor %}
+                    {% csrf_token %}
+                    <div class="input-group input-group-lg mb-3">
+                        <span class="input-group-text" style="background-color:#eeeeee;height: 44px;width: 124px;">Username</span>
+                        <input name="username" type="text" class="form-control" aria-label="Sizing example input"
+                        aria-describedby="inputGroup-sizing-lg" />
+                    </div>
+                    <div class="input-group input-group-lg">
+                        <span class="input-group-text" style="background-color:#eeeeee;height: 45px;width: 124px;">Password</span>
+                        <input name="password" type="password" class="form-control" aria-label="Sizing example input"
+                        aria-describedby="inputGroup-sizing-lg" />
+                    </div>
+                </div>
+                <div class="card-footer text-center">
+                    <button class="btn btn-success">Login</button>
+                    <div class="row" style="padding-top:10px;">
+                      <div class="col" style="text-align:left">
+                        <a href="#" data-bs-toggle="modal" data-bs-target="#SignUpModal">Sign Up</a>
+                      </div>
+                      <div class="col" style="text-align:right">
+                        <a href="#">Forgot Password</a>
+                      </div>
+                    </div>
+                </div>
+            </div>
+        </form>
+    </div>
+
+
+    <div class="modal fade" id="SignUpModal" tabindex="-1" aria-labelledby="exampleModalLabel" aria-hidden="true">
+      <div class="modal-dialog">
+        <div class="modal-content">
+          <form action="{% url 'signup' %}" method="post" id="form-AddUserModalForm">
+            {% csrf_token %}
+            <div class="modal-header bg-primary text-white">
+              <h5 class="modal-title">SignUp Form</h5>
+            </div>
+            <div class="modal-body">
+              <div class="row mb-3">
+                <div class="col">
+                  <div class="form-group">
+                    <label style="font-weight:700;">Email</label>
+                    {{new_user_form.email}}
+                  </div>
+                </div>
+              </div>
+              <div class="row mb-3">
+                <div class="col">
+                  <div class="form-group">
+                    <label style="font-weight:700;">First Name</label>
+                    {{new_user_form.first_name}}
+                  </div>
+                </div>
+              </div>
+              <div class="row mb-3">
+                <div class="col">
+                  <div class="form-group">
+                    <label style="font-weight:700;">Last Name</label>
+                    {{new_user_form.last_name}}
+                  </div>
+                </div>
+              </div>
+            </div>
+            <div class="modal-footer">
+              <button type="button" class="btn btn-secondary" data-bs-dismiss="modal">Close</button>
+              <button type="submit" class="btn btn-primary">Signup</button>
+            </div>
+          </form>
+        </div>
+      </div>
+    </div>
+
+</body>
+</html>
