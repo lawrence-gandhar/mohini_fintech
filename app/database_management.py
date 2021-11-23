@@ -34,8 +34,8 @@ from collections import defaultdict
 #**********************************************************************
 def database_management(request):
     data = defaultdict()
-    data["content_template"] = "administrator/manage_process.html"
-    data["js_files"] = []
+    data["content_template"] = "administrator/manage_db_process.html"
+    data["js_files"] = ['custom_js/db_manage.js']
     data["sidebar_active"] = 5
 
     return render(request, "administrator/index.html", data)

@@ -13,6 +13,8 @@ class New_User(models.Model):
     email_sent_on = models.DateTimeField(auto_now_add=False, db_index=True, blank=True, null=True)
     status = models.IntegerField(default=0, db_index=True, null=True, blank=True)
 
+
+
 #==================================================================================
 # ACCOUNT MASTER
 #==================================================================================
@@ -46,6 +48,8 @@ class AccountMissing(models.Model):
     account_no = models.CharField(blank=True, null=True, max_length=255, db_index=True)
     file_identifier = models.CharField(blank=True, null=True, max_length=255, db_index=True)
     created_on = models.DateTimeField(auto_now_add=True, db_index=True)
+
+
 
 #==================================================================================
 # PD INITIAL
@@ -429,7 +433,6 @@ class EIR_Reports(models.Model):
     cin = models.CharField(blank=True, null=True, max_length=255, db_index=True)
     sectors = models.CharField(blank=True, null=True, max_length=255, db_index=True)
     product_name = models.CharField(blank=True, null=True, max_length=255, db_index=True)
-    cin = models.CharField(blank=True, null=True, max_length=255, db_index=True)
     period = models.CharField(blank=True, null=True, max_length=255, db_index=True)
     loan_availed = models.CharField(blank=True, null=True, max_length=255, db_index=True)
     cost_avail = models.CharField(blank=True, null=True, max_length=255, db_index=True)
@@ -443,6 +446,187 @@ class EIR_Reports(models.Model):
     col_1 = models.CharField(blank=True, null=True, max_length=255, db_index=True)
     col_2 = models.CharField(blank=True, null=True, max_length=255, db_index=True)
     col_3 = models.CharField(blank=True, null=True, max_length=255, db_index=True)
+    created_on = models.DateTimeField(auto_now_add=True, db_index=True)
+
+    @classmethod
+    def truncate(cls):
+        with connection.cursor() as cursor:
+            cursor.execute('TRUNCATE TABLE "{0}" SET_NULL'.format(cls._meta.db_table))
+
+
+#==================================================================================
+# DB MANAGE TABLE
+#==================================================================================
+class DB_Mange(models.Model):
+
+    table_choices = (
+        ('Master', 'Master'),
+        ('user', 'User'),
+        ('PD Initial', 'PD Initial'),
+        ('LGD Initial', 'LGD Initial'),
+        ('Stage Initial', 'Stage Initial'),
+        ('EIR Initial', 'EIR Initial'),
+        ('ECL Initial', 'ECL Initial'),
+        ('EAD Initial', 'EAD Initial'),
+        ('PD Final', 'PD Final'),
+        ('LGD Final', 'LGD Final'),
+        ('Stage Final', 'Stage Final'),
+        ('EIR Final', 'EIR Final'),
+        ('ECL Final', 'ECL Final'),
+        ('EAD Final', 'EAD Final'),
+        ('PD Report', 'PD Report'),
+        ('LGD Final', 'LGD Report'),
+        ('Stage Report', 'Stage Report'),
+        ('EIR Report', 'EIR Report'),
+        ('ECL Report', 'ECL Report'),
+        ('EAD Report', 'EAD Report'),
+    )
+
+    table_name = models.CharField(max_length=255, db_index=True, null=True, blank=True, choices=table_choices)
+    process_name = models.CharField(max_length=1, db_index=True, null=True, blank=True, choices=(('F', 'Full'), ('R', 'Range')))
+    start_date = models.DateTimeField(auto_now_add=True, db_index=True, null=True, blank=True)
+    end_date = models.DateTimeField(db_index=True, null=True, blank=True)
+    start_range_date = models.DateField(db_index=True, null=True, blank=True)
+    end_range_date = models.DateField(db_index=True, null=True, blank=True)
+    total_deleted = models.IntegerField(db_index=True, null=True, blank=True, default=0)
+    executed_by = models.ForeignKey(User, on_delete=models.SET_NULL, null=True, blank=True)
+
+
+
+#==================================================================================
+# PRODUCT MASTER
+#==================================================================================
+class Basel_Product_Master(models.Model):
+    date = models.DateField(auto_now_add=False, null=True, blank=True, db_index=True)
+    account_no = models.ForeignKey(AccountMaster, on_delete=models.SET_NULL, null=True, blank=True, db_index=True)
+    product_name = models.CharField(blank=True, null=True, max_length=255, db_index=True)
+    product_code = models.CharField(blank=True, null=True, max_length=255, db_index=True)
+    product_catgory = models.CharField(blank=True, null=True, max_length=255, db_index=True)
+    basel_product = models.CharField(blank=True, null=True, max_length=255, db_index=True)
+    basel_product_code = models.CharField(blank=True, null=True, max_length=255, db_index=True)
+    drawn_cff = models.CharField(blank=True, null=True, max_length=255, db_index=True)
+    cff_upto_1_yr = models.CharField(blank=True, null=True, max_length=255, db_index=True)
+    cff_gt_1_yr = models.CharField(blank=True, null=True, max_length=255, db_index=True)
+
+
+#==================================================================================
+# BASEL COLLATERAL
+#==================================================================================
+class Basel_Collateral_Master(models.Model):
+    date = models.DateField(auto_now_add=False, null=True, blank=True, db_index=True)
+    account_no = models.ForeignKey(AccountMaster, on_delete=models.SET_NULL, null=True, blank=True, db_index=True)
+    product_name = models.CharField(blank=True, null=True, max_length=255, db_index=True)
+    collateral_code = models.CharField(blank=True, null=True, max_length=255, db_index=True)
+    collateral_type = models.CharField(blank=True, null=True, max_length=255, db_index=True)
+    issuer_type = models.CharField(blank=True, null=True, max_length=255, db_index=True)
+    collateral_eligibity = models.CharField(blank=True, null=True, max_length=255, db_index=True)
+    rating_available = models.CharField(blank=True, null=True, max_length=255, db_index=True)
+    collateral_rating = models.CharField(blank=True, null=True, max_length=255, db_index=True)
+    residual_maturity = models.CharField(blank=True, null=True, max_length=255, db_index=True)
+    basel_collateral_type = models.CharField(blank=True, null=True, max_length=255, db_index=True)
+    basel_collateral_subtype = models.CharField(blank=True, null=True, max_length=255, db_index=True)
+    basel_collateral_code = models.CharField(blank=True, null=True, max_length=255, db_index=True)
+    basel_collateral_rating = models.CharField(blank=True, null=True, max_length=255, db_index=True)
+    soverign_issuer = models.CharField(blank=True, null=True, max_length=255, db_index=True)
+    other_issuer = models.CharField(blank=True, null=True, max_length=255, db_index=True)
+
+
+#==================================================================================
+# PRODUCT MASTER
+#==================================================================================
+class Collateral(models.Model):
+    account_no = models.ForeignKey(AccountMaster, on_delete=models.SET_NULL, null=True, blank=True, db_index=True)
+    collateral_code = models.CharField(blank=True, null=True, max_length=255, db_index=True)
+
+
+#==================================================================================
+# EAD INITIAL TABLE
+#==================================================================================
+class EAD_Initial(models.Model):
+    date = models.DateField(auto_now_add=False, null=True, blank=True,)
+    account_no = models.ForeignKey(AccountMaster, on_delete=models.SET_NULL, null=True, blank=True, db_index=True)
+    account_no_temp = models.CharField(blank=True, null=True, max_length=255, db_index=True)
+    outstanding_amount = models.CharField(blank=True, null=True, max_length=255, db_index=True)
+    undrawn_upto_1_yr = models.CharField(blank=True, null=True, max_length=255, db_index=True)
+    undrawn_greater_than_1_yr = models.CharField(blank=True, null=True, max_length=255, db_index=True)
+    collateral_1_value = models.CharField(blank=True, null=True, max_length=255, db_index=True)
+    collateral_1_rating = models.CharField(blank=True, null=True, max_length=255, db_index=True)
+    collateral_1_residual_maturity = models.CharField(blank=True, null=True, max_length=255, db_index=True)
+    collateral_2_value = models.CharField(blank=True, null=True, max_length=255, db_index=True)
+    collateral_2_rating = models.CharField(blank=True, null=True, max_length=255, db_index=True)
+    collateral_2_residual_maturity = models.CharField(blank=True, null=True, max_length=255, db_index=True)
+    file_identifier = models.CharField(blank=True, null=True, max_length=255, db_index=True)
+    created_on = models.DateTimeField(auto_now_add=True, db_index=True)
+    edited_by = models.ForeignKey(User, on_delete=models.SET_NULL, null=True, blank=True, db_index=True)
+    edited_on = models.DateTimeField(db_index=True, null=True, blank=True)
+
+    @classmethod
+    def truncate(cls):
+        with connection.cursor() as cursor:
+            cursor.execute('TRUNCATE TABLE "{0}" SET_NULL'.format(cls._meta.db_table))
+
+#==================================================================================
+# EAD Final TABLE
+#==================================================================================
+class EAD_Final(models.Model):
+    date = models.DateField(auto_now_add=False, null=True, blank=True,)
+    account_no = models.ForeignKey(AccountMaster, on_delete=models.SET_NULL, null=True, blank=True, db_index=True)
+    outstanding_amount = models.CharField(blank=True, null=True, max_length=255, db_index=True)
+    undrawn_upto_1_yr = models.CharField(blank=True, null=True, max_length=255, db_index=True)
+    undrawn_greater_than_1_yr = models.CharField(blank=True, null=True, max_length=255, db_index=True)
+    collateral_1_value = models.CharField(blank=True, null=True, max_length=255, db_index=True)
+    collateral_1_rating = models.CharField(blank=True, null=True, max_length=255, db_index=True)
+    collateral_1_residual_maturity = models.CharField(blank=True, null=True, max_length=255, db_index=True)
+    collateral_2_value = models.CharField(blank=True, null=True, max_length=255, db_index=True)
+    collateral_2_rating = models.CharField(blank=True, null=True, max_length=255, db_index=True)
+    collateral_2_residual_maturity = models.CharField(blank=True, null=True, max_length=255, db_index=True)
+    created_on = models.DateTimeField(auto_now_add=True, db_index=True)
+
+    @classmethod
+    def truncate(cls):
+        with connection.cursor() as cursor:
+            cursor.execute('TRUNCATE TABLE "{0}" SET_NULL'.format(cls._meta.db_table))
+
+
+#==================================================================================
+# EAD Report TABLE
+#==================================================================================
+class EAD_Report(models.Model):
+    date = models.DateField(auto_now_add=False, null=True, blank=True,)
+    account_no = models.ForeignKey(AccountMaster, on_delete=models.SET_NULL, null=True, blank=True, db_index=True)
+    account_type = models.CharField(blank=True, null=True, max_length=255, db_index=True)
+    cin = models.CharField(blank=True, null=True, max_length=255, db_index=True)
+    sectors = models.CharField(blank=True, null=True, max_length=255, db_index=True)
+    product_name = models.CharField(blank=True, null=True, max_length=255, db_index=True)
+    product_code = models.CharField(blank=True, null=True, max_length=255, db_index=True)
+    product_catgory = models.CharField(blank=True, null=True, max_length=255, db_index=True)
+    basel_product = models.CharField(blank=True, null=True, max_length=255, db_index=True)
+    basel_product_code = models.CharField(blank=True, null=True, max_length=255, db_index=True)
+    drawn_cff = models.CharField(blank=True, null=True, max_length=255, db_index=True)
+    cff_upto_1_yr = models.CharField(blank=True, null=True, max_length=255, db_index=True)
+    cff_gt_1_yr = models.CharField(blank=True, null=True, max_length=255, db_index=True)
+    outstanding_amount = models.CharField(blank=True, null=True, max_length=255, db_index=True)
+    undrawn_upto_1_yr = models.CharField(blank=True, null=True, max_length=255, db_index=True)
+    undrawn_greater_than_1_yr = models.CharField(blank=True, null=True, max_length=255, db_index=True)
+    collateral_1_value = models.CharField(blank=True, null=True, max_length=255, db_index=True)
+    collateral_1_rating = models.CharField(blank=True, null=True, max_length=255, db_index=True)
+    collateral_1_residual_maturity = models.CharField(blank=True, null=True, max_length=255, db_index=True)
+    collateral_2_value = models.CharField(blank=True, null=True, max_length=255, db_index=True)
+    collateral_2_rating = models.CharField(blank=True, null=True, max_length=255, db_index=True)
+    collateral_2_residual_maturity = models.CharField(blank=True, null=True, max_length=255, db_index=True)
+    collateral_code = models.CharField(blank=True, null=True, max_length=255, db_index=True)
+    collateral_type = models.CharField(blank=True, null=True, max_length=255, db_index=True)
+    issuer_type = models.CharField(blank=True, null=True, max_length=255, db_index=True)
+    collateral_eligibity = models.CharField(blank=True, null=True, max_length=255, db_index=True)
+    rating_available = models.CharField(blank=True, null=True, max_length=255, db_index=True)
+    collateral_rating = models.CharField(blank=True, null=True, max_length=255, db_index=True)
+    residual_maturity = models.CharField(blank=True, null=True, max_length=255, db_index=True)
+    basel_collateral_type = models.CharField(blank=True, null=True, max_length=255, db_index=True)
+    basel_collateral_subtype = models.CharField(blank=True, null=True, max_length=255, db_index=True)
+    basel_collateral_code = models.CharField(blank=True, null=True, max_length=255, db_index=True)
+    basel_collateral_rating = models.CharField(blank=True, null=True, max_length=255, db_index=True)
+    soverign_issuer = models.CharField(blank=True, null=True, max_length=255, db_index=True)
+    other_issuer = models.CharField(blank=True, null=True, max_length=255, db_index=True)
     created_on = models.DateTimeField(auto_now_add=True, db_index=True)
 
     @classmethod

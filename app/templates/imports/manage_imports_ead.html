@@ -32,7 +32,7 @@
           </ul>
         </div>
         <a href="{% url 'pd_report' %}" class="btn btn-default btn-sm" style="color:#000000;">
-          <i class="la la-sync"></i> <strong>Run PD Reports</strong>
+          <i class="la la-sync"></i> <strong>Run EAD Reports</strong>
         </a>
       </div>
   </div>
@@ -51,7 +51,7 @@
         <a class="nav-link" href="{% url 'manage_imports' 'master' %}" id="tab_master">Master</a>
       </li>
       <li class="nav-item">
-        <a class="nav-link active" href="{% url 'manage_imports' 'pd' %}" id="tab_pd">PD</a>
+        <a class="nav-link " href="{% url 'manage_imports' 'pd' %}" id="tab_pd">PD</a>
       </li>
       <li class="nav-item">
         <a class="nav-link" href="{% url 'manage_imports' 'lgd' %}" id="tab_lgd">LGD</a>
@@ -66,7 +66,7 @@
         <a class="nav-link" href="{% url 'manage_imports' 'ecl' %}" id="tab_ecl">ECL</a>
       </li>
       <li class="nav-item">
-        <a class="nav-link" href="{% url 'manage_imports' 'ead' %}" id="tab_ead">EAD</a>
+        <a class="nav-link active" href="{% url 'manage_imports' 'ead' %}" id="tab_ead">EAD</a>
       </li>
     </ul>
 
@@ -114,15 +114,15 @@
               <th><input type="checkbox" class="checkbox_all"></th>
               <th>Date</th>
               <th>Account No.</th>
-              <th>Factor 1</th>
-              <th>Factor 2</th>
-              <th>Factor 3</th>
-              <th>Factor 4</th>
-              <th>Factor 5</th>
-              <th>Factor 6</th>
-              <th>Default</th>
-              <th>Management Overlay 1</th>
-              <th>Management Overlay 2</th>
+              <th>Outstanding Amount</th>
+              <th>Undrawn Upto 1 Yr</th>
+              <th>Undrawn > 1 Yr</th>
+              <th>Collateral Value 1</th>
+              <th>Collateral Rating 1</th>
+              <th>Collateral Residual Maturity 1</th>
+              <th>Collateral Value 2</th>
+              <th>Collateral Rating 2</th>
+              <th>Collateral Residual Maturity 2</th>
               <th>Created On</th>
               <th>Edited By</th>
               <th>Edited On</th>
@@ -220,7 +220,7 @@
         {% csrf_token %}
         <input type="hidden" value="" name="id" id="edit_id">
         <div class="modal-header text-white">
-          <h5 class="modal-title">Edit PD Record</h5>
+          <h5 class="modal-title">Edit EAD Record</h5>
         </div>
         <div class="modal-body">
           <div class="row mb-3">
@@ -317,7 +317,7 @@
 
   var jsdata = {{items_list_json|safe}};
 
-  var bg_data_url = '{% url "move_data_bg_process" "pd" %}';
+  var bg_data_url = '{% url "move_data_bg_process" "ead" %}';
 
 
 </script>

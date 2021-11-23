@@ -3,28 +3,33 @@ $(document).ready(function(){
   $(".nav-tabs a").removeClass("active");
   $(".tab-pane").removeClass("active");
 
+  //console.log("error");
+  //console.log(status);
+
   if(status == 1){
     $("#tab_master").addClass("active");
   }
   if(status == 2){
     $("#tab_pd").addClass("active");
   }
-  else if(status == 3){
+  if(status == 3){
     $("#tab_lgd").addClass("active");
   }
-  else if(status == 4){
+  if(status == 4){
     $("#tab_stage").addClass("active");
   }
-  else if(status == 5){
+  if(status == 5){
     $("#tab_eir").addClass("active");
   }
-  else if(status == 6){
+  if(status == 6){
     $("#tab_ecl").addClass("active");
+  }
+  if(status == 7){
+    $("#tab_ead").addClass("active");
   }
 });
 
-console.log("error");
-console.log(status);
+
 
 //
 //

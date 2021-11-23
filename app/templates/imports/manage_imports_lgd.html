@@ -65,6 +65,9 @@
       <li class="nav-item">
         <a class="nav-link" href="{% url 'manage_imports' 'ecl' %}" id="tab_ecl">ECL</a>
       </li>
+      <li class="nav-item">
+        <a class="nav-link" href="{% url 'manage_imports' 'ead' %}" id="tab_ead">EAD</a>
+      </li>
     </ul>
 
     <!-- Tab panes start -->
@@ -96,7 +99,7 @@
                 <input type="date" name="end_date" class="form-control">
               </td>
               <td>
-                <input type="submit" value="Submit" name="submit" class="btn btn-primary">
+                <input type="submit" value="Quick Find" name="submit" class="btn btn-primary">
               </td>
             </tr>
           </table>

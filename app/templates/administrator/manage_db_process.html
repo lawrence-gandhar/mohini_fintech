@@ -1,0 +1,209 @@
+<div class="row" style="margin:20px 0px 0px; ">
+  <div class="col-md-6 col-sm-12">
+    <h3 style="line-height: 40px;" class="main_heading">Database Management</h3>
+  </div>
+</div>
+<hr style="margin-top:0px;" />
+
+{% include 'base/alert_components.html' %}
+
+<div class="row table-responsive" style="overflow:scroll; margin:1px;">
+  <table class="table table-bordered" id="manage_user_table" style="margin-top:10px;">
+    <thead style="background-color:#4169e1; color:#FFFFFF; font-weight:bold;">
+      <td colspan="3">User & Accounts</td>
+    </thead>
+    <thead style="background-color:#eeeeee;">
+      <th class="text-center">Process</th>
+      <th class="text-center">Details</th>
+      <th style="width:100px !important;" class="text-center no-sort">Action</th>
+    </thead>
+    <tbody style="font-size:13px;">
+      <tr>
+        <td>Manage User Table</td>
+        <td></td>
+        <td class="text-center" width="250px">
+          <button class="btn btn-sm btn-danger" style="width:110px;" type="button" onclick="ask_confirm(user)">Full Delete</button>
+          <button class="btn btn-sm btn-warning" style="width:110px;" type="button" onclick="ask_confirm('user')">Range Delete</button>
+        </td>
+      </tr>
+      <tr>
+        <td>Manage Master Table</td>
+        <td></td>
+        <td class="text-center" width="250px">
+          <button class="btn btn-sm btn-danger" style="width:110px;" type="button" onclick="ask_confirm('user')">Full Delete</button>
+          <button class="btn btn-sm btn-warning" style="width:110px;" type="button" onclick="ask_confirm('user')">Range Delete</button>
+        </td>
+      </tr>
+    </tbody>
+  </table>
+</div>
+
+<div class="row table-responsive" style="overflow:scroll; margin:1px;">
+  <table class="table table-bordered" id="manage_user_table" style="margin-top:10px;">
+    <thead style="background-color:#4169e1; color:#FFFFFF; font-weight:bold;">
+      <td colspan="3">Initial Tables</td>
+    </thead>
+    <thead style="background-color:#eeeeee;">
+      <th class="text-center">Process</th>
+      <th class="text-center">Details</th>
+      <th style="width:100px !important;" class="text-center no-sort">Action</th>
+    </thead>
+    <tbody style="font-size:13px;">
+      <tr>
+        <td>Manage PD Initial Table</td>
+        <td></td>
+        <td class="text-center" width="250px">
+          <button class="btn btn-sm btn-danger" style="width:110px;" type="button" onclick="ask_confirm('user')">Full Delete</button>
+          <button class="btn btn-sm btn-warning" style="width:110px;" type="button" onclick="ask_confirm('user')">Range Delete</button>
+        </td>
+      </tr>
+      <tr>
+        <td>Manage LGD Initial Table</td>
+        <td></td>
+        <td class="text-center" width="250px">
+          <button class="btn btn-sm btn-danger" style="width:110px;" type="button" onclick="ask_confirm('user')">Full Delete</button>
+          <button class="btn btn-sm btn-warning" style="width:110px;" type="button" onclick="ask_confirm('user')">Range Delete</button>
+        </td>
+      </tr>
+      <tr>
+        <td>Manage Stage Initial Table</td>
+        <td></td>
+        <td class="text-center" width="250px">
+          <button class="btn btn-sm btn-danger" style="width:110px;" type="button" onclick="ask_confirm('user')">Full Delete</button>
+          <button class="btn btn-sm btn-warning" style="width:110px;" type="button" onclick="ask_confirm('user')">Range Delete</button>
+        </td>
+      </tr>
+      <tr>
+        <td>Manage EIR Initial Table</td>
+        <td></td>
+        <td class="text-center" width="250px">
+          <button class="btn btn-sm btn-danger" style="width:110px;" type="button" onclick="ask_confirm('user')">Full Delete</button>
+          <button class="btn btn-sm btn-warning" style="width:110px;" type="button" onclick="ask_confirm('user')">Range Delete</button>
+        </td>
+      </tr>
+      <tr>
+        <td>Manage ECL Initial Table</td>
+        <td></td>
+        <td class="text-center" width="250px">
+          <button class="btn btn-sm btn-danger" style="width:110px;" type="button" onclick="ask_confirm('user')">Full Delete</button>
+          <button class="btn btn-sm btn-warning" style="width:110px;" type="button" onclick="ask_confirm('user')">Range Delete</button>
+        </td>
+      </tr>
+    </tbody>
+  </table>
+</div>
+
+<div class="row table-responsive" style="overflow:scroll; margin:1px;">
+  <table class="table table-bordered" id="manage_user_table" style="margin-top:10px;">
+    <thead style="background-color:#4169e1; color:#FFFFFF; font-weight:bold;">
+      <td colspan="3">Final Tables</td>
+    </thead>
+    <thead style="background-color:#eeeeee;">
+      <th class="text-center">Process</th>
+      <th class="text-center">Details</th>
+      <th style="width:100px !important;" class="text-center no-sort">Action</th>
+    </thead>
+    <tbody style="font-size:13px;">
+      <tr>
+        <td>Manage PD Final Table</td>
+        <td></td>
+        <td class="text-center" width="250px">
+          <button class="btn btn-sm btn-danger" style="width:110px;" type="button" onclick="ask_confirm('user')">Full Delete</button>
+          <button class="btn btn-sm btn-warning" style="width:110px;" type="button" onclick="ask_confirm('user')">Range Delete</button>
+        </td>
+      </tr>
+      <tr>
+        <td>Manage LGD Final Table</td>
+        <td></td>
+        <td class="text-center" width="250px">
+          <button class="btn btn-sm btn-danger" style="width:110px;">Full Delete</button>
+          <button class="btn btn-sm btn-warning" style="width:110px;">Range Delete</button>
+        </td>
+      </tr>
+      <tr>
+        <td>Manage Stage Final Table</td>
+        <td></td>
+        <td class="text-center" width="250px">
+          <button class="btn btn-sm btn-danger" style="width:110px;" type="button" onclick="ask_confirm('user')">Full Delete</button>
+          <button class="btn btn-sm btn-warning" style="width:110px;" type="button" onclick="ask_confirm('user')">Range Delete</button>
+        </td>
+      </tr>
+      <tr>
+        <td>Manage EIR Final Table</td>
+        <td></td>
+        <td class="text-center" width="250px">
+          <button class="btn btn-sm btn-danger" style="width:110px;" type="button" onclick="ask_confirm('user')">Full Delete</button>
+          <button class="btn btn-sm btn-warning" style="width:110px;" type="button" onclick="ask_confirm('user')">Range Delete</button>
+        </td>
+      </tr>
+      <tr>
+        <td>Manage ECL Final Table</td>
+        <td></td>
+        <td class="text-center" width="250px">
+          <button class="btn btn-sm btn-danger" style="width:110px;" type="button" onclick="ask_confirm('user')">Full Delete</button>
+          <button class="btn btn-sm btn-warning" style="width:110px;" type="button" onclick="ask_confirm('user')">Range Delete</button>
+        </td>
+      </tr>
+    </tbody>
+  </table>
+</div>
+
+<div class="row table-responsive" style="overflow:scroll; margin:1px;">
+  <table class="table table-bordered" id="manage_user_table" style="margin-top:10px;">
+    <thead style="background-color:#4169e1; color:#FFFFFF; font-weight:bold;">
+      <td colspan="3">Reports Tables</td>
+    </thead>
+    <thead style="background-color:#eeeeee;">
+      <th class="text-center">Process</th>
+      <th class="text-center">Details</th>
+      <th style="width:100px !important;" class="text-center no-sort">Action</th>
+    </thead>
+    <tbody style="font-size:13px;">
+      <tr>
+        <td>Manage PD Reports Table</td>
+        <td></td>
+        <td class="text-center" width="250px">
+          <button class="btn btn-sm btn-danger" style="width:110px;" type="button" onclick="ask_confirm('user')">Full Delete</button>
+          <button class="btn btn-sm btn-warning" style="width:110px;" type="button" onclick="ask_confirm('user')">Range Delete</button>
+        </td>
+      </tr>
+      <tr>
+        <td>Manage LGD Reports Table</td>
+        <td></td>
+        <td class="text-center" width="250px">
+          <button class="btn btn-sm btn-danger" style="width:110px;" type="button" onclick="ask_confirm('user')">Full Delete</button>
+          <button class="btn btn-sm btn-warning" style="width:110px;" type="button" onclick="ask_confirm('user')">Range Delete</button>
+        </td>
+      </tr>
+      <tr>
+        <td>Manage Stage Reports Table</td>
+        <td></td>
+        <td class="text-center" width="250px">
+          <button class="btn btn-sm btn-danger" style="width:110px;" type="button" onclick="ask_confirm('user')">Full Delete</button>
+          <button class="btn btn-sm btn-warning" style="width:110px;" type="button" onclick="ask_confirm('user')">Range Delete</button>
+        </td>
+      </tr>
+      <tr>
+        <td>Manage EIR Reports Table</td>
+        <td></td>
+        <td class="text-center" width="250px">
+          <button class="btn btn-sm btn-danger" style="width:110px;" type="button" onclick="ask_confirm('user')">Full Delete</button>
+          <button class="btn btn-sm btn-warning" style="width:110px;" type="button" onclick="ask_confirm('user')">Range Delete</button>
+        </td>
+      </tr>
+      <tr>
+        <td>Manage ECL Reports Table</td>
+        <td></td>
+        <td class="text-center" width="250px">
+          <button class="btn btn-sm btn-danger" style="width:110px;" type="button" onclick="ask_confirm('user')">Full Delete</button>
+          <button class="btn btn-sm btn-warning" style="width:110px;" type="button" onclick="ask_confirm('user')">Range Delete</button>
+        </td>
+      </tr>
+    </tbody>
+  </table>
+</div>
+
+
+<script>
+
+</script>

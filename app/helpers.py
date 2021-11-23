@@ -101,43 +101,6 @@ def check_exam_question(request, exam_id, ques_id):
 
 
 # ******************************************************************************
-# Send Email
-# ******************************************************************************
-
-def send_email_from_app(registered_exam):
-    email_html_template = '''
-        <html>
-        <body>
-        <p>
-        Dear {} {},
-        </br>
-        </p>
-        <p>
-        </br>
-            The evaluation for you last test is complete. Please login in the portal to check the results.
-        </p>
-        <p>
-        <br/><br/>
-        Thank you,<br/>
-        Administrator<br/>
-        Online Examination Portal<br/>
-        </body></html>
-    '''.format(registered_exam.student.first_name.title(), registered_exam.student.last_name.title())
-
-    subject = '{} - Evaluation Status Updated'.format(registered_exam.exam.code)
-
-    email_msg = EmailMessage(subject,
-                             email_html_template,
-                             settings.APPLICATION_EMAIL,
-                             [registered_exam.student.email],
-                             reply_to=[settings.APPLICATION_EMAIL]
-                             )
-    # this is the crucial part that sends email as html content but not as a plain text
-    email_msg.content_subtype = 'html'
-    email_msg.send(fail_silently=False)
-
-
-# ******************************************************************************
 # User Creation Form Errors Mapping
 # ******************************************************************************
 def user_creation_form_errors(err_msg):
@@ -198,7 +161,7 @@ def queryset_row_to_json(queryset):
             items_list_json[row.id] = {x:y for (x,y) in xx.items() if x not in ["_state", "id"]}  # discard _state, id (key:value) pair
         except AttributeError:
             pass
-            
+
         if "account_no_id" in items_list_json[row.id].keys():
             if items_list_json[row.id]["account_no_id"] is not None:
                 acc_ins = AccountMaster.objects.get(pk = items_list_json[row.id]["account_no_id"])
@@ -220,3 +183,114 @@ def clean_data(val=None):
             return val.strip()
         else:
             return None
+
+
+#
+#
+#
+
+def sendmymail(subject=None, email_html_template=None,send_to=[]):
+    email_msg = EmailMessage(subject,
+                             email_html_template,
+                             settings.APPLICATION_EMAIL,
+                             send_to,
+                             reply_to=[settings.APPLICATION_EMAIL]
+                             )
+    # this is the crucial part that sends email as html content but not as a plain text
+    email_msg.content_subtype = 'html'
+    email_msg.send(fail_silently=False)
+
+# ******************************************************************************
+# Send Forgot Password Email
+# ******************************************************************************
+
+def send_email_forgot_password(user=None):
+    email_html_template = '''
+        <html>
+        <body>
+        <p>
+        Dear {} {},
+        </br>
+        </p>
+        <p>
+        </br>
+            Please click on the link given below to reset your password.
+        </p>
+        <p>
+        <br/><br/>
+        Best Regards,<br/>
+        Administrator<br/>
+        FinECL<br/>
+        </body></html>
+    '''.format(user.first_name.title(), user.last_name.title())
+
+    subject = 'FinECL - Forgot Password'.format(user)
+
+    sendmymail(subject, email_html_template,send_to=[user.email])
+
+# ******************************************************************************
+# Send Accept Email
+# ******************************************************************************
+
+def send_email_accept_user(user=None, passwd=None):
+    email_html_template = '''
+        <html>
+        <body>
+        <p>
+        Dear {} {},
+        </br>
+        </p>
+        <p>
+        </br>
+            Congratulations! Your application for the registeration in FinECL has been approved. The credentials are given below.
+            <br/><br/>
+            Please reset your password once you login with the one time password which is valid for a week.
+            <br/><br/>
+            Username: <b>{}</b>
+            <br/>
+            Password: <b>{}</b>
+        </p>
+        <p>
+        <br/><br/>
+        Best Regards,<br/>
+        Administrator<br/>
+        FinECL<br/>
+        </body></html>
+    '''.format(user.first_name.title(), user.last_name.title(), user.email, passwd)
+
+    subject = 'FinECL - registeration Successful'.format(user)
+
+    sendmymail(subject, email_html_template,send_to=[user.email])
+
+
+
+
+# ******************************************************************************
+# Send Reject Email
+# ******************************************************************************
+
+def send_email_reject_user(user=None):
+    email_html_template = '''
+        <html>
+        <body>
+        <p>
+        Dear {} {},
+        </br>
+        </p>
+        <p>
+        </br>
+            Your application for the registeration in FinECL has been rejected due to administrative reasons.
+            <br/>
+            Please try again or contact the Administrator.
+        </p>
+        <p>
+        <br/><br/>
+        Best Regards,<br/>
+        Administrator<br/>
+        FinECL<br/>
+        </body></html>
+    '''.format(user.first_name.title(), user.last_name.title())
+
+    subject = 'FinECL - Forgot Password'.format(user)
+
+    sendmymail(subject, email_html_template,send_to=[user.email])

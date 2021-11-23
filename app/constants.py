@@ -4,7 +4,7 @@
 # Project Date : 14th Sept 2021
 #
 
-from .models import AccountMaster, PD_Initial, PD_Final, LGD_Initial, LGD_Final, Stage_Initial, Stage_Final, EIR_Initial, EIR_Final
+from .models import AccountMaster, PD_Initial, PD_Final, LGD_Initial, LGD_Final, Stage_Initial, Stage_Final, EIR_Initial, EIR_Final, EAD_Final, EAD_Initial
 #
 # CSV & FIELD HEADERS
 
@@ -19,6 +19,8 @@ STAGE_COLS = ['date', 'account_no', 'old_rating', 'new_rating', 'rating_3', 'rat
 EIR_COLS = ['date', 'account_no', 'period', 'loan_availed', 'cost_avail', 'rate', 'emi', 'os_principal', 'os_interest', 'fair_value', 'coupon', 'discount_factor', 'col_1', 'col_2', 'col_3']
 
 ECL_COLS = []
+
+EAD_COLS = ['date', 'account_no', 'outstanding_amount', 'undrawn_upto_1_yr', 'undrawn_greater_than_1_yr', 'collateral_1_value', 'collateral_1_rating', 'collateral_1_residual_maturity', 'collateral_2_value', 'collateral_2_rating', 'collateral_2_residual_maturity']
 
 
 #
@@ -72,10 +74,21 @@ TAB_ACTIVE = {
         6,
         "imports/manage_imports_ecl.html",
         ECL_COLS,
-        PD_Initial.objects,
-        PD_Final.objects,
+        EIR_Initial.objects,
+        EIR_Initial.objects,
         "app_pd_initial",
         "app_pd_final",
         None
+    ],
+    "ead": [
+        7,
+        "imports/manage_imports_ead.html",
+        EAD_COLS,
+        EAD_Initial.objects,
+        EAD_Final.objects,
+        "app_ead_initial",
+        "app_ead_final",
+        "output/manage_ead_output.html",
+        "reports/ead_reports.html",
     ],
 }

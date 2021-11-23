@@ -80,9 +80,9 @@ def pagination_html(page_obj, url = ""):
 @register.simple_tag
 def tick_mark(value):
     if value:
-        html = '<span class="fa fa-check fa-2x" style="color:#2db715"></span>'
+        html = '<span class="la la-check" style="color:#2db715; font-size: 25px;"></span>'
     else:
-        html = '<span class="fa fa-times fa-2x" style="color:#FF0000"></span>'
+        html = '<span class="la la-times" style="color:#FF0000; font-size: 25px;"></span>'
 
     return safestring.mark_safe(html)
 

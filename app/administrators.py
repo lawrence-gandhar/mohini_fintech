@@ -204,6 +204,8 @@ def accept_new_users(request, ids=None):
 
                 messages.success(request, "User Added to registered users list")
 
+                helpers.send_email_accept_user(ins, passwd)
+
             except IntegrityError:
                 messages.error(request, "Record cannot be moved because email address is already present in registered users list")
         else:
@@ -372,6 +374,7 @@ def import_data_from_file(request):
         return redirect("manage_imports", import_type)
     return redirect("manage_imports")
 
+
 #**********************************************************************
 # METHOD TO INSERT DATA INTO RELEVANT MODELS
 #**********************************************************************
@@ -474,6 +477,12 @@ def insert_data(data_set, import_type, file_identifier=None):
              mgmt_overlay_1 = helpers.clean_data(row["mgmt_overlay_1"]) if "mgmt_overlay_1" in col_names else None,
              mgmt_overlay_2 = helpers.clean_data(row["mgmt_overlay_2"]) if "mgmt_overlay_2" in col_names else None,
             )
+
+        #
+        #
+        if tab_status == "ead":
+            pass
+
 
         #
         # Fetch Account Number Instance
@@ -604,6 +613,9 @@ def edit_record(request, tab_status=None):
             obj.rbi_window = request.POST["rbi_window"] if request.POST["rbi_window"].strip()!="" else None
             obj.mgmt_overlay_1 = request.POST["mgmt_overlay_1"] if request.POST["mgmt_overlay_1"].strip()!="" else None
             obj.mgmt_overlay_2 = request.POST["mgmt_overlay_2"] if request.POST["mgmt_overlay_2"].strip()!="" else None
+
+
+
 
         #
         #

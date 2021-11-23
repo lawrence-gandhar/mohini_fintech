@@ -1,3 +1,4 @@
+{% load custom_tags %}
 <div class="row" style="margin:20px 0px 0px; ">
   <div class="col-md-6 col-sm-12">
     <h3 style="line-height: 40px;" class="main_heading">User Management</h3>
@@ -36,6 +37,12 @@
       <th class="text-center">Lastname</th>
       <th class="text-center">Email</th>
       <th class="text-center">Usertype</th>
+      <th class="text-center">Dashboard</th>
+      <th class="text-center">Process</th>
+      <th class="text-center">Reports</th>
+      <th class="text-center">User Management</th>
+      <th class="text-center">Data Management</th>
+      <th class="text-center">Audit Trail</th>
       <th style="width:100px !important;" class="text-center no-sort">Action</th>
     </thead>
     <tbody style="font-size:13px;">
@@ -51,13 +58,38 @@
             <td>{{ row.email|default_if_none:'' }}</td>
             <td>
               {% if row.is_superuser  %}
-                Super Admin
+                Administrator
               {% elif row.is_staff %}
-                Admin
+                Super User
               {% else %}
                 User
               {% endif %}
             </td>
+            <td class="text-center">
+              <span class="la la-check fa-2x" style="color:#2db715; font-size: 25px;"></span>
+            </td>
+            <td class="text-center">
+              <span class="la la-check fa-2x" style="color:#2db715; font-size: 25px;"></span>
+            </td>
+            <td class="text-center">
+              <span class="la la-check fa-2x" style="color:#2db715; font-size: 25px;"></span>
+            </td>
+            <td class="text-center">
+              {% if row.is_superuser  %}
+                {% tick_mark row.is_superuser %}
+              {% elif row.is_staff %}
+                {% tick_mark row.is_staff %}
+              {% else %}
+                {% tick_mark row.is_superuser %}
+              {% endif %}
+            </td>
+            <td class="text-center">
+              {% tick_mark row.is_superuser %}
+            </td>
+            <td class="text-center">
+              {% tick_mark row.is_superuser %}
+            </td>
+
             <td class="text-center p-0">
               <div class="btn-group" role="group" aria-label="Basic example">
                 <button type="button" onclick="load_edit_data({{row.id}})" class="btn btn-icon btn-sm" data-toggle="modal" data-target="#EditUserModalForm">
@@ -255,17 +287,15 @@
 <div id="reset_password" class="modal" tabindex="-1" role="dialog">
     <div class="modal-dialog" role="document">
         <div class="modal-content">
-    			<div class="modal-header" style="background-color:#00dbff">
-            <div class="modal-header text-white">
-              <h5 class="modal-title">Password Reset</h5>
-            </div>
-    			</div>
+          <div class="modal-header text-white">
+            <h5 class="modal-title">Password Reset</h5>
+          </div>
     			<div class="modal-body">
     				<h6>New Password : <span id="reset_password_data" style="color:#FF0000"></span></h6>
     			</div>
-        </div>
-        <div class="modal-footer">
-          <button type="button" class="btn btn-secondary" data-dismiss="modal" onclick="modal_close('#reset_password')">Close</button>
+          <div class="modal-footer">
+            <button type="button" class="btn btn-secondary" data-dismiss="modal" onclick="modal_close('#reset_password')">Close</button>
+          </div>
         </div>
     </div>
 </div>
