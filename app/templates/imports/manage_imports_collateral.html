@@ -1,0 +1,331 @@
+<div class="row" style="margin:20px 0px 0px; ">
+  <div class="col-md-6 col-sm-12">
+    <h3 style="line-height: 40px;" class="main_heading">Imports & Data Management</h3>
+  </div>
+  <div class="col-md-6 col-sm-12 heading_buttons_container">
+      <div class="btn-group" role="group" aria-label="Basic example">
+        <button type="button" class="btn btn-default btn-sm" style="width:100px; color:#000000;" onclick="show_modal('#uploaderModal')">
+          <i class="la la-plus"></i> <strong>Add</strong>
+        </button>
+        <button type="button" class="btn btn-default btn-sm" style="width:100px; color:#000000;" onclick="delete_selected_records()">
+          <i class="la la-trash"></i> <strong>Delete</strong>
+        </button>
+      </div>
+  </div>
+</div>
+<hr style="margin-top:0px;" />
+
+<div class="row">
+  <!-- Nav Tabs Start -->
+
+  <div class="col-sm-12">
+
+    {% include 'base/alert_components.html' %}
+
+    <ul class="nav nav-tabs" role="tablist">
+      <li class="nav-item">
+        <a class="nav-link active" href="{% url 'manage_imports' 'master' %}" id="tab_master">Master</a>
+      </li>
+      <li class="nav-item">
+        <a class="nav-link active" href="{% url 'manage_imports' 'product' %}" id="tab_product">Basel Product</a>
+      </li>
+      <li class="nav-item">
+        <a class="nav-link" href="{% url 'manage_imports' 'collateral' %}" id="tab_collateral">Basel Collateral</a>
+      </li>
+      <li class="nav-item">
+        <a class="nav-link" href="{% url 'manage_imports' 'pd' %}" id="tab_pd">PD</a>
+      </li>
+      <li class="nav-item">
+        <a class="nav-link" href="{% url 'manage_imports' 'lgd' %}" id="tab_lgd">LGD</a>
+      </li>
+      <li class="nav-item">
+        <a class="nav-link" href="{% url 'manage_imports' 'stage' %}" id="tab_stage">Stage</a>
+      </li>
+      <li class="nav-item">
+        <a class="nav-link" href="{% url 'manage_imports' 'eir' %}" id="tab_eir">EIR</a>
+      </li>
+      <li class="nav-item">
+        <a class="nav-link" href="{% url 'manage_imports' 'ecl' %}" id="tab_ecl">ECL</a>
+      </li>
+      <li class="nav-item">
+        <a class="nav-link" href="{% url 'manage_imports' 'ead' %}" id="tab_ead">EAD</a>
+      </li>
+    </ul>
+
+    <!-- Tab panes start -->
+    <div class="tab-content" style="padding:10px 0px;">
+      <div class="table-responsive">
+        <form method="post" action="">
+          <table class="table table-bordered" style="background-color: #dee2e6;">
+            <tr>
+              <td style="font-size:13px;line-height: 38px; text-align:right; font-weight:bold;">Account No</td>
+              <td style="line-height: 38px;">
+                <input type="text" name="account_no" class="form-control">
+              </td>
+              <td style="font-size:13px;line-height: 38px; text-align:right; font-weight:bold;">Edited</td>
+              <td style="line-height: 38px;">
+                <input type="checkbox" name="edited">
+              </td>
+              <td style="font-size:13px;line-height: 38px; text-align:right; font-weight:bold;">Start Date</td>
+              <td>
+                <input type="date" name="start_date" class="form-control">
+              </td>
+              <td style="font-size:13px;line-height: 38px; text-align:right; font-weight:bold;">End Date</td>
+              <td>
+                <input type="date" name="end_date" class="form-control">
+              </td>
+              <td>
+                <input type="submit" value="Quick Search" name="submit" class="btn btn-primary">
+              </td>
+            </tr>
+          </table>
+        </form>
+      </div>
+
+      <div class="table-responsive">
+        <form action="" method="post" id="move_all_to_final">
+          {% csrf_token %}
+        <table class="table table-bordered">
+          <thead class="text-center" style="background-color:#ddd; font-size:13px; white-space: nowrap;">
+            <th><input type="checkbox" class="checkbox_all"></th>
+            <th>Date</th>
+            <th>Account No.</th>
+            <th>Product Name</th>
+            <th>Collateral Code</th>
+            <th>Collateral Type</th>
+            <th>Issuer Type</th>
+            <th>Collateral Eligibity</th>
+            <th>Rating Available</th>
+            <th>Collateral Rating</th>
+            <th>Residual Maturity</th>
+            <th>Basel Collateral Type</th>
+            <th>Basel Collateral Subtype</th>
+            <th>Basel Collateral Code</th>
+            <th>Basel Collateral Rating</th>
+            <th>Soverign Issuer</th>
+            <th>Other Issuer</th>
+            <th>Action</th>
+          </thead>
+          <tbody style="font-size:12px; white-space: nowrap;">
+            {% for row in items_list %}
+              <tr>
+                <td class="text-center">
+                  <input type="checkbox" value="{{row.id}}" class="checkbox_one" name="checkbox_one">
+                </td>
+                <td>{{row.date|default_if_none:''}}</td>
+                <td>{{row.account_no|default_if_none:''}}</td>
+                <td>{{row.product_name|default_if_none:''}}</td>
+                <td>{{row.collateral_code|default_if_none:''}}</td>
+                <td>{{row.collateral_type|default_if_none:''}}</td>
+                <td>{{row.issuer_type|default_if_none:''}}</td>
+                <td>{{row.collateral_eligibity|default_if_none:''}}</td>
+                <td>{{row.rating_available|default_if_none:''}}</td>
+                <td>{{row.collateral_rating|default_if_none:''}}</td>
+                <td>{{row.residual_maturity|default_if_none:''}}</td>
+                <td>{{row.basel_collateral_type|default_if_none:''}}</td>
+                <td>{{row.basel_collateral_subtype|default_if_none:''}}</td>
+                <td>{{row.basel_collateral_code|default_if_none:''}}</td>
+                <td>{{row.basel_collateral_rating|default_if_none:''}}</td>
+                <td>{{row.soverign_issuer|default_if_none:''}}</td>
+                <td>{{row.other_issuer|default_if_none:''}}</td>
+                <td class="text-center p-0">
+                  <div class="btn-group" role="group" aria-label="Basic example">
+                    <button type="button" onclick="load_edit_data({{row.id}})" class="btn btn-icon btn-sm" data-toggle="modal" data-target="#EditUserModalForm">
+                      <i class="la la-pencil" aria-hidden="true" style="font-size: 25px;line-height: 30px;"></i>
+                    </button>
+                    <a href="{% url 'delete_record' 'master' row.id %}" class="btn btn-icon btn-sm">
+                      <i class="la la-trash" aria-hidden="true" style="font-size: 25px;line-height: 30px; color:#FF0000;"></i>
+                    </a>
+                  </div>
+                </td>
+              </tr>
+            {% endfor %}
+          </tbody>
+        </table>
+        </form>
+      </div>
+
+
+    </div>
+
+    <!-- Tab panes end -->
+  </div>
+  <!-- Nav Tabs End -->
+
+</div>
+
+<!-- -->
+<div class="modal fade" id="uploaderModal" tabindex="-1" role="dialog">
+  <div class="modal-dialog">
+    <div class="modal-content">
+      <form method="post" action="{% url 'import_data_from_file' %}" enctype="multipart/form-data">
+        {% csrf_token %}
+        <input type="hidden" value="{{tab_status}}" name="import_type">
+        <div class="modal-header text-white">
+          <h5 class="modal-title" id="exampleModalLabel">Upload CSV File</h5>
+        </div>
+        <div class="modal-body">
+            <div class="mb-3">
+              <label for="formFile" class="form-label">Basel Collateral Master</label>
+              <input class="form-control" required type="file" name="formFile" accept=".csv">
+            </div>
+        </div>
+        <div class="modal-footer">
+          <button type="button" class="btn btn-secondary" data-bs-dismiss="modal">Close</button>
+          <button type="submit" class="btn btn-primary">Upload</button>
+        </div>
+      </form>
+    </div>
+  </div>
+</div>
+
+
+<!-- EDIT MODAL -->
+<div class="modal fade" id="EditModal" tabindex="-1" role="dialog">
+  <div class="modal-dialog">
+    <div class="modal-content">
+      <form method="post" action="{% url 'edit_record' tab_status %}">
+        {% csrf_token %}
+        <input type="hidden" value="" name="id" id="edit_id">
+        <div class="modal-header text-white">
+          <h5 class="modal-title">Edit Basel Collateral Record</h5>
+        </div>
+        <div class="modal-body">
+          <div class="row mb-3">
+            <div class="col">
+              <div class="form-group">
+                <label for="formFile" class="form-label">Account no.</label>
+                <input class="form-control" type="text" name="account_no" id="edit_account_no">
+              </div>
+            </div>
+          </div>
+          <div class="row mb-3">
+            <div class="col">
+              <div class="form-group">
+                <label for="formFile" class="form-label">Date</label>
+                <input class="form-control" type="date" name="date" id="edit_date">
+              </div>
+            </div>
+            <div class="col">
+              <div class="form-group">
+                <label for="formFile" class="form-label">Product Name</label>
+                <input class="form-control" type="text" name="product_name" id="edit_product_name">
+              </div>
+            </div>
+          </div>
+          <div class="row mb-3">
+            <div class="col">
+              <div class="form-group">
+                <label for="formFile" class="form-label">Collateral Code</label>
+                <input class="form-control" type="text" name="collateral_code" id="edit_collateral_code">
+              </div>
+            </div>
+            <div class="col">
+              <div class="form-group">
+                <label for="formFile" class="form-label">Collateral Type</label>
+                <input class="form-control" type="text" name="collateral_type" id="edit_collateral_type">
+              </div>
+            </div>
+          </div>
+          <div class="row mb-3">
+            <div class="col">
+              <div class="form-group">
+                <label for="formFile" class="form-label">Issuer Type</label>
+                <input class="form-control" type="text" name="issuer_type" id="edit_issuer_type">
+              </div>
+            </div>
+            <div class="col">
+              <div class="form-group">
+                <label for="formFile" class="form-label">Collateral Eligibity</label>
+                <input class="form-control" type="text" name="collateral_eligibity" id="edit_collateral_eligibity">
+              </div>
+            </div>
+          </div>
+          <div class="row mb-3">
+            <div class="col">
+              <div class="form-group">
+                <label for="formFile" class="form-label">Rating Available</label>
+                <input class="form-control" type="text" name="rating_available" id="edit_rating_available">
+              </div>
+            </div>
+            <div class="col">
+              <div class="form-group">
+                <label for="formFile" class="form-label">Collateral Rating</label>
+                <input class="form-control" type="text" name="collateral_rating" id="edit_collateral_rating">
+              </div>
+            </div>
+          </div>
+
+          <div class="row mb-3">
+            <div class="col">
+              <div class="form-group">
+                <label for="formFile" class="form-label">Residual Maturity</label>
+                <input class="form-control" type="text" name="residual_maturity" id="edit_residual_maturity">
+              </div>
+            </div>
+            <div class="col">
+              <div class="form-group">
+                <label for="formFile" class="form-label">Basel Collateral Type</label>
+                <input class="form-control" type="text" name="basel_collateral_type" id="edit_basel_collateral_type">
+              </div>
+            </div>
+          </div>
+
+          <div class="row mb-3">
+            <div class="col">
+              <div class="form-group">
+                <label for="formFile" class="form-label">Basel Collateral Subtype</label>
+                <input class="form-control" type="text" name="basel_collateral_subtype" id="edit_basel_collateral_subtype">
+              </div>
+            </div>
+            <div class="col">
+              <div class="form-group">
+                <label for="formFile" class="form-label">Basel Collateral Code</label>
+                <input class="form-control" type="text" name="basel_collateral_code" id="edit_basel_collateral_code">
+              </div>
+            </div>
+          </div>
+
+          <div class="row mb-3">
+            <div class="col">
+              <div class="form-group">
+                <label for="formFile" class="form-label">Basel Collateral Rating</label>
+                <input class="form-control" type="text" name="basel_collateral_rating" id="edit_basel_collateral_rating">
+              </div>
+            </div>
+            <div class="col">
+              <div class="form-group">
+                <label for="formFile" class="form-label">Soverign Issuer</label>
+                <input class="form-control" type="text" name="soverign_issuer" id="edit_soverign_issuer">
+              </div>
+            </div>
+          </div>
+
+          <div class="row mb-3">
+            <div class="col">
+              <div class="form-group">
+                <label for="formFile" class="form-label">Other Issuer</label>
+                <input class="form-control" type="text" name="other_issuer" id="edit_other_issuer">
+              </div>
+            </div>
+            <div class="col">
+            </div>
+          </div>
+
+        </div>
+        <div class="modal-footer">
+          <button type="button" class="btn btn-secondary" data-bs-dismiss="modal">Close</button>
+          <button type="submit" class="btn btn-primary">Submit</button>
+        </div>
+      </form>
+    </div>
+  </div>
+</div>
+
+<script>
+  var status = {{tab_active}};
+
+  var jsdata = {{items_list_json|safe}};
+
+  var delete_selected_url = '{% url "delete_selected_records" "collateral" %}';
+</script>

@@ -4,7 +4,20 @@
 # Project Date : 14th Sept 2021
 #
 
-from .models import AccountMaster, PD_Initial, PD_Final, LGD_Initial, LGD_Final, Stage_Initial, Stage_Final, EIR_Initial, EIR_Final, EAD_Final, EAD_Initial
+from .models import AccountMaster
+from .models import PD_Initial
+from .models import PD_Final
+from .models import LGD_Initial
+from .models import LGD_Final
+from .models import Stage_Initial
+from .models import Stage_Final
+from .models import EIR_Initial
+from .models import EIR_Final
+from .models import EAD_Final
+from .models import EAD_Initial
+from .models import Basel_Product_Master
+from .models import Basel_Collateral_Master
+
 #
 # CSV & FIELD HEADERS
 
@@ -22,12 +35,25 @@ ECL_COLS = []
 
 EAD_COLS = ['date', 'account_no', 'outstanding_amount', 'undrawn_upto_1_yr', 'undrawn_greater_than_1_yr', 'collateral_1_value', 'collateral_1_rating', 'collateral_1_residual_maturity', 'collateral_2_value', 'collateral_2_rating', 'collateral_2_residual_maturity']
 
+BASEL_PRODUCT_COLS = ['date', 'account_no', 'product_name', 'product_code', 'product_catgory', 'basel_product', 'basel_product_code', 'drawn_cff', 'cff_upto_1_yr', 'cff_gt_1_yr']
+
+BASEL_COLLATERAL_COLS = ['date', 'account_no', 'product_name', 'collateral_code', 'collateral_type', 'issuer_type', 'collateral_eligibity', 'rating_available', 'collateral_rating', 'residual_maturity', 'basel_collateral_type', 'basel_collateral_subtype', 'basel_collateral_code', 'basel_collateral_rating', 'soverign_issuer', 'other_issuer']
+
 
 #
 # CONSTANTS FOR THE APP
 
 TAB_ACTIVE = {
-    "master": [1, "imports/manage_imports_master.html", ACCOUNT_MASTER_COLS, AccountMaster.objects, None, None, None, None],
+    "master": [
+        1,
+        "imports/manage_imports_master.html",
+        ACCOUNT_MASTER_COLS,
+        AccountMaster.objects,
+        None,
+        None,
+        None,
+        None
+    ],
     "pd": [
         2,
         "imports/manage_imports_pd.html",
@@ -53,7 +79,8 @@ TAB_ACTIVE = {
     "stage": [
         4,
         "imports/manage_imports_stage.html",
-        STAGE_COLS, Stage_Initial.objects,
+        STAGE_COLS,
+        Stage_Initial.objects,
         Stage_Final.objects,
         "app_stage_initial",
         "app_stage_final",
@@ -90,5 +117,27 @@ TAB_ACTIVE = {
         "app_ead_final",
         "output/manage_ead_output.html",
         "reports/ead_reports.html",
+    ],
+    "product": [
+        8,
+        "imports/manage_imports_products.html",
+        BASEL_PRODUCT_COLS,
+        Basel_Product_Master.objects,
+        None,
+        None,
+        None,
+        None,
+        None,
+    ],
+    "collateral": [
+        9,
+        "imports/manage_imports_collateral.html",
+        BASEL_COLLATERAL_COLS,
+        Basel_Collateral_Master.objects,
+        None,
+        None,
+        None,
+        None,
+        None,
     ],
 }

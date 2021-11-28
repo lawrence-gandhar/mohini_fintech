@@ -8,7 +8,7 @@
         <button type="button" class="btn btn-default btn-sm" style="width:100px; color:#000000;" onclick="show_modal('#uploaderModal')">
           <i class="la la-plus"></i> <strong>Add</strong>
         </button>
-        <button type="button" class="btn btn-default btn-sm" style="width:100px; color:#000000;">
+        <button type="button" class="btn btn-default btn-sm" style="width:100px; color:#000000;" onclick="delete_selected_records()">
           <i class="la la-trash"></i> <strong>Delete</strong>
         </button>
         <a href="" class="btn btn-default btn-sm" style="width:100px; color:#000000;">
@@ -47,6 +47,12 @@
     <ul class="nav nav-tabs" role="tablist">
       <li class="nav-item">
         <a class="nav-link" href="{% url 'manage_imports' 'master' %}" id="tab_master">Master</a>
+      </li>
+      <li class="nav-item">
+        <a class="nav-link" href="{% url 'manage_imports' 'product' %}" id="tab_product">Basel Product</a>
+      </li>
+      <li class="nav-item">
+        <a class="nav-link" href="{% url 'manage_imports' 'collateral' %}" id="tab_collateral">Basel Collateral</a>
       </li>
       <li class="nav-item">
         <a class="nav-link" href="{% url 'manage_imports' 'pd' %}" id="tab_pd">PD</a>
@@ -103,6 +109,12 @@
           </table>
         </form>
       </div>
+
+      <!-- SHOW WHILE MOVING DATA START -->
+
+      <div id="moving_data_main_div"></div>
+
+      <!-- SHOW WHILE MOVING DATA END -->
 
       <div class="table-responsive">
         <form action="{% url 'move_all_to_final' 'stage' %}" method="post" id="move_all_to_final">
@@ -497,6 +509,8 @@
   var jsdata = {{items_list_json|safe}};
 
   var bg_data_url = '{% url "move_data_bg_process" "stage" %}';
+
+  var delete_selected_url = '{% url "delete_selected_records" "stage" %}'
 
 
 </script>

@@ -48,7 +48,9 @@ urlpatterns += [
     path('admin/move_data_bg_process/<str:tab_status>/',decorators.admin_required(admin.move_data_bg_process), name="move_data_bg_process"),
     path('admin/show_final_records/', decorators.admin_required(admin.show_final_records), name="show_final_records"),
     path('admin/show_final_records/<str:tab_status>/', decorators.admin_required(admin.show_final_records), name="show_final_records"),
-    path('admin/download_missing_accounts_csv/', decorators.admin_required(admin.download_missing_accounts_csv), name="download_missing_accounts_csv")
+    path('admin/download_missing_accounts_csv/', decorators.admin_required(admin.download_missing_accounts_csv), name="download_missing_accounts_csv"),
+    path('admin/delete_selected_records/<str:tab_status>/', decorators.admin_required(admin.delete_selected_records), name="delete_selected_records")
+
 ]
 
 # Output & Reports

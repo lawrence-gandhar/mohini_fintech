@@ -383,124 +383,359 @@ def insert_data(data_set, import_type, file_identifier=None):
     for row in data_set:
         col_names = row.keys()
 
-        #
-        # MASTER ENTRY
-        if import_type == "master":
-            ins, created = AccountMaster.objects.update_or_create(
-                date = row["date"] if row["date"].strip()!="" else None if "date" in col_names else None,
-                cin = row["cin"] if row["cin"].strip()!="" else None if "cin" in col_names else None,
-                account_no = row["account_no"] if row["account_no"].strip()!="" else None if "account_no" in col_names else None,
-                account_type = row["account_type"] if row["account_type"].strip()!="" else None if "account_type" in col_names else None,
-                product_name = row["product_name"] if row["product_name"].strip()!="" else None if "product_name" in col_names else None,
-                sectors = row["sectors"] if row["sectors"].strip()!="" else None if "sectors" in col_names else None,
-                customer_name = row["customer_name"] if row["customer_name"].strip()!="" else None if "customer_name" in col_names else None,
-                contact_no = row["contact_no"] if row["contact_no"].strip()!="" else None if "contact_no" in col_names else None,
-                email = row["email"] if row["email"].strip()!="" else None if "email" in col_names else None,
-                pan = row["pan"] if row["pan"].strip()!="" else None if "pan" in col_names else None,
-                aadhar_no = row["aadhar_no"] if row["aadhar_no"].strip()!="" else None if "aadhar_no" in col_names else None,
-                customer_addr = row["customer_addr"] if row["customer_addr"].strip()!="" else None if "customer_addr" in col_names else None,
-                pin = row["pin"] if row["pin"].strip()!="" else None if "pin" in col_names else None,
-            )
+        try:
+            account_ins = AccountMaster.objects.get(account_no = row["account_no"].strip())
+        except ObjectDoesNotExist:
+            account_ins = None
 
-        #
-        # PD
-        if import_type == "pd":
+        try:
+            if import_type == "master":
+                if account_ins is None:
+                    raise Exception("exception")
+                else:
+                    update_record(account_ins, import_type, row, file_identifier)
+            else:
+                if account_ins is not None:
+                    ins_const = constants.TAB_ACTIVE[import_type][3].get(account_no = account_ins, date = row["date"])
+                else:
+                    ins_const = constants.TAB_ACTIVE[import_type][3].get(account_no_temp = row["account_no"].strip(), date = row["date"])
 
-            ins, created = PD_Initial.objects.update_or_create(
-             date = helpers.clean_data(row["date"]) if "date" in col_names else None,
-             factor_1 = helpers.clean_data(row["factor_1"]) if "factor_1" in col_names else None,
-             factor_2 = helpers.clean_data(row["factor_2"]) if "factor_2" in col_names else None,
-             factor_3 = helpers.clean_data(row["factor_3"]) if "factor_3" in col_names else None,
-             factor_4 = helpers.clean_data(row["factor_4"]) if "factor_4" in col_names else None,
-             factor_5 = helpers.clean_data(row["factor_5"]) if "factor_5" in col_names else None,
-             factor_6 = helpers.clean_data(row["factor_6"]) if "factor_6" in col_names else None,
-             default_col = helpers.clean_data(row["default_col"]) if "default_col" in col_names else None,
-             mgmt_overlay_1 = helpers.clean_data(row["mgmt_overlay_1"]) if "mgmt_overlay_1" in col_names else None,
-             mgmt_overlay_2 = helpers.clean_data(row["mgmt_overlay_2"]) if "mgmt_overlay_2" in col_names else None,
-            )
+                update_record(ins_const, import_type, row, file_identifier)
 
-        #
-        # LGD
-        if import_type == "lgd":
-            ins, created = LGD_Initial.objects.update_or_create(
-             date = helpers.clean_data(row["date"]) if "date" in col_names else None,
-             ead_os = helpers.clean_data(row["ead_os"]) if "ead_os" in col_names else None,
-             pv_cashflows = helpers.clean_data(row["pv_cashflows"]) if "pv_cashflows" in col_names else None,
-             pv_cost = helpers.clean_data(row["pv_cost"]) if "pv_cost" in col_names else None,
-             beta_value = helpers.clean_data(row["beta_value"]) if "beta_value" in col_names else None,
-             sec_flag = helpers.clean_data(row["sec_flag"]) if "sec_flag" in col_names else None,
-             factor_4 = helpers.clean_data(row["factor_4"]) if "factor_4" in col_names else None,
-             factor_5 = helpers.clean_data(row["factor_5"]) if "factor_5" in col_names else None,
-             avg_1 = helpers.clean_data(row["avg_1"]) if "avg_1" in col_names else None,
-             avg_2 = helpers.clean_data(row["avg_2"]) if "avg_2" in col_names else None,
-             avg_3 = helpers.clean_data(row["avg_3"]) if "avg_3" in col_names else None,
-             avg_4 = helpers.clean_data(row["avg_4"]) if "avg_4" in col_names else None,
-             avg_5 = helpers.clean_data(row["avg_5"]) if "avg_5" in col_names else None,
-             mgmt_overlay_1 = helpers.clean_data(row["mgmt_overlay_1"]) if "mgmt_overlay_1" in col_names else None,
-             mgmt_overlay_2 = helpers.clean_data(row["mgmt_overlay_2"]) if "mgmt_overlay_2" in col_names else None,
-            )
+        except:
 
-        #
-        # STAGE
-        if import_type == "stage":
-            ins, created = Stage_Initial.objects.update_or_create(
-             date = helpers.clean_data(row["date"]) if "date" in col_names else None,
-             old_rating = helpers.clean_data(row["old_rating"]) if "old_rating" in col_names else None,
-             new_rating = helpers.clean_data(row["new_rating"]) if "new_rating" in col_names else None,
-             rating_3 = helpers.clean_data(row["rating_3"]) if "rating_3" in col_names else None,
-             rating_4 = helpers.clean_data(row["rating_4"]) if "rating_4" in col_names else None,
-             rating_5 = helpers.clean_data(row["rating_5"]) if "rating_5" in col_names else None,
-             rating_6 = helpers.clean_data(row["rating_6"]) if "rating_6" in col_names else None,
-             rating_7 = helpers.clean_data(row["rating_7"]) if "rating_7" in col_names else None,
-             day_bucket_1 = helpers.clean_data(row["day_bucket_1"]) if "day_bucket_1" in col_names else None,
-             day_bucket_2 = helpers.clean_data(row["day_bucket_2"]) if "day_bucket_2" in col_names else None,
-             day_bucket_3 = helpers.clean_data(row["day_bucket_3"]) if "day_bucket_3" in col_names else None,
-             day_bucket_4 = helpers.clean_data(row["day_bucket_4"]) if "day_bucket_4" in col_names else None,
-             day_bucket_5 = helpers.clean_data(row["day_bucket_5"]) if "day_bucket_5" in col_names else None,
-             day_bucket_6 = helpers.clean_data(row["day_bucket_6"]) if "day_bucket_6" in col_names else None,
-             day_bucket_7 = helpers.clean_data(row["day_bucket_7"]) if "day_bucket_7" in col_names else None,
-             day_bucket_8 = helpers.clean_data(row["day_bucket_8"]) if "day_bucket_8" in col_names else None,
-             day_bucket_9 = helpers.clean_data(row["day_bucket_9"]) if "day_bucket_9" in col_names else None,
-             day_bucket_10 = helpers.clean_data(row["day_bucket_10"]) if "day_bucket_10" in col_names else None,
-             day_bucket_11 = helpers.clean_data(row["day_bucket_11"]) if "day_bucket_11" in col_names else None,
-             day_bucket_12 = helpers.clean_data(row["day_bucket_12"]) if "day_bucket_12" in col_names else None,
-             day_bucket_13 = helpers.clean_data(row["day_bucket_13"]) if "day_bucket_13" in col_names else None,
-             day_bucket_14 = helpers.clean_data(row["day_bucket_14"]) if "day_bucket_14" in col_names else None,
-             day_bucket_15 = helpers.clean_data(row["day_bucket_15"]) if "day_bucket_15" in col_names else None,
-             criteria = helpers.clean_data(row["criteria"]) if "criteria" in col_names else None,
-             cooling_period_1 = helpers.clean_data(row["cooling_period_1"]) if "cooling_period_1" in col_names else None,
-             cooling_period_2 = helpers.clean_data(row["cooling_period_2"]) if "cooling_period_2" in col_names else None,
-             cooling_period_3 = helpers.clean_data(row["cooling_period_3"]) if "cooling_period_3" in col_names else None,
-             cooling_period_4 = helpers.clean_data(row["cooling_period_4"]) if "cooling_period_4" in col_names else None,
-             cooling_period_5 = helpers.clean_data(row["cooling_period_5"]) if "cooling_period_5" in col_names else None,
-             rbi_window = helpers.clean_data(row["rbi_window"]) if "rbi_window" in col_names else None,
-             mgmt_overlay_1 = helpers.clean_data(row["mgmt_overlay_1"]) if "mgmt_overlay_1" in col_names else None,
-             mgmt_overlay_2 = helpers.clean_data(row["mgmt_overlay_2"]) if "mgmt_overlay_2" in col_names else None,
-            )
+            #
+            # MASTER ENTRY
+            if import_type == "master" and account_ins is None:
+                ins = AccountMaster.objects.create(
+                    date = row["date"] if row["date"].strip()!="" else None if "date" in col_names else None,
+                    cin = row["cin"] if row["cin"].strip()!="" else None if "cin" in col_names else None,
+                    account_no = row["account_no"] if row["account_no"].strip()!="" else None if "account_no" in col_names else None,
+                    account_type = row["account_type"] if row["account_type"].strip()!="" else None if "account_type" in col_names else None,
+                    product_name = row["product_name"] if row["product_name"].strip()!="" else None if "product_name" in col_names else None,
+                    sectors = row["sectors"] if row["sectors"].strip()!="" else None if "sectors" in col_names else None,
+                    customer_name = row["customer_name"] if row["customer_name"].strip()!="" else None if "customer_name" in col_names else None,
+                    contact_no = row["contact_no"] if row["contact_no"].strip()!="" else None if "contact_no" in col_names else None,
+                    email = row["email"] if row["email"].strip()!="" else None if "email" in col_names else None,
+                    pan = row["pan"] if row["pan"].strip()!="" else None if "pan" in col_names else None,
+                    aadhar_no = row["aadhar_no"] if row["aadhar_no"].strip()!="" else None if "aadhar_no" in col_names else None,
+                    customer_addr = row["customer_addr"] if row["customer_addr"].strip()!="" else None if "customer_addr" in col_names else None,
+                    pin = row["pin"] if row["pin"].strip()!="" else None if "pin" in col_names else None,
+                )
 
-        #
-        #
-        if tab_status == "ead":
-            pass
+            #
+            # BASEL PRODUCT ENTRY
+            if import_type == "product":
+                ins = Basel_Product_Master.objects.create(
+                    date = row["date"] if row["date"].strip()!="" else None if "date" in col_names else None,
+                    account_no = row["account_no"] if row["account_no"].strip()!="" else None if "account_no" in col_names else None,
+                    product_name = row["product_name"] if row["product_name"].strip()!="" else None if "product_name" in col_names else None,
+                    product_code = row["product_code"] if row["product_code"].strip()!="" else None if "product_code" in col_names else None,
+                    product_catgory = row["product_catgory"] if row["product_catgory"].strip()!="" else None if "product_catgory" in col_names else None,
+                    basel_product = row["basel_product"] if row["basel_product"].strip()!="" else None if "basel_product" in col_names else None,
+                    basel_product_code = row["basel_product_code"] if row["basel_product_code"].strip()!="" else None if "basel_product_code" in col_names else None,
+                    drawn_cff = row["drawn_cff"] if row["drawn_cff"].strip()!="" else None if "drawn_cff" in col_names else None,
+                    cff_upto_1_yr = row["cff_upto_1_yr"] if row["cff_upto_1_yr"].strip()!="" else None if "cff_upto_1_yr" in col_names else None,
+                    cff_gt_1_yr = row["cff_gt_1_yr"] if row["cff_gt_1_yr"].strip()!="" else None if "cff_gt_1_yr" in col_names else None,
+                )
+
+            #
+            # BASEL PRODUCT ENTRY
+            if import_type == "collateral":
+                ins = Basel_Collateral_Master.objects.create(
+                    date = row["date"] if row["date"].strip()!="" else None if "date" in col_names else None,
+                    account_no = row["account_no"] if row["account_no"].strip()!="" else None if "account_no" in col_names else None,
+                    product_name = row["product_name"] if row["product_name"].strip()!="" else None if "product_name" in col_names else None,
+                    collateral_code = row["collateral_code"] if row["collateral_code"].strip()!="" else None if "collateral_code" in col_names else None,
+                    collateral_type = row["collateral_type"] if row["collateral_type"].strip()!="" else None if "collateral_type" in col_names else None,
+                    issuer_type = row["issuer_type"] if row["issuer_type"].strip()!="" else None if "issuer_type" in col_names else None,
+                    collateral_eligibity = row["collateral_eligibity"] if row["collateral_eligibity"].strip()!="" else None if "collateral_eligibity" in col_names else None,
+                    rating_available = row["rating_available"] if row["rating_available"].strip()!="" else None if "rating_available" in col_names else None,
+                    collateral_rating = row["collateral_rating"] if row["collateral_rating"].strip()!="" else None if "collateral_rating" in col_names else None,
+                    residual_maturity = row["residual_maturity"] if row["residual_maturity"].strip()!="" else None if "residual_maturity" in col_names else None,
+                    basel_collateral_type = row["basel_collateral_type"] if row["basel_collateral_type"].strip()!="" else None if "basel_collateral_type" in col_names else None,
+                    basel_collateral_subtype = row["basel_collateral_subtype"] if row["basel_collateral_subtype"].strip()!="" else None if "basel_collateral_subtype" in col_names else None,
+                    basel_collateral_code = row["basel_collateral_code"] if row["basel_collateral_code"].strip()!="" else None if "basel_collateral_code" in col_names else None,
+                    basel_collateral_rating = row["basel_collateral_rating"] if row["basel_collateral_rating"].strip()!="" else None if "basel_collateral_rating" in col_names else None,
+                    soverign_issuer = row["soverign_issuer"] if row["soverign_issuer"].strip()!="" else None if "soverign_issuer" in col_names else None,
+                    other_issuer = row["other_issuer"] if row["other_issuer"].strip()!="" else None if "other_issuer" in col_names else None,
+                )
+
+            #
+            # PD
+            if import_type == "pd":
+
+                ins = PD_Initial.objects.create(
+                 date = helpers.clean_data(row["date"]) if "date" in col_names else None,
+                 factor_1 = helpers.clean_data(row["factor_1"]) if "factor_1" in col_names else None,
+                 factor_2 = helpers.clean_data(row["factor_2"]) if "factor_2" in col_names else None,
+                 factor_3 = helpers.clean_data(row["factor_3"]) if "factor_3" in col_names else None,
+                 factor_4 = helpers.clean_data(row["factor_4"]) if "factor_4" in col_names else None,
+                 factor_5 = helpers.clean_data(row["factor_5"]) if "factor_5" in col_names else None,
+                 factor_6 = helpers.clean_data(row["factor_6"]) if "factor_6" in col_names else None,
+                 default_col = helpers.clean_data(row["default_col"]) if "default_col" in col_names else None,
+                 mgmt_overlay_1 = helpers.clean_data(row["mgmt_overlay_1"]) if "mgmt_overlay_1" in col_names else None,
+                 mgmt_overlay_2 = helpers.clean_data(row["mgmt_overlay_2"]) if "mgmt_overlay_2" in col_names else None,
+                )
+
+            #
+            # LGD
+            if import_type == "lgd":
+                ins = LGD_Initial.objects.create(
+                 date = helpers.clean_data(row["date"]) if "date" in col_names else None,
+                 ead_os = helpers.clean_data(row["ead_os"]) if "ead_os" in col_names else None,
+                 pv_cashflows = helpers.clean_data(row["pv_cashflows"]) if "pv_cashflows" in col_names else None,
+                 pv_cost = helpers.clean_data(row["pv_cost"]) if "pv_cost" in col_names else None,
+                 beta_value = helpers.clean_data(row["beta_value"]) if "beta_value" in col_names else None,
+                 sec_flag = helpers.clean_data(row["sec_flag"]) if "sec_flag" in col_names else None,
+                 factor_4 = helpers.clean_data(row["factor_4"]) if "factor_4" in col_names else None,
+                 factor_5 = helpers.clean_data(row["factor_5"]) if "factor_5" in col_names else None,
+                 avg_1 = helpers.clean_data(row["avg_1"]) if "avg_1" in col_names else None,
+                 avg_2 = helpers.clean_data(row["avg_2"]) if "avg_2" in col_names else None,
+                 avg_3 = helpers.clean_data(row["avg_3"]) if "avg_3" in col_names else None,
+                 avg_4 = helpers.clean_data(row["avg_4"]) if "avg_4" in col_names else None,
+                 avg_5 = helpers.clean_data(row["avg_5"]) if "avg_5" in col_names else None,
+                 mgmt_overlay_1 = helpers.clean_data(row["mgmt_overlay_1"]) if "mgmt_overlay_1" in col_names else None,
+                 mgmt_overlay_2 = helpers.clean_data(row["mgmt_overlay_2"]) if "mgmt_overlay_2" in col_names else None,
+                )
+
+            #
+            # STAGE
+            if import_type == "stage":
+                ins = Stage_Initial.objects.create(
+                 date = helpers.clean_data(row["date"]) if "date" in col_names else None,
+                 old_rating = helpers.clean_data(row["old_rating"]) if "old_rating" in col_names else None,
+                 new_rating = helpers.clean_data(row["new_rating"]) if "new_rating" in col_names else None,
+                 rating_3 = helpers.clean_data(row["rating_3"]) if "rating_3" in col_names else None,
+                 rating_4 = helpers.clean_data(row["rating_4"]) if "rating_4" in col_names else None,
+                 rating_5 = helpers.clean_data(row["rating_5"]) if "rating_5" in col_names else None,
+                 rating_6 = helpers.clean_data(row["rating_6"]) if "rating_6" in col_names else None,
+                 rating_7 = helpers.clean_data(row["rating_7"]) if "rating_7" in col_names else None,
+                 day_bucket_1 = helpers.clean_data(row["day_bucket_1"]) if "day_bucket_1" in col_names else None,
+                 day_bucket_2 = helpers.clean_data(row["day_bucket_2"]) if "day_bucket_2" in col_names else None,
+                 day_bucket_3 = helpers.clean_data(row["day_bucket_3"]) if "day_bucket_3" in col_names else None,
+                 day_bucket_4 = helpers.clean_data(row["day_bucket_4"]) if "day_bucket_4" in col_names else None,
+                 day_bucket_5 = helpers.clean_data(row["day_bucket_5"]) if "day_bucket_5" in col_names else None,
+                 day_bucket_6 = helpers.clean_data(row["day_bucket_6"]) if "day_bucket_6" in col_names else None,
+                 day_bucket_7 = helpers.clean_data(row["day_bucket_7"]) if "day_bucket_7" in col_names else None,
+                 day_bucket_8 = helpers.clean_data(row["day_bucket_8"]) if "day_bucket_8" in col_names else None,
+                 day_bucket_9 = helpers.clean_data(row["day_bucket_9"]) if "day_bucket_9" in col_names else None,
+                 day_bucket_10 = helpers.clean_data(row["day_bucket_10"]) if "day_bucket_10" in col_names else None,
+                 day_bucket_11 = helpers.clean_data(row["day_bucket_11"]) if "day_bucket_11" in col_names else None,
+                 day_bucket_12 = helpers.clean_data(row["day_bucket_12"]) if "day_bucket_12" in col_names else None,
+                 day_bucket_13 = helpers.clean_data(row["day_bucket_13"]) if "day_bucket_13" in col_names else None,
+                 day_bucket_14 = helpers.clean_data(row["day_bucket_14"]) if "day_bucket_14" in col_names else None,
+                 day_bucket_15 = helpers.clean_data(row["day_bucket_15"]) if "day_bucket_15" in col_names else None,
+                 criteria = helpers.clean_data(row["criteria"]) if "criteria" in col_names else None,
+                 cooling_period_1 = helpers.clean_data(row["cooling_period_1"]) if "cooling_period_1" in col_names else None,
+                 cooling_period_2 = helpers.clean_data(row["cooling_period_2"]) if "cooling_period_2" in col_names else None,
+                 cooling_period_3 = helpers.clean_data(row["cooling_period_3"]) if "cooling_period_3" in col_names else None,
+                 cooling_period_4 = helpers.clean_data(row["cooling_period_4"]) if "cooling_period_4" in col_names else None,
+                 cooling_period_5 = helpers.clean_data(row["cooling_period_5"]) if "cooling_period_5" in col_names else None,
+                 rbi_window = helpers.clean_data(row["rbi_window"]) if "rbi_window" in col_names else None,
+                 mgmt_overlay_1 = helpers.clean_data(row["mgmt_overlay_1"]) if "mgmt_overlay_1" in col_names else None,
+                 mgmt_overlay_2 = helpers.clean_data(row["mgmt_overlay_2"]) if "mgmt_overlay_2" in col_names else None,
+                )
+
+            #
+            #
+            if import_type == "ead":
+                ins = EAD_Initial.objects.create(
+                    date = helpers.clean_data(row["date"]) if "date" in col_names else None,
+                    outstanding_amount = helpers.clean_data(row["outstanding_amount"]) if "outstanding_amount" in col_names else None,
+                    undrawn_upto_1_yr = helpers.clean_data(row["undrawn_upto_1_yr"]) if "undrawn_upto_1_yr" in col_names else None,
+                    undrawn_greater_than_1_yr = helpers.clean_data(row["undrawn_greater_than_1_yr"]) if "undrawn_greater_than_1_yr" in col_names else None,
+                    collateral_1_value = helpers.clean_data(row["collateral_1_value"]) if "collateral_1_value" in col_names else None,
+                    collateral_1_rating = helpers.clean_data(row["collateral_1_rating"]) if "collateral_1_rating" in col_names else None,
+                    collateral_1_residual_maturity = helpers.clean_data(row["collateral_1_residual_maturity"]) if "collateral_1_residual_maturity" in col_names else None,
+                    collateral_2_value = helpers.clean_data(row["collateral_2_value"]) if "collateral_2_value" in col_names else None,
+                    collateral_2_rating = helpers.clean_data(row["collateral_2_rating"]) if "collateral_2_rating" in col_names else None,
+                    collateral_2_residual_maturity = helpers.clean_data(row["collateral_2_residual_maturity"]) if "collateral_2_residual_maturity" in col_names else None,
+                )
+
+            #
+            # Fetch Account Number Instance
+            if account_ins is not None and import_type != "master":
+                ins.account_no = account_ins
+            else:
+                if "account_no" in col_names and import_type != "master":
+                    if row["account_no"].strip()!="":
+                        ins.account_no_temp = row["account_no"]
+                        _, created = AccountMissing.objects.update_or_create(
+                            account_no = row["account_no"]
+                        )
+            #
+            # add file Identifier
+            ins.file_identifier = file_identifier
+            ins.save()
 
 
-        #
-        # Fetch Account Number Instance
-        if "account_no" in col_names and import_type != "master":
-            if row["account_no"].strip()!="":
-                try:
-                    account_ins = AccountMaster.objects.get(account_no = row["account_no"].strip())
-                    ins.account_no = account_ins
-                except ObjectDoesNotExist:
-                    ins.account_no_temp = row["account_no"]
-                    _, created = AccountMissing.objects.update_or_create(
-                        account_no = row["account_no"],
-                        file_identifier = file_identifier
-                    )
-        #
-        # add file Identifier
-        ins.file_identifier = file_identifier
-        ins.save()
+#**********************************************************************
+# METHOD TO UPDATE DATA INTO RELEVANT MODELS
+#**********************************************************************
+def update_record(ins_const=None, import_type=None, row=None, file_identifier=None):
+
+    col_names = row.keys()
+    #
+    # MASTER ENTRY
+    if import_type == "master":
+
+        ins_const.date = row["date"] if row["date"].strip()!="" else None if "date" in col_names else None
+        ins_const.cin = row["cin"] if row["cin"].strip()!="" else None if "cin" in col_names else None
+        ins_const.account_no = row["account_no"] if row["account_no"].strip()!="" else None if "account_no" in col_names else None
+        ins_const.account_type = row["account_type"] if row["account_type"].strip()!="" else None if "account_type" in col_names else None
+        ins_const.product_name = row["product_name"] if row["product_name"].strip()!="" else None if "product_name" in col_names else None
+        ins_const.sectors = row["sectors"] if row["sectors"].strip()!="" else None if "sectors" in col_names else None
+        ins_const.customer_name = row["customer_name"] if row["customer_name"].strip()!="" else None if "customer_name" in col_names else None
+        ins_const.contact_no = row["contact_no"] if row["contact_no"].strip()!="" else None if "contact_no" in col_names else None
+        ins_const.email = row["email"] if row["email"].strip()!="" else None if "email" in col_names else None
+        ins_const.pan = row["pan"] if row["pan"].strip()!="" else None if "pan" in col_names else None
+        ins_const.aadhar_no = row["aadhar_no"] if row["aadhar_no"].strip()!="" else None if "aadhar_no" in col_names else None
+        ins_const.customer_addr = row["customer_addr"] if row["customer_addr"].strip()!="" else None if "customer_addr" in col_names else None
+        ins_const.pin = row["pin"] if row["pin"].strip()!="" else None if "pin" in col_names else None
+
+    #
+    # BASEL PRODUCT ENTRY
+    if import_type == "product":
+
+        ins_const.date = row["date"] if row["date"].strip()!="" else None if "date" in col_names else None,
+        ins_const.account_no = row["account_no"] if row["account_no"].strip()!="" else None if "account_no" in col_names else None,
+        ins_const.product_name = row["product_name"] if row["product_name"].strip()!="" else None if "product_name" in col_names else None,
+        ins_const.product_code = row["product_code"] if row["product_code"].strip()!="" else None if "product_code" in col_names else None,
+        ins_const.product_catgory = row["product_catgory"] if row["product_catgory"].strip()!="" else None if "product_catgory" in col_names else None,
+        ins_const.basel_product = row["basel_product"] if row["basel_product"].strip()!="" else None if "basel_product" in col_names else None,
+        ins_const.basel_product_code = row["basel_product_code"] if row["basel_product_code"].strip()!="" else None if "basel_product_code" in col_names else None,
+        ins_const.drawn_cff = row["drawn_cff"] if row["drawn_cff"].strip()!="" else None if "drawn_cff" in col_names else None,
+        ins_const.cff_upto_1_yr = row["cff_upto_1_yr"] if row["cff_upto_1_yr"].strip()!="" else None if "cff_upto_1_yr" in col_names else None,
+        ins_const.cff_gt_1_yr = row["cff_gt_1_yr"] if row["cff_gt_1_yr"].strip()!="" else None if "cff_gt_1_yr" in col_names else None,
+
+
+    #
+    # BASEL PRODUCT ENTRY
+    if import_type == "collateral":
+
+        ins_const.date = row["date"] if row["date"].strip()!="" else None if "date" in col_names else None,
+        ins_const.account_no = row["account_no"] if row["account_no"].strip()!="" else None if "account_no" in col_names else None,
+        ins_const.product_name = row["product_name"] if row["product_name"].strip()!="" else None if "product_name" in col_names else None,
+        ins_const.collateral_code = row["collateral_code"] if row["collateral_code"].strip()!="" else None if "collateral_code" in col_names else None,
+        ins_const.collateral_type = row["collateral_type"] if row["collateral_type"].strip()!="" else None if "collateral_type" in col_names else None,
+        ins_const.issuer_type = row["issuer_type"] if row["issuer_type"].strip()!="" else None if "issuer_type" in col_names else None,
+        ins_const.collateral_eligibity = row["collateral_eligibity"] if row["collateral_eligibity"].strip()!="" else None if "collateral_eligibity" in col_names else None,
+        ins_const.rating_available = row["rating_available"] if row["rating_available"].strip()!="" else None if "rating_available" in col_names else None,
+        ins_const.collateral_rating = row["collateral_rating"] if row["collateral_rating"].strip()!="" else None if "collateral_rating" in col_names else None,
+        ins_const.residual_maturity = row["residual_maturity"] if row["residual_maturity"].strip()!="" else None if "residual_maturity" in col_names else None,
+        ins_const.basel_collateral_type = row["basel_collateral_type"] if row["basel_collateral_type"].strip()!="" else None if "basel_collateral_type" in col_names else None,
+        ins_const.basel_collateral_subtype = row["basel_collateral_subtype"] if row["basel_collateral_subtype"].strip()!="" else None if "basel_collateral_subtype" in col_names else None,
+        ins_const.basel_collateral_code = row["basel_collateral_code"] if row["basel_collateral_code"].strip()!="" else None if "basel_collateral_code" in col_names else None,
+        ins_const.basel_collateral_rating = row["basel_collateral_rating"] if row["basel_collateral_rating"].strip()!="" else None if "basel_collateral_rating" in col_names else None,
+        ins_const.soverign_issuer = row["soverign_issuer"] if row["soverign_issuer"].strip()!="" else None if "soverign_issuer" in col_names else None,
+        ins_const.other_issuer = row["other_issuer"] if row["other_issuer"].strip()!="" else None if "other_issuer" in col_names else None,
+
+
+    #
+    # PD
+    if import_type == "pd":
+
+         ins_const.date = helpers.clean_data(row["date"]) if "date" in col_names else None
+         ins_const.factor_1 = helpers.clean_data(row["factor_1"]) if "factor_1" in col_names else None
+         ins_const.factor_2 = helpers.clean_data(row["factor_2"]) if "factor_2" in col_names else None
+         ins_const.factor_3 = helpers.clean_data(row["factor_3"]) if "factor_3" in col_names else None
+         ins_const.factor_4 = helpers.clean_data(row["factor_4"]) if "factor_4" in col_names else None
+         ins_const.factor_5 = helpers.clean_data(row["factor_5"]) if "factor_5" in col_names else None
+         ins_const.factor_6 = helpers.clean_data(row["factor_6"]) if "factor_6" in col_names else None
+         ins_const.default_col = helpers.clean_data(row["default_col"]) if "default_col" in col_names else None
+         ins_const.mgmt_overlay_1 = helpers.clean_data(row["mgmt_overlay_1"]) if "mgmt_overlay_1" in col_names else None
+         ins_const.mgmt_overlay_2 = helpers.clean_data(row["mgmt_overlay_2"]) if "mgmt_overlay_2" in col_names else None
+
+    #
+    # LGD
+    if import_type == "lgd":
+
+         ins_const.date = helpers.clean_data(row["date"]) if "date" in col_names else None
+         ins_const.ead_os = helpers.clean_data(row["ead_os"]) if "ead_os" in col_names else None,
+         ins_const.pv_cashflows = helpers.clean_data(row["pv_cashflows"]) if "pv_cashflows" in col_names else None
+         ins_const.pv_cost = helpers.clean_data(row["pv_cost"]) if "pv_cost" in col_names else None
+         ins_const.beta_value = helpers.clean_data(row["beta_value"]) if "beta_value" in col_names else None
+         ins_const.sec_flag = helpers.clean_data(row["sec_flag"]) if "sec_flag" in col_names else None
+         ins_const.factor_4 = helpers.clean_data(row["factor_4"]) if "factor_4" in col_names else None
+         ins_const.factor_5 = helpers.clean_data(row["factor_5"]) if "factor_5" in col_names else None
+         ins_const.avg_1 = helpers.clean_data(row["avg_1"]) if "avg_1" in col_names else None
+         ins_const.avg_2 = helpers.clean_data(row["avg_2"]) if "avg_2" in col_names else None
+         ins_const.avg_3 = helpers.clean_data(row["avg_3"]) if "avg_3" in col_names else None
+         ins_const.avg_4 = helpers.clean_data(row["avg_4"]) if "avg_4" in col_names else None
+         ins_const.avg_5 = helpers.clean_data(row["avg_5"]) if "avg_5" in col_names else None
+         ins_const.mgmt_overlay_1 = helpers.clean_data(row["mgmt_overlay_1"]) if "mgmt_overlay_1" in col_names else None
+         ins_const.mgmt_overlay_2 = helpers.clean_data(row["mgmt_overlay_2"]) if "mgmt_overlay_2" in col_names else None
+
+    #
+    # STAGE
+    if import_type == "stage":
+
+         ins_const.date = helpers.clean_data(row["date"]) if "date" in col_names else None
+         ins_const.old_rating = helpers.clean_data(row["old_rating"]) if "old_rating" in col_names else None
+         ins_const.new_rating = helpers.clean_data(row["new_rating"]) if "new_rating" in col_names else None
+         ins_const.rating_3 = helpers.clean_data(row["rating_3"]) if "rating_3" in col_names else None
+         ins_const.rating_4 = helpers.clean_data(row["rating_4"]) if "rating_4" in col_names else None
+         ins_const.rating_5 = helpers.clean_data(row["rating_5"]) if "rating_5" in col_names else None
+         ins_const.rating_6 = helpers.clean_data(row["rating_6"]) if "rating_6" in col_names else None
+         ins_const.rating_7 = helpers.clean_data(row["rating_7"]) if "rating_7" in col_names else None
+         ins_const.day_bucket_1 = helpers.clean_data(row["day_bucket_1"]) if "day_bucket_1" in col_names else None
+         ins_const.day_bucket_2 = helpers.clean_data(row["day_bucket_2"]) if "day_bucket_2" in col_names else None
+         ins_const.day_bucket_3 = helpers.clean_data(row["day_bucket_3"]) if "day_bucket_3" in col_names else None
+         ins_const.day_bucket_4 = helpers.clean_data(row["day_bucket_4"]) if "day_bucket_4" in col_names else None
+         ins_const.day_bucket_5 = helpers.clean_data(row["day_bucket_5"]) if "day_bucket_5" in col_names else None
+         ins_const.day_bucket_6 = helpers.clean_data(row["day_bucket_6"]) if "day_bucket_6" in col_names else None
+         ins_const.day_bucket_7 = helpers.clean_data(row["day_bucket_7"]) if "day_bucket_7" in col_names else None
+         ins_const.day_bucket_8 = helpers.clean_data(row["day_bucket_8"]) if "day_bucket_8" in col_names else None
+         ins_const.day_bucket_9 = helpers.clean_data(row["day_bucket_9"]) if "day_bucket_9" in col_names else None
+         ins_const.day_bucket_10 = helpers.clean_data(row["day_bucket_10"]) if "day_bucket_10" in col_names else None
+         ins_const.day_bucket_11 = helpers.clean_data(row["day_bucket_11"]) if "day_bucket_11" in col_names else None
+         ins_const.day_bucket_12 = helpers.clean_data(row["day_bucket_12"]) if "day_bucket_12" in col_names else None
+         ins_const.day_bucket_13 = helpers.clean_data(row["day_bucket_13"]) if "day_bucket_13" in col_names else None
+         ins_const.day_bucket_14 = helpers.clean_data(row["day_bucket_14"]) if "day_bucket_14" in col_names else None
+         ins_const.day_bucket_15 = helpers.clean_data(row["day_bucket_15"]) if "day_bucket_15" in col_names else None
+         ins_const.criteria = helpers.clean_data(row["criteria"]) if "criteria" in col_names else None
+         ins_const.cooling_period_1 = helpers.clean_data(row["cooling_period_1"]) if "cooling_period_1" in col_names else None
+         ins_const.cooling_period_2 = helpers.clean_data(row["cooling_period_2"]) if "cooling_period_2" in col_names else None
+         ins_const.cooling_period_3 = helpers.clean_data(row["cooling_period_3"]) if "cooling_period_3" in col_names else None
+         ins_const.cooling_period_4 = helpers.clean_data(row["cooling_period_4"]) if "cooling_period_4" in col_names else None
+         ins_const.cooling_period_5 = helpers.clean_data(row["cooling_period_5"]) if "cooling_period_5" in col_names else None
+         ins_const.rbi_window = helpers.clean_data(row["rbi_window"]) if "rbi_window" in col_names else None
+         ins_const.mgmt_overlay_1 = helpers.clean_data(row["mgmt_overlay_1"]) if "mgmt_overlay_1" in col_names else None
+         ins_const.mgmt_overlay_2 = helpers.clean_data(row["mgmt_overlay_2"]) if "mgmt_overlay_2" in col_names else None
+
+    #
+    #
+    if import_type == "ead":
+
+        ins_const.date = helpers.clean_data(row["date"]) if "date" in col_names else None
+        ins_const.outstanding_amount = helpers.clean_data(row["outstanding_amount"]) if "outstanding_amount" in col_names else None
+        ins_const.undrawn_upto_1_yr = helpers.clean_data(row["undrawn_upto_1_yr"]) if "undrawn_upto_1_yr" in col_names else None
+        ins_const.undrawn_greater_than_1_yr = helpers.clean_data(row["undrawn_greater_than_1_yr"]) if "undrawn_greater_than_1_yr" in col_names else None
+        ins_const.collateral_1_value = helpers.clean_data(row["collateral_1_value"]) if "collateral_1_value" in col_names else None
+        ins_const.collateral_1_rating = helpers.clean_data(row["collateral_1_rating"]) if "collateral_1_rating" in col_names else None
+        ins_const.collateral_1_residual_maturity = helpers.clean_data(row["collateral_1_residual_maturity"]) if "collateral_1_residual_maturity" in col_names else None
+        ins_const.collateral_2_value = helpers.clean_data(row["collateral_2_value"]) if "collateral_2_value" in col_names else None
+        ins_const.collateral_2_rating = helpers.clean_data(row["collateral_2_rating"]) if "collateral_2_rating" in col_names else None
+        ins_const.collateral_2_residual_maturity = helpers.clean_data(row["collateral_2_residual_maturity"]) if "collateral_2_residual_maturity" in col_names else None
+
+
+    #
+    # Fetch Account Number Instance
+    if "account_no" in col_names and import_type != "master":
+        if row["account_no"].strip()!="":
+            try:
+                account_ins = AccountMaster.objects.get(account_no = row["account_no"].strip())
+                ins_const.account_no = account_ins
+            except ObjectDoesNotExist:
+                ins_const.account_no_temp = row["account_no"]
+                _, created = AccountMissing.objects.update_or_create(
+                    account_no = row["account_no"]
+                )
+    #
+    # add file Identifier
+    ins_const.file_identifier = file_identifier
+    ins_const.save()
 
 
 #**********************************************************************
@@ -517,10 +752,27 @@ def delete_record(request, tab_status=None, ins=None):
 
 
 #**********************************************************************
+# METHOD SELECTED DELETE DATA INTO RELEVANT MODELS
+#**********************************************************************
+def delete_selected_records(request, tab_status=None):
+
+    ins_list = request.POST.getlist("checkbox_one", None)
+
+    if len(ins_list) == 0:
+        constants.TAB_ACTIVE[tab_status][3].all().delete()
+    else:
+        constants.TAB_ACTIVE[tab_status][3].filter(pk__in = ins_list).delete()
+    messages.success(request, "Records Deleted Successfully")
+
+    return HttpResponse("1")
+
+#**********************************************************************
 # METHOD TO EDIT DATA OF RELEVANT MODELS
 #**********************************************************************
 def edit_record(request, tab_status=None):
     if request.POST:
+
+        #AccountMissing.objects.all().delete()
 
         ins = int(request.POST["id"])
 
@@ -540,9 +792,46 @@ def edit_record(request, tab_status=None):
             obj.account_no_temp = None
             AccountMissing.objects.filter(account_no = request.POST["account_no"]).delete()
         except ObjectDoesNotExist:
+            print("does not exist")
             obj.account_no = None
             obj.account_no_temp = request.POST["account_no"]
             _, created = AccountMissing.objects.update_or_create(account_no = request.POST["account_no"])
+
+
+        #
+        # BASEL PRODUCT ENTRY
+        if tab_status == "product":
+            obj.date = row["date"] if row["date"].strip()!="" else None if "date" in col_names else None,
+            obj.account_no = row["account_no"] if row["account_no"].strip()!="" else None if "account_no" in col_names else None,
+            obj.product_name = row["product_name"] if row["product_name"].strip()!="" else None if "product_name" in col_names else None,
+            obj.product_code = row["product_code"] if row["product_code"].strip()!="" else None if "product_code" in col_names else None,
+            obj.product_catgory = row["product_catgory"] if row["product_catgory"].strip()!="" else None if "product_catgory" in col_names else None,
+            obj.basel_product = row["basel_product"] if row["basel_product"].strip()!="" else None if "basel_product" in col_names else None,
+            obj.basel_product_code = row["basel_product_code"] if row["basel_product_code"].strip()!="" else None if "basel_product_code" in col_names else None,
+            obj.drawn_cff = row["drawn_cff"] if row["drawn_cff"].strip()!="" else None if "drawn_cff" in col_names else None,
+            obj.cff_upto_1_yr = row["cff_upto_1_yr"] if row["cff_upto_1_yr"].strip()!="" else None if "cff_upto_1_yr" in col_names else None,
+            obj.cff_gt_1_yr = row["cff_gt_1_yr"] if row["cff_gt_1_yr"].strip()!="" else None if "cff_gt_1_yr" in col_names else None,
+
+
+        #
+        # BASEL PRODUCT ENTRY
+        if tab_status == "collateral":
+            obj.date = row["date"] if row["date"].strip()!="" else None if "date" in col_names else None,
+            obj.account_no = row["account_no"] if row["account_no"].strip()!="" else None if "account_no" in col_names else None,
+            obj.product_name = row["product_name"] if row["product_name"].strip()!="" else None if "product_name" in col_names else None,
+            obj.collateral_code = row["collateral_code"] if row["collateral_code"].strip()!="" else None if "collateral_code" in col_names else None,
+            obj.collateral_type = row["collateral_type"] if row["collateral_type"].strip()!="" else None if "collateral_type" in col_names else None,
+            obj.issuer_type = row["issuer_type"] if row["issuer_type"].strip()!="" else None if "issuer_type" in col_names else None,
+            obj.collateral_eligibity = row["collateral_eligibity"] if row["collateral_eligibity"].strip()!="" else None if "collateral_eligibity" in col_names else None,
+            obj.rating_available = row["rating_available"] if row["rating_available"].strip()!="" else None if "rating_available" in col_names else None,
+            obj.collateral_rating = row["collateral_rating"] if row["collateral_rating"].strip()!="" else None if "collateral_rating" in col_names else None,
+            obj.residual_maturity = row["residual_maturity"] if row["residual_maturity"].strip()!="" else None if "residual_maturity" in col_names else None,
+            obj.basel_collateral_type = row["basel_collateral_type"] if row["basel_collateral_type"].strip()!="" else None if "basel_collateral_type" in col_names else None,
+            obj.basel_collateral_subtype = row["basel_collateral_subtype"] if row["basel_collateral_subtype"].strip()!="" else None if "basel_collateral_subtype" in col_names else None,
+            obj.basel_collateral_code = row["basel_collateral_code"] if row["basel_collateral_code"].strip()!="" else None if "basel_collateral_code" in col_names else None,
+            obj.basel_collateral_rating = row["basel_collateral_rating"] if row["basel_collateral_rating"].strip()!="" else None if "basel_collateral_rating" in obj else None,
+            obj.soverign_issuer = row["soverign_issuer"] if row["soverign_issuer"].strip()!="" else None if "soverign_issuer" in col_names else None,
+            obj.other_issuer = row["other_issuer"] if row["other_issuer"].strip()!="" else None if "other_issuer" in col_names else None,
 
 
         #
@@ -614,8 +903,19 @@ def edit_record(request, tab_status=None):
             obj.mgmt_overlay_1 = request.POST["mgmt_overlay_1"] if request.POST["mgmt_overlay_1"].strip()!="" else None
             obj.mgmt_overlay_2 = request.POST["mgmt_overlay_2"] if request.POST["mgmt_overlay_2"].strip()!="" else None
 
-
-
+        #
+        #
+        if tab_status == "ead":
+            obj.date = request.POST["date"] if request.POST["date"].strip()!="" else None
+            obj.outstanding_amount = request.POST["outstanding_amount"] if request.POST["outstanding_amount"].strip()!="" else None
+            obj.undrawn_upto_1_yr = request.POST["undrawn_upto_1_yr"] if request.POST["undrawn_upto_1_yr"].strip()!="" else None
+            obj.undrawn_greater_than_1_yr = request.POST["undrawn_greater_than_1_yr"] if request.POST["undrawn_greater_than_1_yr"].strip()!="" else None
+            obj.collateral_1_value = request.POST["collateral_1_value"] if request.POST["collateral_1_value"].strip()!="" else None
+            obj.collateral_1_rating = request.POST["collateral_1_rating"] if request.POST["collateral_1_rating"].strip()!="" else None
+            obj.collateral_1_residual_maturity = request.POST["collateral_1_residual_maturity"] if request.POST["collateral_1_residual_maturity"].strip()!="" else None
+            obj.collateral_2_value = request.POST["collateral_2_value"] if request.POST["collateral_2_value"].strip()!="" else None
+            obj.collateral_2_rating = request.POST["collateral_2_rating"] if request.POST["collateral_2_rating"].strip()!="" else None
+            obj.collateral_2_residual_maturity = request.POST["collateral_2_residual_maturity"] if request.POST["collateral_2_residual_maturity"].strip()!="" else None
 
         #
         #
@@ -787,6 +1087,25 @@ def move_record(tab_status=None, obj=None):
 
         obj.delete()
         return True
+
+    elif tab_status == "ead" and obj is not None:
+        constants.TAB_ACTIVE[tab_status][4].create(
+            date = obj.date,
+            account_no = obj.account_no,
+            outstanding_amount = obj.outstanding_amount,
+            undrawn_upto_1_yr = obj.undrawn_upto_1_yr,
+            undrawn_greater_than_1_yr = obj.undrawn_greater_than_1_yr,
+            collateral_1_value = obj.collateral_1_value,
+            collateral_1_rating = obj.collateral_1_rating,
+            collateral_1_residual_maturity = obj.collateral_1_residual_maturity,
+            collateral_2_value = obj.collateral_2_value,
+            collateral_2_rating = obj.collateral_2_rating,
+            collateral_2_residual_maturity = obj.collateral_2_residual_maturity,
+        )
+
+        obj.delete()
+        return True
+
     else:
         return False
 
@@ -823,8 +1142,6 @@ def show_final_records(request, tab_status=None):
         results = constants.TAB_ACTIVE[tab_status][4].select_related("account_no")
         results = results.values('id', 'date', 'account_no_id', 'factor_1', 'factor_2', 'factor_3', 'factor_4', 'default_col', 'factor_5', 'factor_6', 'mgmt_overlay_1', 'mgmt_overlay_2', Account_No = F('account_no__account_no'), cin = F('account_no__cin'), product_name = F('account_no__product_name'), sectors = F('account_no__sectors'), account_type = F('account_no__account_type'))
 
-
-
     #
     # TAB- LGD
     #==============================================================
@@ -838,6 +1155,14 @@ def show_final_records(request, tab_status=None):
     if tab_status == "stage":
         results = constants.TAB_ACTIVE[tab_status][4].select_related("account_no")
         results.values('id', 'date', 'account_no_id', 'old_rating', 'new_rating', 'rating_3', 'rating_4', 'rating_5', 'rating_6', 'rating_7', 'day_bucket_1', 'day_bucket_2', 'day_bucket_3', 'day_bucket_4', 'day_bucket_5', 'day_bucket_6', 'day_bucket_7', 'day_bucket_8', 'day_bucket_9', 'day_bucket_10', 'day_bucket_11', 'day_bucket_12','day_bucket_13', 'day_bucket_14', 'day_bucket_15', 'criteria', 'cooling_period_1', 'cooling_period_2', 'cooling_period_3', 'cooling_period_4', 'cooling_period_5', 'rbi_window', 'mgmt_overlay_1', 'mgmt_overlay_2', Account_No = F('account_no__account_no'), cin = F('account_no__cin'), product_name = F('account_no__product_name'), sectors = F('account_no__sectors'), account_type = F('account_no__account_type')).order_by("id")
+
+    #
+    # TAB- EAD
+    #==============================================================
+    if tab_status == "ead":
+        results = constants.TAB_ACTIVE[tab_status][4].select_related("account_no")
+        results.values('id', 'date', 'account_no_id', 'outstanding_amount', 'undrawn_upto_1_yr', 'undrawn_greater_than_1_yr', 'collateral_1_value', 'collateral_1_rating', 'collateral_1_residual_maturity', 'collateral_2_value', 'collateral_2_rating', 'collateral_2_residual_maturity', Account_No = F('account_no__account_no'), cin = F('account_no__cin'), product_name = F('account_no__product_name'), sectors = F('account_no__sectors'), account_type = F('account_no__account_type')).order_by("id")
+
 
     #
     # PAGINATIONS
@@ -1036,6 +1361,50 @@ def stage_report(request):
 
 
 #**********************************************************************
+# ENDPOINT: GENERATE REPORT - STAGE
+#**********************************************************************
+def ead_report(request):
+
+    ret = False
+    start_date = request.POST["start_date"] if request.POST["start_date"].strip()!="" else None
+    end_date = request.POST["end_date"] if request.POST["end_date"].strip()!="" else None
+    account_no = [helpers.clean_data(x) for x in request.POST["account_no"].split(",")] if request.POST["account_no"].strip()!="" else None
+    id_selected = request.POST.getlist("checkbox_one", None)
+
+    ret = background_tasks.ead_report(start_date = start_date, end_date = end_date, account_no = account_no)
+    if ret:
+
+        results = EAD_Report.objects
+
+        if len(id_selected) > 0:
+            results = results.filter(id__in = id_selected)
+        else:
+
+            if start_date is None and end_date is None and account_no is None:
+                results = results.all()
+
+            if start_date is not None:
+                if end_date is not None:
+                    results = results.filter(date__gte = start_date, date__lte = end_date)
+                else:
+                    results = results.filter(date__gte = start_date)
+
+            if account_no is not None:
+                results = results.filter(account_no__account_no__in = account_no)
+
+        results = results.select_related('account_no').values('id', 'date', 'account_no__account_no', 'account_type', 'cin', 'product_name', 'outstanding_amount', 'undrawn_upto_1_yr', 'undrawn_greater_than_1_yr', 'collateral_1_value', 'collateral_1_rating', 'collateral_1_residual_maturity', 'collateral_2_value', 'collateral_2_rating', 'collateral_2_residual_maturity')
+
+    if request.is_ajax():
+        if ret:
+            return JsonResponse({"ret":ret, "msg":"EAD Report Created Successfully", "results":list(results)})
+        else:
+            return JsonResponse({"ret":ret, "msg":"EAD Report Creation Failed"})
+    else:
+        return redirect("show_reports", "ead")
+
+
+
+#**********************************************************************
 # ENDPOINT: REPORT - SHOW
 #**********************************************************************
 def show_reports(request, tab_status=None):
@@ -1112,6 +1481,26 @@ def show_reports(request, tab_status=None):
             results = results.filter(account_no__account_no__in = account_no)
 
         results = results.select_related('account_no').values('id' ,'date', 'account_no__account_no', 'account_type', 'cin', 'product_name', 'sectors', 'stage', 'state', 'old_rating', 'new_rating', 'rating_3', 'rating_4', 'rating_5', 'rating_6', 'rating_7', 'day_bucket_1', 'day_bucket_2', 'day_bucket_3', 'day_bucket_4', 'day_bucket_5', 'day_bucket_6', 'day_bucket_7', 'day_bucket_8', 'day_bucket_9', 'day_bucket_10', 'day_bucket_11', 'day_bucket_12', 'day_bucket_13', 'day_bucket_14', 'day_bucket_15', 'criteria', 'cooling_period_1', 'cooling_period_2', 'cooling_period_3', 'cooling_period_4', 'cooling_period_5', 'rbi_window', 'mgmt_overlay_1', 'mgmt_overlay_2').order_by("id")
+
+    #
+    # TAB- EAD
+    #==============================================================
+    if tab_status == "ead":
+        results = EAD_Report.objects
+
+        if start_date is None and end_date is None and account_no is None:
+            results = results.all()
+
+        if start_date is not None:
+            if end_date is not None:
+                results = results.filter(date__gte = start_date, date__lte = end_date)
+            else:
+                results = results.filter(date__gte = start_date)
+
+        if account_no is not None:
+            results = results.filter(account_no__account_no__in = account_no)
+
+        results = results.select_related('account_no').values('id' ,'date', 'account_no__account_no', 'account_type', 'cin', 'product_name', 'sectors', 'outstanding_amount', 'undrawn_upto_1_yr', 'undrawn_greater_than_1_yr', 'collateral_1_value', 'collateral_1_rating', 'collateral_1_residual_maturity', 'collateral_2_value', 'collateral_2_rating', 'collateral_2_residual_maturity').order_by("id")
 
     #
     # PAGINATIONS

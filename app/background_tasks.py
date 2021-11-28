@@ -4,7 +4,7 @@
 # Project Date : 21th Sept 2021
 #
 
-from django.core.exceptions import ObjectDoesNotExist
+from django.core.exceptions import ObjectDoesNotExist, MultipleObjectsReturned
 from django.utils import timezone
 from django.db import connection
 from django.db.models import F
@@ -35,6 +35,8 @@ def move_data_bg_process(request, tab_status=None):
 
     if tab_status in constants.TAB_ACTIVE.keys():
 
+        #constants.TAB_ACTIVE[tab_status][4].all().delete()
+
         #
         # Queryset
         qry = constants.TAB_ACTIVE[tab_status][3].filter(account_no__isnull = False)
@@ -58,17 +60,29 @@ def move_data_bg_process(request, tab_status=None):
                 insert_qry = """
                     insert into {0} (date, account_no_id, factor_1, factor_2, factor_3, factor_4, factor_5, factor_6, default_col, mgmt_overlay_1, mgmt_overlay_2, created_on)""".format(constants.TAB_ACTIVE[tab_status][6])
 
+                update_qry = """
+                    update {0} set factor_1='{3}', factor_2='{4}', factor_3='{5}', factor_4='{6}', factor_5='{7}', factor_6='{8}', default_col='{9}', mgmt_overlay_1='{10}', mgmt_overlay_2='{11}', created_on='{12}' where date='{1}' and account_no_id='{2}'
+                    """
+
             if tab_status == "lgd":
                 result_set = qry.values_list('id', 'date', 'account_no', 'ead_os', 'pv_cashflows', 'pv_cost', 'beta_value', 'sec_flag', 'factor_4', 'factor_5', 'avg_1', 'avg_2', 'avg_3', 'avg_4', 'avg_5', 'mgmt_overlay_1', 'mgmt_overlay_2', 'rec_rate')
 
                 insert_qry = """
                     insert into {0} (date, account_no_id, ead_os, pv_cashflows, pv_cost, beta_value, sec_flag, factor_4, factor_5, avg_1, avg_2, avg_3, avg_4, avg_5, mgmt_overlay_1, mgmt_overlay_2, rec_rate, created_on)""".format(constants.TAB_ACTIVE[tab_status][6])
 
+                update_qry = """
+                    update {0} set ead_os='{3}', pv_cashflows='{4}', pv_cost='{5}', beta_value='{6}', sec_flag='{7}', factor_4='{8}', factor_5='{9}', avg_1='{10}', avg_2='{11}', avg_3='{12}', avg_4='{13}', avg_5='{14}', mgmt_overlay_1='{15}', mgmt_overlay_2='{16}', rec_rate='{17}', created_on='{18}' where date='{1}' and account_no_id='{2}'
+                    """
+
             if tab_status == "stage":
                 result_set = qry.values_list('id', 'date', 'account_no', 'old_rating', 'new_rating', 'rating_3', 'rating_4', 'rating_5', 'rating_6', 'rating_7', 'day_bucket_1', 'day_bucket_2', 'day_bucket_3', 'day_bucket_4', 'day_bucket_5', 'day_bucket_6', 'day_bucket_7', 'day_bucket_8', 'day_bucket_9', 'day_bucket_10', 'day_bucket_11', 'day_bucket_12','day_bucket_13', 'day_bucket_14', 'day_bucket_15', 'criteria', 'cooling_period_1', 'cooling_period_2', 'cooling_period_3', 'cooling_period_4', 'cooling_period_5', 'rbi_window', 'mgmt_overlay_1', 'mgmt_overlay_2')
 
                 insert_qry = """
                     insert into {0} (date, account_no_id, old_rating, new_rating, rating_3, rating_4, rating_5, rating_6, rating_7, day_bucket_1, day_bucket_2, day_bucket_3, day_bucket_4, day_bucket_5, day_bucket_6, day_bucket_7, day_bucket_8, day_bucket_9, day_bucket_10, day_bucket_11, day_bucket_12, day_bucket_13, day_bucket_14, day_bucket_15, criteria, cooling_period_1, cooling_period_2, cooling_period_3, cooling_period_4, cooling_period_5, rbi_window, mgmt_overlay_1, mgmt_overlay_2, created_on)""".format(constants.TAB_ACTIVE[tab_status][6])
+
+                update_qry = """
+                    update {0} set old_rating='{3}', new_rating, rating_3='{4}', rating_4='{5}', rating_5='{6}', rating_6='{7}', rating_7='{8}', day_bucket_1='{9}', day_bucket_2='{10}', day_bucket_3='{11}', day_bucket_4='{12}', day_bucket_5='{13}', day_bucket_6='{14}', day_bucket_7='{15}', day_bucket_8='{16}', day_bucket_9='{17}', day_bucket_10='{18}', day_bucket_11='{19}', day_bucket_12='{20}', day_bucket_13='{21}', day_bucket_14='{22}', day_bucket_15='{23}', criteria='{24}', cooling_period_1='{25}', cooling_period_2='{26}', cooling_period_3='{27}', cooling_period_4='{28}', cooling_period_5='{29}', rbi_window='{30}', mgmt_overlay_1='{31}', mgmt_overlay_2='{32}', created_on='{33}' where date='{1}' and account_no_id='{2}'
+                """
 
             #
             # Iterate over each row & insert
@@ -77,41 +91,92 @@ def move_data_bg_process(request, tab_status=None):
                 row = list(row)
                 row_id = row[0]
                 del row[0]
+
                 #
-                # Insert record
-                with connection.cursor() as cursor:
+                # update record if already present in final table
+                #
 
-                    formatted_data = [x if x is not None else '' for x in row]
-                    formatted_data.append(timezone.now())
+                try:
+                    ins = constants.TAB_ACTIVE[tab_status][4].get(date = row[0], account_no_id = row[1])
 
-                    value_params = "'{}', "*(len(formatted_data))
-                    value_params = value_params.rstrip(', ')
+                    with connection.cursor() as cursor:
 
-                    main_query = insert_qry+"values({})".format(value_params)
-                    main_query = main_query.format(*formatted_data)
+                        formatted_data = [x if x is not None else '' for x in row]
+                        formatted_data.append(timezone.now())
 
-                    print(main_query)
+                        update_qry = update_qry.format(constants.TAB_ACTIVE[tab_status][6], *formatted_data)
 
-                    ret_val = False
-                    try:
-                        cursor.execute(main_query)
-                        records_moved += 1
+                        ret_val = False
+                        try:
+                            cursor.execute(update_qry)
+                            records_moved += 1
 
-                        ret_val = True
-                    except:
-                        records_failed += 1
+                            ret_val = True
+                        except:
+                            records_failed += 1
 
+                        #
+                        # Delete record
+                        if ret_val:
+                            constants.TAB_ACTIVE[tab_status][3].get(pk = row_id).delete()
+
+                except MultipleObjectsReturned:
+
+                    with connection.cursor() as cursor:
+
+                        formatted_data = [x if x is not None else '' for x in row]
+                        formatted_data.append(timezone.now())
+
+                        update_qry = update_qry.format(constants.TAB_ACTIVE[tab_status][6], *formatted_data)
+                        
+                        ret_val = False
+                        try:
+                            cursor.execute(update_qry)
+                            records_moved += 1
+
+                            ret_val = True
+                        except:
+                            records_failed += 1
+
+                        #
+                        # Delete record
+                        if ret_val:
+                            constants.TAB_ACTIVE[tab_status][3].get(pk = row_id).delete()
+
+                except ObjectDoesNotExist:
                     #
-                    # Delete record
-                    if ret_val:
-                        constants.TAB_ACTIVE[tab_status][3].get(pk = row_id).delete()
+                    # Insert record
+                    with connection.cursor() as cursor:
+
+                        formatted_data = [x if x is not None else '' for x in row]
+                        formatted_data.append(timezone.now())
+
+                        value_params = "'{}', "*(len(formatted_data))
+                        value_params = value_params.rstrip(', ')
+
+                        main_query = insert_qry+"values({})".format(value_params)
+                        main_query = main_query.format(*formatted_data)
+
+                        ret_val = False
+                        try:
+                            cursor.execute(main_query)
+                            records_moved += 1
+
+                            ret_val = True
+                        except:
+                            records_failed += 1
+
+                        #
+                        # Delete record
+                        if ret_val:
+                            constants.TAB_ACTIVE[tab_status][3].get(pk = row_id).delete()
 
         else:
             msg = "No valid rows to move"
 
 
     if records_moved >0 :
-        msg = "records Moved Successfully"
+        msg = "Records Moved Successfully"
         ret = True
 
     return dict({
@@ -485,4 +550,20 @@ def stage_report(account_no=None, start_date=None, end_date=None):
 
                 stage_report.save()
                 pass
+        return True
+
+
+
+# **********************************************************************
+# PD REPORT CALCULATION & DATA LOAD
+# **********************************************************************
+def ead_report(account_no=None, start_date=None, end_date=None):
+
+    results = constants.TAB_ACTIVE["stage"][4].all().select_related("account_no")
+
+    results = results.values('id', 'date', 'account_no_id', 'outstanding_amount', 'undrawn_upto_1_yr', 'undrawn_greater_than_1_yr', 'collateral_1_value', 'collateral_1_rating', 'collateral_1_residual_maturity', 'collateral_2_value', 'collateral_2_rating', 'collateral_2_residual_maturity', Account_No = F('account_no__account_no'), sectors = F('account_no__sectors'))
+
+    if results.exists() is False:
+        return False
+    else:
         return True

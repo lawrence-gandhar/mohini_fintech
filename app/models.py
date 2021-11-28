@@ -1,5 +1,9 @@
 from django.db import models
 from django.contrib.auth.models import User
+from django.db.models.signals import pre_delete
+from django.dispatch import receiver
+from django.core.exceptions import ObjectDoesNotExist, MultipleObjectsReturned
+
 
 #==================================================================================
 # NEW USER SIGNUP DETAILS
@@ -499,6 +503,7 @@ class DB_Mange(models.Model):
 class Basel_Product_Master(models.Model):
     date = models.DateField(auto_now_add=False, null=True, blank=True, db_index=True)
     account_no = models.ForeignKey(AccountMaster, on_delete=models.SET_NULL, null=True, blank=True, db_index=True)
+    account_no_temp = models.CharField(blank=True, null=True, max_length=255, db_index=True)
     product_name = models.CharField(blank=True, null=True, max_length=255, db_index=True)
     product_code = models.CharField(blank=True, null=True, max_length=255, db_index=True)
     product_catgory = models.CharField(blank=True, null=True, max_length=255, db_index=True)
@@ -515,6 +520,7 @@ class Basel_Product_Master(models.Model):
 class Basel_Collateral_Master(models.Model):
     date = models.DateField(auto_now_add=False, null=True, blank=True, db_index=True)
     account_no = models.ForeignKey(AccountMaster, on_delete=models.SET_NULL, null=True, blank=True, db_index=True)
+    account_no_temp = models.CharField(blank=True, null=True, max_length=255, db_index=True)
     product_name = models.CharField(blank=True, null=True, max_length=255, db_index=True)
     collateral_code = models.CharField(blank=True, null=True, max_length=255, db_index=True)
     collateral_type = models.CharField(blank=True, null=True, max_length=255, db_index=True)
@@ -633,3 +639,45 @@ class EAD_Report(models.Model):
     def truncate(cls):
         with connection.cursor() as cursor:
             cursor.execute('TRUNCATE TABLE "{0}" SET_NULL'.format(cls._meta.db_table))
+
+
+#==================================================================================
+# PRED DELETE FOR ACCOUNT NUMBERS FROM INITIAL TABLES
+#==================================================================================
+@receiver(pre_delete, sender=AccountMaster)
+def replace_account_nos(sender, instance, **kwargs):
+    try:
+        AccountMissing.objects.get(account_no = instance.account_no)
+    except ObjectDoesNotExist:
+        AccountMissing.objects.create(
+            account_no = instance.account_no
+        )
+    except MultipleObjectsReturned:
+        AccountMissing.objects.filter(account_no = instance.account_no).delete()
+        AccountMissing.objects.create(
+            account_no = instance.account_no
+        )
+
+    #
+    # Update PD INITIAL
+    PD_Initial.objects.filter(account_no = instance).update(account_no_temp = instance.account_no, account_no = None)
+
+    #
+    # Update LGD INITIAL
+    LGD_Initial.objects.filter(account_no = instance).update(account_no_temp = instance.account_no, account_no = None)
+
+    #
+    # Update Stage INITIAL
+    Stage_Initial.objects.filter(account_no = instance).update(account_no_temp = instance.account_no, account_no = None)
+
+    #
+    # Update EIR INITIAL
+    EIR_Initial.objects.filter(account_no = instance).update(account_no_temp = instance.account_no, account_no = None)
+
+    #
+    # Update ECL INITIAL
+    #ECL_Initial.objects.filter(account_no = instance).update(account_no_temp = instance.account_no, account_no = None)
+
+    #
+    # Update EAD INITIAL
+    EAD_Initial.objects.filter(account_no = instance).update(account_no_temp = instance.account_no, account_no = None)

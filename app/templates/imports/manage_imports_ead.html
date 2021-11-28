@@ -8,7 +8,7 @@
         <button type="button" class="btn btn-default btn-sm" style="width:100px; color:#000000;" onclick="show_modal('#uploaderModal')">
           <i class="la la-plus"></i> <strong>Add</strong>
         </button>
-        <button type="button" class="btn btn-default btn-sm" style="width:100px; color:#000000;">
+        <button type="button" class="btn btn-default btn-sm" style="width:100px; color:#000000;"  onclick="delete_selected_records()">
           <i class="la la-trash"></i> <strong>Delete</strong>
         </button>
         <a href="" class="btn btn-default btn-sm" style="width:100px; color:#000000;">
@@ -49,6 +49,12 @@
     <ul class="nav nav-tabs" role="tablist">
       <li class="nav-item">
         <a class="nav-link" href="{% url 'manage_imports' 'master' %}" id="tab_master">Master</a>
+      </li>
+      <li class="nav-item">
+        <a class="nav-link active" href="{% url 'manage_imports' 'product' %}" id="tab_product">Basel Product</a>
+      </li>
+      <li class="nav-item">
+        <a class="nav-link active" href="{% url 'manage_imports' 'collateral' %}" id="tab_collateral">Basel Collateral</a>
       </li>
       <li class="nav-item">
         <a class="nav-link " href="{% url 'manage_imports' 'pd' %}" id="tab_pd">PD</a>
@@ -106,8 +112,14 @@
         </form>
       </div>
 
+      <!-- SHOW WHILE MOVING DATA START -->
+
+      <div id="moving_data_main_div"></div>
+
+      <!-- SHOW WHILE MOVING DATA END -->
+
       <div class="table-responsive">
-        <form action="{% url 'move_all_to_final' 'pd' %}" method="post" id="move_all_to_final">
+        <form action="{% url 'move_all_to_final' 'ead' %}" method="post" id="move_all_to_final">
           {% csrf_token %}
           <table class="table table-bordered">
             <thead class="text-center" style="background-color:#ddd; font-size:13px; white-space: nowrap;">
@@ -140,15 +152,15 @@
                     {% else %} {{row.account_no.account_no|default_if_none:''}}
                     {% endif %}
                   </td>
-                  <td>{{row.factor_1|default_if_none:''}}</td>
-                  <td>{{row.factor_2|default_if_none:''}}</td>
-                  <td>{{row.factor_3|default_if_none:''}}</td>
-                  <td>{{row.factor_4|default_if_none:''}}</td>
-                  <td>{{row.factor_5|default_if_none:''}}</td>
-                  <td>{{row.factor_6|default_if_none:''}}</td>
-                  <td>{{row.default_col|default_if_none:''}}</td>
-                  <td>{{row.mgmt_overlay_1|default_if_none:''}}</td>
-                  <td>{{row.mgmt_overlay_2|default_if_none:''}}</td>
+                  <td>{{row.outstanding_amount|default_if_none:''}}</td>
+                  <td>{{row.undrawn_upto_1_yr|default_if_none:''}}</td>
+                  <td>{{row.undrawn_greater_than_1_yr|default_if_none:''}}</td>
+                  <td>{{row.collateral_1_value|default_if_none:''}}</td>
+                  <td>{{row.collateral_1_rating|default_if_none:''}}</td>
+                  <td>{{row.collateral_1_residual_maturity|default_if_none:''}}</td>
+                  <td>{{row.collateral_2_value|default_if_none:''}}</td>
+                  <td>{{row.collateral_2_rating|default_if_none:''}}</td>
+                  <td>{{row.collateral_2_residual_maturity|default_if_none:''}}</td>
                   <td>{{row.created_on|default_if_none:''}}</td>
                   <td>{{row.edited_by|default_if_none:''}}</td>
                   <td>{{row.edited_on|default_if_none:''}}</td>
@@ -157,15 +169,15 @@
                       <button type="button" onclick="load_edit_data({{row.id}})" class="btn btn-icon btn-sm">
                         <i class="la la-pencil" aria-hidden="true" style="font-size: 25px;line-height: 30px;"></i>
                       </button>
-                      <button type="button" params="{% url 'delete_record' 'pd' row.id %}" class="btn btn-icon btn-sm" onclick="delete_single_record(this)">
+                      <button type="button" params="{% url 'delete_record' 'ead' row.id %}" class="btn btn-icon btn-sm" onclick="delete_single_record(this)">
                         <i class="la la-trash" aria-hidden="true" style="font-size: 25px;line-height: 30px; color:#FF0000;"></i>
                       </button>
                       {% if row.edited_by %}
-                        <button type="button" params="{% url 'move_to_final' 'pd' row.id %}" onclick="confirm_row_move(this)" class="btn btn-icon btn-sm" title="confirm">
+                        <button type="button" params="{% url 'move_to_final' 'ead' row.id %}" onclick="confirm_row_move(this)" class="btn btn-icon btn-sm" title="confirm">
                           <i class="la la-list-alt" aria-hidden="true" style="font-size: 25px;line-height: 30px;"></i>
                         </button>
                       {% else %}
-                        <a href="{% url 'move_to_final' 'pd' row.id %}" class="btn btn-icon btn-sm">
+                        <a href="{% url 'move_to_final' 'ead' row.id %}" class="btn btn-icon btn-sm">
                           <i class="la la-cloud-upload-alt" aria-hidden="true" style="font-size: 25px;line-height: 30px; color:#0c7cb3;"></i>
                         </a>
                       {% endif %}
@@ -198,7 +210,7 @@
         </div>
         <div class="modal-body">
             <div class="mb-3">
-              <label for="formFile" class="form-label">PD Input</label>
+              <label for="formFile" class="form-label">EAD Input</label>
               <input class="form-control" type="file" name="formFile">
             </div>
         </div>
@@ -240,50 +252,50 @@
             </div>
             <div class="col">
               <div class="form-group">
-                <label for="formFile" class="form-label">Default</label>
-                <input class="form-control" type="text" name="default_col" id="edit_default_col">
+                <label for="formFile" class="form-label">Outstanding Amount	</label>
+                <input class="form-control" type="text" name="outstanding_amount" id="edit_outstanding_amount">
               </div>
             </div>
           </div>
           <div class="row mb-3">
             <div class="col">
               <div class="form-group">
-                <label for="formFile" class="form-label">Factor 1</label>
-                <input class="form-control" type="text" name="factor_1" id="edit_factor_1">
+                <label for="formFile" class="form-label">Undrawn Upto 1 Yr	</label>
+                <input class="form-control" type="text" name="undrawn_upto_1_yr" id="edit_undrawn_upto_1_yr">
               </div>
             </div>
             <div class="col">
               <div class="form-group">
-                <label for="formFile" class="form-label">Factor 2</label>
-                <input class="form-control" type="text" name="factor_2" id="edit_factor_2">
-              </div>
-            </div>
-          </div>
-          <div class="row mb-3">
-            <div class="col">
-              <div class="form-group">
-                <label for="formFile" class="form-label">Factor 3</label>
-                <input class="form-control" type="text" name="factor_3" id="edit_factor_3">
-              </div>
-            </div>
-            <div class="col">
-              <div class="form-group">
-                <label for="formFile" class="form-label">Factor 4</label>
-                <input class="form-control" type="text" name="factor_4" id="edit_factor_4">
+                <label for="formFile" class="form-label">Undrawn > 1 Yr	</label>
+                <input class="form-control" type="text" name="undrawn_greater_than_1_yr" id="edit_undrawn_greater_than_1_yr">
               </div>
             </div>
           </div>
           <div class="row mb-3">
             <div class="col">
               <div class="form-group">
-                <label for="formFile" class="form-label">Factor 5</label>
-                <input class="form-control" type="text" name="factor_5" id="edit_factor_5">
+                <label for="formFile" class="form-label">Collateral Value 1</label>
+                <input class="form-control" type="text" name="collateral_1_value" id="edit_collateral_1_value">
               </div>
             </div>
             <div class="col">
               <div class="form-group">
-                <label for="formFile" class="form-label">Factor 6</label>
-                <input class="form-control" type="text" name="factor_6" id="edit_factor_6">
+                <label for="formFile" class="form-label">Collateral Rating 1</label>
+                <input class="form-control" type="text" name="collateral_1_rating" id="edit_collateral_1_rating">
+              </div>
+            </div>
+          </div>
+          <div class="row mb-3">
+            <div class="col">
+              <div class="form-group">
+                <label for="formFile" class="form-label">Collateral Residual Maturity 1</label>
+                <input class="form-control" type="text" name="collateral_1_residual_maturity" id="edit_collateral_1_residual_maturity">
+              </div>
+            </div>
+            <div class="col">
+              <div class="form-group">
+                <label for="formFile" class="form-label">Collateral Value 2	</label>
+                <input class="form-control" type="text" name="collateral_2_value" id="edit_collateral_2_value">
               </div>
             </div>
           </div>
@@ -291,14 +303,14 @@
           <div class="row mb-3">
             <div class="col">
               <div class="form-group">
-                <label for="formFile" class="form-label">Management Overlay 1</label>
-                <input class="form-control" type="text" name="mgmt_overlay_1" id="edit_mgmt_overlay_1">
+                <label for="formFile" class="form-label">Collateral Rating 2</label>
+                <input class="form-control" type="text" name="collateral_2_rating" id="edit_collateral_2_rating">
               </div>
             </div>
             <div class="col">
               <div class="form-group">
-                <label for="formFile" class="form-label">Management Overlay 2</label>
-                <input class="form-control" type="text" name="mgmt_overlay_2" id="edit_mgmt_overlay_2">
+                <label for="formFile" class="form-label">Collateral Residual Maturity 2</label>
+                <input class="form-control" type="text" name="collateral_2_residual_maturity" id="edit_collateral_2_residual_maturity">
               </div>
             </div>
           </div>
@@ -318,6 +330,8 @@
   var jsdata = {{items_list_json|safe}};
 
   var bg_data_url = '{% url "move_data_bg_process" "ead" %}';
+
+  var delete_selected_url = '{% url "delete_selected_records" "ead" %}'
 
 
 </script>

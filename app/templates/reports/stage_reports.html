@@ -1,7 +1,7 @@
 {% load custom_tags %}
 <div class="row" style="margin:20px 0px 0px; ">
   <div class="col-md-6 col-sm-12">
-    <h3 style="line-height: 40px;" class="main_heading">Process Management</h3>
+    <h3 style="line-height: 40px;" class="main_heading">Reports</h3>
   </div>
 </div>
 <hr style="margin-top:0px;" />
@@ -28,6 +28,9 @@
       </li>
       <li class="nav-item">
         <a class="nav-link" href="{% url 'show_reports' 'ecl' %}" id="tab_ecl">ECL</a>
+      </li>
+      <li class="nav-item">
+        <a class="nav-link" href="{% url 'show_reports' 'ead' %}" id="tab_ead">EAD</a>
       </li>
     </ul>
 
