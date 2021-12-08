@@ -49,8 +49,11 @@ urlpatterns += [
     path('admin/show_final_records/', decorators.admin_required(admin.show_final_records), name="show_final_records"),
     path('admin/show_final_records/<str:tab_status>/', decorators.admin_required(admin.show_final_records), name="show_final_records"),
     path('admin/download_missing_accounts_csv/', decorators.admin_required(admin.download_missing_accounts_csv), name="download_missing_accounts_csv"),
-    path('admin/delete_selected_records/<str:tab_status>/', decorators.admin_required(admin.delete_selected_records), name="delete_selected_records")
-
+    path('admin/delete_selected_records/<str:tab_status>/', decorators.admin_required(admin.delete_selected_records), name="delete_selected_records"),
+    path('admin/collateral_upload/', decorators.admin_required(admin.collateral_upload), name="collateral_upload"),
+    path('admin/get_collateral_data/<int:ins>/', decorators.admin_required(admin.get_collateral_data), name="get_collateral_data"),
+    path('admin/delete_single_collateral_data/', decorators.admin_required(admin.delete_single_collateral_data), name="delete_single_collateral_data"),
+    path('admin/delete_all_collaterals/', decorators.admin_required(admin.delete_all_collaterals), name="delete_all_collaterals"),
 ]
 
 # Output & Reports
@@ -59,6 +62,8 @@ urlpatterns += [
     path('admin/show_final/<str:tab_status>/', decorators.admin_required(admin.show_final_records), name="show_final_records"),
     path('admin/show_reports/', decorators.admin_required(admin.show_reports), name='show_reports'),
     path('admin/show_reports/<str:tab_status>/', decorators.admin_required(admin.show_reports), name='show_reports'),
+    path('admin/delete_final_records/<str:tab_status>/', decorators.admin_required(admin.delete_final_records), name="delete_final_records"),
+    path('admin/delete_report_records/<str:tab_status>/', decorators.admin_required(admin.delete_report_records), name="delete_report_records"),
 ]
 
 # Process Management
@@ -69,8 +74,11 @@ urlpatterns += [
 #Background tasks
 urlpatterns += [
     path('admin/run_pd_report/', decorators.admin_required(admin.pd_report), name='pd_report'),
+    path('admin/run_pd_report/<int:s_type>/', decorators.admin_required(admin.pd_report), name='pd_report'),
     path('admin/run_lgd_report/', decorators.admin_required(admin.lgd_report), name='lgd_report'),
+    path('admin/run_lgd_report/<int:s_type>/', decorators.admin_required(admin.lgd_report), name='lgd_report'),
     path('admin/run_stage_report/', decorators.admin_required(admin.stage_report), name='stage_report'),
+    path('admin/run_stage_report/<int:s_type>/', decorators.admin_required(admin.stage_report), name='stage_report'),
 ]
 
 

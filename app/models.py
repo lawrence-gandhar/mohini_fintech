@@ -1,6 +1,6 @@
 from django.db import models
 from django.contrib.auth.models import User
-from django.db.models.signals import pre_delete
+from django.db.models.signals import pre_delete, post_save
 from django.dispatch import receiver
 from django.core.exceptions import ObjectDoesNotExist, MultipleObjectsReturned
 
@@ -23,11 +23,10 @@ class New_User(models.Model):
 # ACCOUNT MASTER
 #==================================================================================
 class AccountMaster(models.Model):
-    date = models.DateField(auto_now_add=False, null=True, blank=True, db_index=True)
     cin = models.CharField(blank=True, null=True, max_length=255, db_index=True)
     account_no = models.CharField(blank=False, null=False, max_length=255, db_index=True, unique=True)
     account_type = models.CharField(blank=True, null=True, max_length=255, db_index=True)
-    product_name = models.CharField(blank=True, null=True, max_length=255, db_index=True)
+    account_status = models.BooleanField(default=True, null=True, db_index=True)
     sectors = models.CharField(blank=True, null=True, max_length=255, db_index=True)
     customer_name = models.CharField(blank=True, null=True, max_length=255, db_index=True)
     contact_no = models.CharField(blank=True, null=True, max_length=255, db_index=True)
@@ -110,10 +109,6 @@ class PD_Final(models.Model):
 class PD_Report(models.Model):
     date = models.DateField(auto_now_add=False, null=True, blank=True,)
     account_no = models.ForeignKey(AccountMaster, on_delete=models.CASCADE, null=True, blank=True, db_index=True)
-    account_type = models.CharField(blank=True, null=True, max_length=255, db_index=True)
-    cin = models.CharField(blank=True, null=True, max_length=255, db_index=True)
-    product_name = models.CharField(blank=True, null=True, max_length=255, db_index=True)
-    sectors = models.CharField(blank=True, null=True, max_length=255, db_index=True)
     factor_1 = models.CharField(blank=True, null=True, max_length=255, db_index=True)
     factor_2 = models.CharField(blank=True, null=True, max_length=255, db_index=True)
     factor_3 = models.CharField(blank=True, null=True, max_length=255, db_index=True)
@@ -201,10 +196,6 @@ class LGD_Final(models.Model):
 class LGD_Report(models.Model):
     date = models.DateField(auto_now_add=False, null=True, blank=True,)
     account_no = models.ForeignKey(AccountMaster, on_delete=models.SET_NULL, null=True, blank=True, db_index=True)
-    account_type = models.CharField(blank=True, null=True, max_length=255, db_index=True)
-    cin = models.CharField(blank=True, null=True, max_length=255, db_index=True)
-    product_name = models.CharField(blank=True, null=True, max_length=255, db_index=True)
-    sectors = models.CharField(blank=True, null=True, max_length=255, db_index=True)
     ead_os = models.CharField(blank=True, null=True, max_length=255, db_index=True)
     pv_cashflows = models.CharField(blank=True, null=True, max_length=255, db_index=True)
     pv_cost = models.CharField(blank=True, null=True, max_length=255, db_index=True)
@@ -328,12 +319,7 @@ class Stage_Final(models.Model):
 class Stage_Report(models.Model):
     date = models.DateField(auto_now_add=False, null=True, blank=True,)
     account_no = models.ForeignKey(AccountMaster, on_delete=models.SET_NULL, null=True, blank=True, db_index=True)
-    account_type = models.CharField(blank=True, null=True, max_length=255, db_index=True)
-    cin = models.CharField(blank=True, null=True, max_length=255, db_index=True)
-    sectors = models.CharField(blank=True, null=True, max_length=255, db_index=True)
-    product_name = models.CharField(blank=True, null=True, max_length=255, db_index=True)
     stage = models.CharField(blank=True, null=True, max_length=255, db_index=True)
-    state = models.CharField(blank=True, null=True, max_length=255, db_index=True)
     old_rating = models.CharField(blank=True, null=True, max_length=255, db_index=True)
     new_rating = models.CharField(blank=True, null=True, max_length=255, db_index=True)
     rating_3 = models.CharField(blank=True, null=True, max_length=255, db_index=True)
@@ -433,10 +419,6 @@ class EIR_Final(models.Model):
 class EIR_Reports(models.Model):
     date = models.DateField(auto_now_add=False, null=True, blank=True,)
     account_no = models.ForeignKey(AccountMaster, on_delete=models.SET_NULL, null=True, blank=True, db_index=True)
-    account_type = models.CharField(blank=True, null=True, max_length=255, db_index=True)
-    cin = models.CharField(blank=True, null=True, max_length=255, db_index=True)
-    sectors = models.CharField(blank=True, null=True, max_length=255, db_index=True)
-    product_name = models.CharField(blank=True, null=True, max_length=255, db_index=True)
     period = models.CharField(blank=True, null=True, max_length=255, db_index=True)
     loan_availed = models.CharField(blank=True, null=True, max_length=255, db_index=True)
     cost_avail = models.CharField(blank=True, null=True, max_length=255, db_index=True)
@@ -501,9 +483,6 @@ class DB_Mange(models.Model):
 # PRODUCT MASTER
 #==================================================================================
 class Basel_Product_Master(models.Model):
-    date = models.DateField(auto_now_add=False, null=True, blank=True, db_index=True)
-    account_no = models.ForeignKey(AccountMaster, on_delete=models.SET_NULL, null=True, blank=True, db_index=True)
-    account_no_temp = models.CharField(blank=True, null=True, max_length=255, db_index=True)
     product_name = models.CharField(blank=True, null=True, max_length=255, db_index=True)
     product_code = models.CharField(blank=True, null=True, max_length=255, db_index=True)
     product_catgory = models.CharField(blank=True, null=True, max_length=255, db_index=True)
@@ -518,10 +497,6 @@ class Basel_Product_Master(models.Model):
 # BASEL COLLATERAL
 #==================================================================================
 class Basel_Collateral_Master(models.Model):
-    date = models.DateField(auto_now_add=False, null=True, blank=True, db_index=True)
-    account_no = models.ForeignKey(AccountMaster, on_delete=models.SET_NULL, null=True, blank=True, db_index=True)
-    account_no_temp = models.CharField(blank=True, null=True, max_length=255, db_index=True)
-    product_name = models.CharField(blank=True, null=True, max_length=255, db_index=True)
     collateral_code = models.CharField(blank=True, null=True, max_length=255, db_index=True)
     collateral_type = models.CharField(blank=True, null=True, max_length=255, db_index=True)
     issuer_type = models.CharField(blank=True, null=True, max_length=255, db_index=True)
@@ -541,8 +516,9 @@ class Basel_Collateral_Master(models.Model):
 # PRODUCT MASTER
 #==================================================================================
 class Collateral(models.Model):
-    account_no = models.ForeignKey(AccountMaster, on_delete=models.SET_NULL, null=True, blank=True, db_index=True)
-    collateral_code = models.CharField(blank=True, null=True, max_length=255, db_index=True)
+    account_no = models.ForeignKey(AccountMaster, on_delete=models.CASCADE, null=True, blank=True, db_index=True)
+    collateral_code = models.ForeignKey(Basel_Collateral_Master, on_delete=models.CASCADE, null=True, blank=True, db_index=True)
+    product = models.ForeignKey(Basel_Product_Master, on_delete=models.CASCADE, null=True, blank=True, db_index=True)
 
 
 #==================================================================================
@@ -681,3 +657,38 @@ def replace_account_nos(sender, instance, **kwargs):
     #
     # Update EAD INITIAL
     EAD_Initial.objects.filter(account_no = instance).update(account_no_temp = instance.account_no, account_no = None)
+
+
+#==================================================================================
+# POST SAVE FOR ACCOUNT NUMBERS FROM INITIAL TABLES
+#==================================================================================
+@receiver(post_save, sender=AccountMaster)
+def replace_account_nos(sender, instance, **kwargs):
+    try:
+        AccountMissing.objects.get(account_no = instance.account_no).delete()
+    except:
+        pass
+
+    #
+    # Update PD INITIAL
+    PD_Initial.objects.filter(account_no_temp = instance.account_no).update(account_no_temp = None, account_no = instance)
+
+    #
+    # Update LGD INITIAL
+    LGD_Initial.objects.filter(account_no_temp = instance.account_no).update(account_no_temp = None, account_no = instance)
+
+    #
+    # Update Stage INITIAL
+    Stage_Initial.objects.filter(account_no_temp = instance.account_no).update(account_no_temp = None, account_no = instance)
+
+    #
+    # Update EIR INITIAL
+    EIR_Initial.objects.filter(account_no_temp = instance.account_no).update(account_no_temp = None, account_no = instance)
+
+    #
+    # Update ECL INITIAL
+    #ECL_Initial.objects.filter(account_no = instance).update(account_no_temp = instance.account_no, account_no = None)
+
+    #
+    # Update EAD INITIAL
+    EAD_Initial.objects.filter(account_no_temp = instance.account_no).update(account_no_temp = None, account_no = instance)

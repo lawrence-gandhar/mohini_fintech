@@ -1,10 +1,9 @@
 $(document).ready(function(){
 
+  console.log(1);
+
   $(".nav-tabs a").removeClass("active");
   $(".tab-pane").removeClass("active");
-
-  console.log("error");
-  console.log(status);
 
   if(status == 1){
     $("#tab_master").addClass("active");
@@ -66,7 +65,50 @@ function delete_selected_records(){
         });
       }
     }
+  }
+}
 
+//
+//
+//
+
+function delete_final_selected_records(){
+
+  var r = confirm("Do you really want to delete the selected records?");
+  if (r == true) {
+    if($(".checkbox_one:checked").length > 0){
+      formdata = $("#move_all_to_final").serialize();
+      $.post(delete_selected_url, formdata, function(data){
+        location.reload();
+      });
+    }else{
+      var r1 = confirm("No records are selected. Do you want to continue? This will delete all the records");
+      if (r1 == true) {
+        $.get(delete_selected_url, function(data){
+          location.reload();
+        });
+      }
+    }
+  }
+}
+
+function delete_report_selected_records(){
+
+  var r = confirm("Do you really want to delete the selected records?");
+  if (r == true) {
+    if($(".checkbox_one:checked").length > 0){
+      formdata = $("#move_all_to_final").serialize();
+      $.post(delete_selected_url, formdata, function(data){
+        location.reload();
+      });
+    }else{
+      var r1 = confirm("No records are selected. Do you want to continue? This will delete all the records");
+      if (r1 == true) {
+        $.get(delete_selected_url, function(data){
+          location.reload();
+        });
+      }
+    }
   }
 }
 
@@ -96,6 +138,24 @@ function load_edit_data(id){
 
   $("#edit_id").val(id);
   $("#edit_date").val(jsdata[id]["date"]);
+
+  if(status == 1){
+    $("#edit_cin").val(jsdata[id]["cin"]);
+    $("#edit_account_no").val(jsdata[id]["account_no"]);
+
+    if(jsdata[id]["account_status"]) $("#edit_account_status").val(1);
+    else $("#edit_account_status").val(0);
+
+    $("#edit_account_type").val(jsdata[id]["account_type"]);
+    $("#edit_sectors").val(jsdata[id]["sectors"]);
+    $("#edit_customer_name").val(jsdata[id]["customer_name"]);
+    $("#edit_contact_no").val(jsdata[id]["contact_no"]);
+    $("#edit_email").val(jsdata[id]["email"]);
+    $("#edit_pan").val(jsdata[id]["pan"]);
+    $("#edit_aadhar_no").val(jsdata[id]["aadhar_no"]);
+    $("#edit_customer_addr").val(jsdata[id]["customer_addr"]);
+    $("#edit_pin").val(jsdata[id]["pin"]);
+  }
 
   if(status == 2){
     $("#edit_default_col").val(jsdata[id]["default_col"]);
@@ -266,13 +326,28 @@ function move_data_bg_process(){
 
 
   }, 2000);
-
-
-
-
 }
 
+//
+//
+//
 
+function run_report(){
 
+  console.log("start");
 
-console.log("dkhsk error");
+  var account_no = $("#report_account_no").val();
+  var start_date = $("#report_start_date").val();
+  var end_date = $("#report_end_date").val();
+
+  if(account_no.trim() !="" || start_date.trim() !="" || end_date.trim() !=""){
+    $("form#run_report_form").submit();
+  }else{
+    if($('.checkbox_one:checked').length >= 1){
+      $("form#move_all_to_final").submit();
+    }else{
+      $("form#run_report_form").submit();
+    }
+  }
+
+}

@@ -4,10 +4,10 @@
   </div>
   <div class="col-md-6 col-sm-12 heading_buttons_container">
       <div class="btn-group" role="group" aria-label="Basic example">
-        <button type="button" class="btn btn-default btn-sm" style="width:100px; color:#000000;" onclick="return false">
+        <button type="button" class="btn btn-default btn-sm" style="width:100px; color:#000000;" onclick="accept_new_users()">
           <i class="la la-check" aria-hidden="true"></i> <strong>Accept</strong>
         </button>
-        <button type="button" class="btn btn-default btn-sm" style="width:100px; color:#000000;" onclick="return false">
+        <button type="button" class="btn btn-default btn-sm" style="width:100px; color:#000000;" onclick="reject_new_users()">
           <i class="la la-times" aria-hidden="true"></i> <strong>Reject</strong>
         </button>
         <button type="button" class="btn btn-default btn-sm" style="width:100px; color:#000000;" onclick="delete_selected_users()">
@@ -73,4 +73,68 @@
 
 
 <script>
+
+$(document).ready(function(){});
+
+//
+//
+//
+
+function accept_new_users(){
+  $("form#manage_new_users_form").attr("action","#");
+
+  if($(".checkbox_one:checked").length == 0){
+    var r = confirm("No records are selected. Do you really want to proceed. This will process all the records");
+    if(r == true){
+      $("form#manage_new_users_form").attr("action", "{% url 'accept_new_users' %}").submit();
+    }
+  }else{
+    var r = confirm("Do you really want to process all the selected records?");
+    if(r == true){
+      $("form#manage_new_users_form").attr("action", "{% url 'accept_new_users' %}").submit();
+    }
+  }
+}
+
+
+//
+//
+//
+
+function reject_new_users(){
+  $("form#manage_new_users_form").attr("action","#");
+
+  if($(".checkbox_one:checked").length == 0){
+    var r = confirm("No records are selected. Do you really want to proceed. This will process all the records");
+    if(r == true){
+      $("form#manage_new_users_form").attr("action", "{% url 'reject_new_users' %}").submit();
+    }
+  }else{
+    var r = confirm("Do you really want to process all the selected records?");
+    if(r == true){
+      $("form#manage_new_users_form").attr("action", "{% url 'reject_new_users' %}").submit();
+    }
+  }
+}
+
+//
+//
+//
+
+function delete_selected_users(){
+  $("form#manage_new_users_form").attr("action","#");
+
+  if($(".checkbox_one:checked").length == 0){
+    var r = confirm("No records are selected. Do you really want to proceed. This will process all the records");
+    if(r == true){
+      $("form#manage_new_users_form").attr("action", "{% url 'delete_new_users' %}").submit();
+    }
+  }else{
+    var r = confirm("Do you really want to process all the selected records?");
+    if(r == true){
+      $("form#manage_new_users_form").attr("action", "{% url 'delete_new_users' %}").submit();
+    }
+  }
+}
+
 </script>

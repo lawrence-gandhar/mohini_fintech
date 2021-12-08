@@ -14,7 +14,7 @@
 
   {% for message in messages %}
     {% if message.tags == 'success' %}
-      <div class="alert bg-green-alert d-flex align-items-center alert-dismissible fade show" role="alert" style="margin-top: 10px; margin-bottom: 20px;">
+      <div class="alert bg-green-alert d-flex align-items-center alert-dismissible fade show" role="alert" style="margin-top: 10px; margin-bottom: 20px; font-size:13px;">
         <svg class="bi flex-shrink-0 me-2" width="24" height="24" role="img" aria-label="Success:">
           <use xlink:href="#check-circle-fill"/>
         </svg>
@@ -23,7 +23,7 @@
       </div>
     {% endif %}
     {% if message.tags == 'info' %}
-      <div class="alert bg-blue-alert d-flex align-items-center alert-dismissible fade show" role="alert" style="margin-top: 10px; margin-bottom: 20px;">
+      <div class="alert bg-blue-alert d-flex align-items-center alert-dismissible fade show" role="alert" style="margin-top: 10px; margin-bottom: 20px; font-size:13px;">
         <svg class="bi flex-shrink-0 me-2" width="24" height="24" role="img" aria-label="Success:">
           <use xlink:href="#info-fill"/>
         </svg>
@@ -32,13 +32,13 @@
       </div>
     {% endif %}
     {% if message.tags == 'error' %}
-      <div class="alert bg-red-alert d-flex align-items-center alert-dismissible fade show" role="alert" style="margin-top: 10px; margin-bottom: 20px;">
+      <div class="alert bg-red-alert d-flex align-items-center alert-dismissible fade show" role="alert" style="margin-top: 10px; margin-bottom: 20px; font-size:13px;">
         <div class="col">{{message|safe}}</div>
         <button type="button" class="btn-close" data-bs-dismiss="alert" aria-label="Close"></button>
       </div>
     {% endif %}
     {% if message.tags == 'warning' %}
-      <div class="alert bg-orange-alert d-flex align-items-center alert-dismissible fade show" role="alert" style="margin-top: 10px; margin-bottom: 20px;">
+      <div class="alert bg-orange-alert d-flex align-items-center alert-dismissible fade show" role="alert" style="margin-top: 10px; margin-bottom: 20px; font-size:13px;">
         <svg class="bi flex-shrink-0 me-2" width="24" height="24" role="img" aria-label="Success:">
           <use xlink:href="#exclamation-triangle-fill"/>
         </svg>

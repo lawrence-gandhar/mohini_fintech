@@ -31,8 +31,8 @@
             </li>
           </ul>
         </div>
-        <a href="{% url 'lgd_report' %}" class="btn btn-default btn-sm" style="color:#000000;">
-          <i class="la la-sync"></i> <strong>Run PD Reports</strong>
+        <a href="{% url 'lgd_report' 1 %}" class="btn btn-default btn-sm" style="color:#000000;">
+          <i class="la la-sync"></i> <strong>Run LGD Reports</strong>
         </a>
       </div>
   </div>
@@ -221,7 +221,7 @@
         <div class="modal-body">
             <div class="mb-3">
               <label for="formFile" class="form-label">LGD Input</label>
-              <input class="form-control" type="file" name="formFile">
+              <input class="form-control" type="file" name="formFile" required>
             </div>
         </div>
         <div class="modal-footer">

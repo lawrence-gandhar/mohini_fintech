@@ -17,11 +17,16 @@ from .models import EAD_Final
 from .models import EAD_Initial
 from .models import Basel_Product_Master
 from .models import Basel_Collateral_Master
+from .models import PD_Report
+from .models import LGD_Report
+from .models import Stage_Report
+from .models import EAD_Report
+from .models import EIR_Reports
 
 #
 # CSV & FIELD HEADERS
 
-ACCOUNT_MASTER_COLS = ['date', 'cin', 'account_no', 'account_type', 'product_name', 'sectors', 'customer_name', 'contact_no', 'email', 'pan', 'aadhar_no', 'customer_addr', 'pin']
+ACCOUNT_MASTER_COLS = ['cin', 'account_no', 'account_type', 'account_status', 'sectors', 'customer_name', 'contact_no', 'email', 'pan', 'aadhar_no', 'customer_addr', 'pin']
 
 PD_INITIAL_COLS = ['date', 'account_no', 'factor_1', 'factor_2', 'factor_3', 'factor_4', 'factor_5', 'factor_6', 'default_col', 'mgmt_overlay_1', 'mgmt_overlay_2']
 
@@ -35,9 +40,9 @@ ECL_COLS = []
 
 EAD_COLS = ['date', 'account_no', 'outstanding_amount', 'undrawn_upto_1_yr', 'undrawn_greater_than_1_yr', 'collateral_1_value', 'collateral_1_rating', 'collateral_1_residual_maturity', 'collateral_2_value', 'collateral_2_rating', 'collateral_2_residual_maturity']
 
-BASEL_PRODUCT_COLS = ['date', 'account_no', 'product_name', 'product_code', 'product_catgory', 'basel_product', 'basel_product_code', 'drawn_cff', 'cff_upto_1_yr', 'cff_gt_1_yr']
+BASEL_PRODUCT_COLS = ['product_name', 'product_code', 'product_catgory', 'basel_product', 'basel_product_code', 'drawn_cff', 'cff_upto_1_yr', 'cff_gt_1_yr']
 
-BASEL_COLLATERAL_COLS = ['date', 'account_no', 'product_name', 'collateral_code', 'collateral_type', 'issuer_type', 'collateral_eligibity', 'rating_available', 'collateral_rating', 'residual_maturity', 'basel_collateral_type', 'basel_collateral_subtype', 'basel_collateral_code', 'basel_collateral_rating', 'soverign_issuer', 'other_issuer']
+BASEL_COLLATERAL_COLS = ['collateral_code', 'collateral_type', 'issuer_type', 'collateral_eligibity', 'rating_available', 'collateral_rating', 'residual_maturity', 'basel_collateral_type', 'basel_collateral_subtype', 'basel_collateral_code', 'basel_collateral_rating', 'soverign_issuer', 'other_issuer']
 
 
 #
@@ -52,7 +57,8 @@ TAB_ACTIVE = {
         None,
         None,
         None,
-        None
+        None,
+        None,
     ],
     "pd": [
         2,
@@ -64,6 +70,7 @@ TAB_ACTIVE = {
         "app_pd_final",
         "output/manage_pd_output.html",
         "reports/pd_reports.html",
+        PD_Report.objects,
     ],
     "lgd": [
         3,
@@ -75,6 +82,7 @@ TAB_ACTIVE = {
         "app_lgd_final",
         "output/manage_lgd_output.html",
         "reports/lgd_reports.html",
+        LGD_Report.objects,
     ],
     "stage": [
         4,
@@ -86,6 +94,7 @@ TAB_ACTIVE = {
         "app_stage_final",
         "output/manage_stage_output.html",
         "reports/stage_reports.html",
+        Stage_Report.objects,
     ],
     "eir": [
         5,
@@ -95,7 +104,9 @@ TAB_ACTIVE = {
         EIR_Final.objects,
         "app_lgd_initial",
         "app_lgd_initial",
-        None
+        None,
+        None,
+        EIR_Reports.objects,
     ],
     "ecl": [
         6,
@@ -105,7 +116,9 @@ TAB_ACTIVE = {
         EIR_Initial.objects,
         "app_pd_initial",
         "app_pd_final",
-        None
+        None,
+        None,
+        None,
     ],
     "ead": [
         7,
@@ -117,6 +130,7 @@ TAB_ACTIVE = {
         "app_ead_final",
         "output/manage_ead_output.html",
         "reports/ead_reports.html",
+        EAD_Report.objects,
     ],
     "product": [
         8,
@@ -128,12 +142,14 @@ TAB_ACTIVE = {
         None,
         None,
         None,
+        None,
     ],
     "collateral": [
         9,
         "imports/manage_imports_collateral.html",
         BASEL_COLLATERAL_COLS,
         Basel_Collateral_Master.objects,
+        None,
         None,
         None,
         None,

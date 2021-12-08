@@ -24,13 +24,13 @@
 
     <ul class="nav nav-tabs" role="tablist">
       <li class="nav-item">
-        <a class="nav-link active" href="{% url 'manage_imports' 'master' %}" id="tab_master">Master</a>
+        <a class="nav-link" href="{% url 'manage_imports' 'master' %}" id="tab_master">Master</a>
       </li>
       <li class="nav-item">
-        <a class="nav-link active" href="{% url 'manage_imports' 'product' %}" id="tab_product">Basel Product</a>
+        <a class="nav-link" href="{% url 'manage_imports' 'product' %}" id="tab_product">Basel Product</a>
       </li>
       <li class="nav-item">
-        <a class="nav-link" href="{% url 'manage_imports' 'collateral' %}" id="tab_collateral">Basel Collateral</a>
+        <a class="nav-link active" href="{% url 'manage_imports' 'collateral' %}" id="tab_collateral">Basel Collateral</a>
       </li>
       <li class="nav-item">
         <a class="nav-link" href="{% url 'manage_imports' 'pd' %}" id="tab_pd">PD</a>
@@ -56,23 +56,12 @@
     <div class="tab-content" style="padding:10px 0px;">
       <div class="table-responsive">
         <form method="post" action="">
+          {% csrf_token %}
           <table class="table table-bordered" style="background-color: #dee2e6;">
             <tr>
-              <td style="font-size:13px;line-height: 38px; text-align:right; font-weight:bold;">Account No</td>
+              <td style="font-size:13px;line-height: 38px; text-align:right; font-weight:bold;">Collateral Code / Basel Collateral Code</td>
               <td style="line-height: 38px;">
-                <input type="text" name="account_no" class="form-control">
-              </td>
-              <td style="font-size:13px;line-height: 38px; text-align:right; font-weight:bold;">Edited</td>
-              <td style="line-height: 38px;">
-                <input type="checkbox" name="edited">
-              </td>
-              <td style="font-size:13px;line-height: 38px; text-align:right; font-weight:bold;">Start Date</td>
-              <td>
-                <input type="date" name="start_date" class="form-control">
-              </td>
-              <td style="font-size:13px;line-height: 38px; text-align:right; font-weight:bold;">End Date</td>
-              <td>
-                <input type="date" name="end_date" class="form-control">
+                <input type="text" name="collateral_code" class="form-control">
               </td>
               <td>
                 <input type="submit" value="Quick Search" name="submit" class="btn btn-primary">
@@ -88,13 +77,10 @@
         <table class="table table-bordered">
           <thead class="text-center" style="background-color:#ddd; font-size:13px; white-space: nowrap;">
             <th><input type="checkbox" class="checkbox_all"></th>
-            <th>Date</th>
-            <th>Account No.</th>
-            <th>Product Name</th>
             <th>Collateral Code</th>
             <th>Collateral Type</th>
             <th>Issuer Type</th>
-            <th>Collateral Eligibity</th>
+            <th>Collateral Eligibility</th>
             <th>Rating Available</th>
             <th>Collateral Rating</th>
             <th>Residual Maturity</th>
@@ -102,7 +88,7 @@
             <th>Basel Collateral Subtype</th>
             <th>Basel Collateral Code</th>
             <th>Basel Collateral Rating</th>
-            <th>Soverign Issuer</th>
+            <th>Sovereign Issuer</th>
             <th>Other Issuer</th>
             <th>Action</th>
           </thead>
@@ -112,9 +98,6 @@
                 <td class="text-center">
                   <input type="checkbox" value="{{row.id}}" class="checkbox_one" name="checkbox_one">
                 </td>
-                <td>{{row.date|default_if_none:''}}</td>
-                <td>{{row.account_no|default_if_none:''}}</td>
-                <td>{{row.product_name|default_if_none:''}}</td>
                 <td>{{row.collateral_code|default_if_none:''}}</td>
                 <td>{{row.collateral_type|default_if_none:''}}</td>
                 <td>{{row.issuer_type|default_if_none:''}}</td>
@@ -130,12 +113,12 @@
                 <td>{{row.other_issuer|default_if_none:''}}</td>
                 <td class="text-center p-0">
                   <div class="btn-group" role="group" aria-label="Basic example">
-                    <button type="button" onclick="load_edit_data({{row.id}})" class="btn btn-icon btn-sm" data-toggle="modal" data-target="#EditUserModalForm">
+                    <button type="button" onclick="load_edit_data({{row.id}})" class="btn btn-icon btn-sm">
                       <i class="la la-pencil" aria-hidden="true" style="font-size: 25px;line-height: 30px;"></i>
                     </button>
-                    <a href="{% url 'delete_record' 'master' row.id %}" class="btn btn-icon btn-sm">
+                    <button type="button" params="{% url 'delete_record' 'collateral' row.id %}" class="btn btn-icon btn-sm" onclick="delete_single_record(this)">
                       <i class="la la-trash" aria-hidden="true" style="font-size: 25px;line-height: 30px; color:#FF0000;"></i>
-                    </a>
+                    </button>
                   </div>
                 </td>
               </tr>
@@ -144,8 +127,6 @@
         </table>
         </form>
       </div>
-
-
     </div>
 
     <!-- Tab panes end -->
@@ -194,28 +175,6 @@
           <div class="row mb-3">
             <div class="col">
               <div class="form-group">
-                <label for="formFile" class="form-label">Account no.</label>
-                <input class="form-control" type="text" name="account_no" id="edit_account_no">
-              </div>
-            </div>
-          </div>
-          <div class="row mb-3">
-            <div class="col">
-              <div class="form-group">
-                <label for="formFile" class="form-label">Date</label>
-                <input class="form-control" type="date" name="date" id="edit_date">
-              </div>
-            </div>
-            <div class="col">
-              <div class="form-group">
-                <label for="formFile" class="form-label">Product Name</label>
-                <input class="form-control" type="text" name="product_name" id="edit_product_name">
-              </div>
-            </div>
-          </div>
-          <div class="row mb-3">
-            <div class="col">
-              <div class="form-group">
                 <label for="formFile" class="form-label">Collateral Code</label>
                 <input class="form-control" type="text" name="collateral_code" id="edit_collateral_code">
               </div>
@@ -236,7 +195,7 @@
             </div>
             <div class="col">
               <div class="form-group">
-                <label for="formFile" class="form-label">Collateral Eligibity</label>
+                <label for="formFile" class="form-label">Collateral Eligibility</label>
                 <input class="form-control" type="text" name="collateral_eligibity" id="edit_collateral_eligibity">
               </div>
             </div>
@@ -295,7 +254,7 @@
             </div>
             <div class="col">
               <div class="form-group">
-                <label for="formFile" class="form-label">Soverign Issuer</label>
+                <label for="formFile" class="form-label">Sovereign Issuer</label>
                 <input class="form-control" type="text" name="soverign_issuer" id="edit_soverign_issuer">
               </div>
             </div>

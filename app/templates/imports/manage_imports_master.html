@@ -13,17 +13,20 @@
         <a href="{% url 'download_missing_accounts_csv' %}" class="btn btn-default btn-sm" style= color:#000000;" download>
           <i class="la la-download"></i> <strong>Missing Account No.</strong>
         </a>
+        <button type="button" class="btn btn-default btn-sm" style="color:#000000;" onclick="show_modal('#uploaderCollateralModal')">
+          <i class="la la-upload"></i> <strong>Upload Collaterals</strong>
+        </button>
       </div>
   </div>
 </div>
 <hr style="margin-top:0px;" />
 
+{% include 'base/alert_components.html' %}
+
 <div class="row">
   <!-- Nav Tabs Start -->
 
   <div class="col-sm-12">
-
-    {% include 'base/alert_components.html' %}
 
     <ul class="nav nav-tabs" role="tablist">
       <li class="nav-item">
@@ -59,23 +62,12 @@
     <div class="tab-content" style="padding:10px 0px;">
       <div class="table-responsive">
         <form method="post" action="">
+          {% csrf_token %}
           <table class="table table-bordered" style="background-color: #dee2e6;">
             <tr>
-              <td style="font-size:13px;line-height: 38px; text-align:right; font-weight:bold;">Account No</td>
+              <td style="font-size:13px;line-height: 38px; text-align:right; font-weight:bold;">Account No / Customer Name</td>
               <td style="line-height: 38px;">
-                <input type="text" name="account_no" class="form-control">
-              </td>
-              <td style="font-size:13px;line-height: 38px; text-align:right; font-weight:bold;">Edited</td>
-              <td style="line-height: 38px;">
-                <input type="checkbox" name="edited">
-              </td>
-              <td style="font-size:13px;line-height: 38px; text-align:right; font-weight:bold;">Start Date</td>
-              <td>
-                <input type="date" name="start_date" class="form-control">
-              </td>
-              <td style="font-size:13px;line-height: 38px; text-align:right; font-weight:bold;">End Date</td>
-              <td>
-                <input type="date" name="end_date" class="form-control">
+                <input type="text" name="account_no" class="form-control" required>
               </td>
               <td>
                 <input type="submit" value="Quick Search" name="submit" class="btn btn-primary">
@@ -91,11 +83,10 @@
         <table class="table table-bordered">
           <thead class="text-center" style="background-color:#ddd; font-size:13px; white-space: nowrap;">
             <th><input type="checkbox" class="checkbox_all"></th>
-            <th>Date</th>
             <th>Account No.</th>
             <th>Account Type</th>
+            <th>Status</th>
             <th>CIN</th>
-            <th>Product Name</th>
             <th>Sectors</th>
             <th>Customer Name</th>
             <th>Contact No.</th>
@@ -113,11 +104,10 @@
                 <td class="text-center">
                   <input type="checkbox" value="{{row.id}}" class="checkbox_one" name="checkbox_one">
                 </td>
-                <td>{{row.date|default_if_none:''}}</td>
                 <td>{{row.account_no|default_if_none:''}}</td>
                 <td>{{row.account_type|default_if_none:''}}</td>
+                <td>{% if row.account_status == 1 %} Active {% else %}In-Active{% endif %}</td>
                 <td>{{row.cin|default_if_none:''}}</td>
-                <td>{{row.product_name|default_if_none:''}}</td>
                 <td>{{row.sectors|default_if_none:''}}</td>
                 <td>{{row.customer_name|default_if_none:''}}</td>
                 <td>{{row.contact_no|default_if_none:''}}</td>
@@ -129,13 +119,22 @@
                 <td>{{row.created_on|default_if_none:''}}</td>
                 <td class="text-center p-0">
                   <div class="btn-group" role="group" aria-label="Basic example">
-                    <button type="button" onclick="load_edit_data({{row.id}})" class="btn btn-icon btn-sm" data-toggle="modal" data-target="#EditUserModalForm">
+                    <button type="button" class="btn btn-icon btn-sm" params="0" id="button-{{row.id}}" onclick="get_collateral_data('{% url 'get_collateral_data' row.id %}', {{row.id}})">
+                      <i class="la la-database" aria-hidden="true" style="font-size: 25px;line-height: 30px;"></i>
+                    </button>
+                    <button type="button" onclick="load_edit_data({{row.id}})" class="btn btn-icon btn-sm">
                       <i class="la la-pencil" aria-hidden="true" style="font-size: 25px;line-height: 30px;"></i>
                     </button>
-                    <a href="{% url 'delete_record' 'master' row.id %}" class="btn btn-icon btn-sm">
+                    <button type="button" params="{% url 'delete_record' 'master' row.id %}" class="btn btn-icon btn-sm" onclick="delete_single_record(this)">
                       <i class="la la-trash" aria-hidden="true" style="font-size: 25px;line-height: 30px; color:#FF0000;"></i>
-                    </a>
+                    </button>
                   </div>
+                </td>
+              </tr>
+              <tr id="tr-{{row.id}}" class="data-trs" style="display:none; background-color:#dee2e6;">
+                <td></td>
+                <td class="data-td" colspan="20">
+
                 </td>
               </tr>
             {% endfor %}
@@ -178,9 +177,262 @@
   </div>
 </div>
 
+
+
+<!-- Upload Collaterals -->
+<div class="modal fade" id="uploaderCollateralModal" tabindex="-1" role="dialog">
+  <div class="modal-dialog">
+    <div class="modal-content">
+      <form method="post" action="{% url 'collateral_upload' %}" enctype="multipart/form-data">
+        {% csrf_token %}
+        <input type="hidden" value="{{tab_status}}" name="import_type">
+        <div class="modal-header text-white">
+          <h5 class="modal-title" id="exampleModalLabel">Upload Account-Product-Collateral CSV File</h5>
+        </div>
+        <div class="modal-body">
+            <div class="mb-3">
+              <label for="formFile" class="form-label">Account-Product-Collateral CSV</label>
+              <input class="form-control" required type="file" name="formFile" accept=".csv">
+            </div>
+        </div>
+        <div class="modal-footer">
+          <button type="button" class="btn btn-secondary" data-bs-dismiss="modal">Close</button>
+          <button type="submit" class="btn btn-primary">Upload</button>
+        </div>
+      </form>
+    </div>
+  </div>
+</div>
+
+
+
+<!-- EDIT MODAL -->
+<div class="modal fade" id="EditModal" tabindex="-1" role="dialog">
+  <div class="modal-dialog">
+    <div class="modal-content">
+      <form method="post" action="{% url 'edit_record' tab_status %}">
+        {% csrf_token %}
+        <input type="hidden" value="" name="id" id="edit_id">
+        <div class="modal-header text-white">
+          <h5 class="modal-title">Edit Account Master Record</h5>
+        </div>
+        <div class="modal-body">
+          <div class="row mb-3">
+            <div class="col">
+              <div class="form-group">
+                <label for="formFile" class="form-label">Account no.</label>
+                <input class="form-control" type="text" name="account_no" id="edit_account_no">
+              </div>
+            </div>
+            <div class="col">
+              <div class="form-group">
+                <label for="formFile" class="form-label">CIN</label>
+                <input class="form-control" type="text" name="cin" id="edit_cin">
+              </div>
+            </div>
+          </div>
+          <div class="row mb-3">
+            <div class="col">
+              <div class="form-group">
+                <label for="formFile" class="form-label">Account Status</label>
+                <select class='form-control' name="account_status" id="edit_account_status">
+                  <option value="1">Active</option>
+                  <option value="0">In-Active</option>
+                </select>
+              </div>
+            </div>
+            <div class="col">
+              <div class="form-group">
+                <label for="formFile" class="form-label">Account Type</label>
+                <input class="form-control" type="text" name="account_type" id="edit_account_type">
+              </div>
+            </div>
+          </div>
+          <div class="row mb-3">
+            <div class="col">
+              <div class="form-group">
+                <label for="formFile" class="form-label">Sectors</label>
+                <input class="form-control" type="text" name="sectors" id="edit_sectors">
+              </div>
+            </div>
+            <div class="col">
+              <div class="form-group">
+                <label for="formFile" class="form-label">Customer's Name</label>
+                <input class="form-control" type="text" name="customer_name" id="edit_customer_name">
+              </div>
+            </div>
+          </div>
+          <div class="row mb-3">
+            <div class="col">
+              <div class="form-group">
+                <label for="formFile" class="form-label">Contact No.</label>
+                <input class="form-control" type="text" name="contact_no" id="edit_contact_no">
+              </div>
+            </div>
+            <div class="col">
+              <div class="form-group">
+                <label for="formFile" class="form-label">Email</label>
+                <input class="form-control" type="text" name="email" id="edit_email">
+              </div>
+            </div>
+          </div>
+          <div class="row mb-3">
+            <div class="col">
+              <div class="form-group">
+                <label for="formFile" class="form-label">PAN</label>
+                <input class="form-control" type="text" name="pan" id="edit_pan">
+              </div>
+            </div>
+            <div class="col">
+              <div class="form-group">
+                <label for="formFile" class="form-label">Aadhar No.</label>
+                <input class="form-control" type="text" name="aadhar_no" id="edit_aadhar_no">
+              </div>
+            </div>
+          </div>
+
+          <div class="row mb-3">
+            <div class="col">
+              <div class="form-group">
+                <label for="formFile" class="form-label">Customer's Address</label>
+                <input class="form-control" type="text" name="customer_addr" id="edit_customer_addr">
+              </div>
+            </div>
+            <div class="col">
+              <div class="form-group">
+                <label for="formFile" class="form-label">PIN</label>
+                <input class="form-control" type="text" name="pin" id="edit_pin">
+              </div>
+            </div>
+          </div>
+        </div>
+        <div class="modal-footer">
+          <button type="button" class="btn btn-secondary" data-bs-dismiss="modal">Close</button>
+          <button type="submit" class="btn btn-primary">Submit</button>
+        </div>
+      </form>
+    </div>
+  </div>
+</div>
+
+
+
 <script>
   var status = {{tab_active}};
 
+  var jsdata = {{items_list_json|safe}};
+
   var delete_selected_url = '{% url "delete_selected_records" "master" %}'
+
+
+  //
+  //
+  //
+  function get_collateral_data(url, ids){
+
+    var active_but = $("#button-"+ids).attr("params");
+
+    $("tr.data-trs").css("display","none");
+
+    if(active_but == 1){
+      $("#button-"+ids).attr("params", 0);
+    }else{
+
+      $("#button-"+ids).attr("params", 1);
+
+      $.get(url, function(data){
+
+        htm = '<button type="button" class="btn btn-danger btn-sm" style="float:right;" onclick="delete_all_collaterals('+ids+',\''+url+'\')">';
+        htm += '<i class="la la-trash"></i> <strong>Delete All</strong>'
+        htm += '</button>';
+
+        htm += '<table class="table table-responsive table-bordered" style="margin-bottom:0px; background-color:#FFF;">';
+        htm += '<tr style="background-color:#dee2e6;; font-weight:bold;">';
+        htm += '<td class="text-center">Product Name</td>';
+        htm += '<td class="text-center">Product Code</td>';
+        htm += '<td class="text-center">Product Category</td>';
+        htm += '<td class="text-center">Basel Product</td>';
+        htm += '<td class="text-center">Basel Product Code</td>';
+        htm += '<td class="text-center">Drawn CCF</td>';
+        htm += '<td class="text-center">CCF upto 1 yr</td>';
+        htm += '<td class="text-center">CCF > 1 yr</td>';
+        htm += '<td class="text-center">Colateral Code</td>';
+        htm += '<td class="text-center">Collateral Type</td>';
+        htm += '<td class="text-center">Issuer Type</td>';
+        htm += '<td class="text-center">Collateral Eligibility</td>';
+        htm += '<td class="text-center">Rating Available</td>';
+        htm += '<td class="text-center">Collateral Rating</td>';
+        htm += '<td class="text-center">Residual Maturity</td>';
+        htm += '<td class="text-center">Basel Collateral Type</td>';
+        htm += '<td class="text-center">Basel Collateral Subtype</td>';
+        htm += '<td class="text-center">Basel Collateral Code</td>';
+        htm += '<td class="text-center">Basel Collateral Rating</td>';
+        htm += '<td class="text-center">Soveriegn Issuer</td>';
+        htm += '<td class="text-center">Other Issuer</td>';
+        htm += '<td class="text-center">Action</td>';
+        htm += '</tr>';
+
+        $.each(data.results, function(i, v){
+          htm += '<tr>';
+          htm += '<td>'+v.product__product_name+'</td>';
+          htm += '<td>'+v.product__product_code+'</td>';
+          htm += '<td>'+v.product__product_catgory+'</td>';
+          htm += '<td>'+v.product__basel_product+'</td>';
+          htm += '<td>'+v.product__basel_product_code+'</td>';
+          htm += '<td>'+v.product__drawn_cff+'</td>';
+          htm += '<td>'+v.product__cff_upto_1_yr+'</td>';
+          htm += '<td>'+v.product__cff_gt_1_yr+'</td>';
+          htm += '<td>'+v.collateral_code__collateral_code+'</td>';
+          htm += '<td>'+v.collateral_code__collateral_type+'</td>';
+          htm += '<td>'+v.collateral_code__issuer_type+'</td>';
+          htm += '<td>'+v.collateral_code__collateral_eligibity+'</td>';
+          htm += '<td>'+v.collateral_code__rating_available+'</td>';
+          htm += '<td>'+v.collateral_code__collateral_rating+'</td>';
+          htm += '<td>'+v.collateral_code__residual_maturity+'</td>';
+          htm += '<td>'+v.collateral_code__basel_collateral_type+'</td>';
+          htm += '<td>'+v.collateral_code__basel_collateral_subtype+'</td>';
+          htm += '<td>'+v.collateral_code__basel_collateral_code+'</td>';
+          htm += '<td>'+v.collateral_code__basel_collateral_rating+'</td>';
+          htm += '<td>'+v.collateral_code__soverign_issuer+'</td>';
+          htm += '<td>'+v.collateral_code__other_issuer+'</td>';
+          htm += '<td>';
+          htm += '<button type="button" class="btn btn-sm btn-icon" onclick="delete_single_collateral('+ids+', '+v.id+',\''+url+'\')">';
+          htm += '<i class="la la-trash" aria-hidden="true" style="font-size: 25px;line-height: 30px; color:#FF0000;"></i>';
+          htm += '</button>';
+          htm += '</td>';
+          htm += '</tr>';
+        });
+
+        htm += '</table>';
+
+        $("#tr-"+ids).show();
+        $("#tr-"+ids).find("td.data-td").empty().html(htm);
+
+      });
+
+    }
+
+
+
+
+  }
+
+  //
+  //
+  //
+  function delete_single_collateral(ids, id, url){
+    $.get("{% url 'delete_single_collateral_data' %}", {"id":id}, function(data){
+      get_collateral_data(url, ids);
+    });
+  }
+
+  //
+  //
+  //
+  function delete_all_collaterals(ids, url){
+    $.get("{% url 'delete_all_collaterals' %}", {"ids":ids}, function(data){
+      get_collateral_data(url, ids);
+    });
+  }
 
 </script>

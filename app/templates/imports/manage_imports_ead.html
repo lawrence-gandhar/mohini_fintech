@@ -31,7 +31,7 @@
             </li>
           </ul>
         </div>
-        <a href="{% url 'pd_report' %}" class="btn btn-default btn-sm" style="color:#000000;">
+        <a href="{% url 'ead_report' 1 %}" class="btn btn-default btn-sm" style="color:#000000;">
           <i class="la la-sync"></i> <strong>Run EAD Reports</strong>
         </a>
       </div>
@@ -211,7 +211,7 @@
         <div class="modal-body">
             <div class="mb-3">
               <label for="formFile" class="form-label">EAD Input</label>
-              <input class="form-control" type="file" name="formFile">
+              <input class="form-control" type="file" name="formFile" required>
             </div>
         </div>
         <div class="modal-footer">

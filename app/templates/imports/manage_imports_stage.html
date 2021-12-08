@@ -31,7 +31,9 @@
             </li>
           </ul>
         </div>
-
+        <a href="{% url 'stage_report' 1 %}" class="btn btn-default btn-sm" style="color:#000000;">
+          <i class="la la-sync"></i> <strong>Run Stage Reports</strong>
+        </a>
       </div>
   </div>
 </div>
@@ -253,7 +255,7 @@
         <div class="modal-body">
             <div class="mb-3">
               <label for="formFile" class="form-label">Stage Input</label>
-              <input class="form-control" type="file" name="formFile">
+              <input class="form-control" type="file" name="formFile" required>
             </div>
         </div>
         <div class="modal-footer">

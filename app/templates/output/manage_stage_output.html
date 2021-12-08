@@ -3,6 +3,13 @@
   <div class="col-md-6 col-sm-12">
     <h3 style="line-height: 40px;" class="main_heading">Process Management</h3>
   </div>
+  <div class="col-md-6 col-sm-12 heading_buttons_container">
+      <div class="btn-group" role="group" aria-label="Basic example">
+        <button type="button" class="btn btn-default btn-sm" style="width:100px; color:#000000;" onclick="delete_final_selected_records()">
+          <i class="la la-trash"></i> <strong>Delete</strong>
+        </button>
+      </div>
+  </div>
 </div>
 <hr style="margin-top:0px;" />
 
@@ -63,6 +70,8 @@
       </div>
 
       <div class="table-responsive">
+        <form action="" method="post" id="move_all_to_final">
+          {% csrf_token %}
           <table class="table table-bordered">
             <thead class="text-center" style="background-color:#ddd; font-size:13px; white-space: nowrap;">
               <th><input type="checkbox" class="checkbox_all"></th>
@@ -162,6 +171,7 @@
               {% endfor %}
             </tbody>
           </table>
+        </form>  
       </div>
       </form>
 
@@ -198,6 +208,6 @@
 
 <script>
   var status = {{tab_active}};
-
+  var delete_selected_url = '{% url "delete_final_records" "stage" %}';
 
 </script>
