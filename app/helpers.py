@@ -263,8 +263,6 @@ def send_email_accept_user(user=None, passwd=None):
     sendmymail(subject, email_html_template,send_to=[user.email])
 
 
-
-
 # ******************************************************************************
 # Send Reject Email
 # ******************************************************************************

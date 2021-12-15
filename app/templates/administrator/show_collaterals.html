@@ -1,7 +1,17 @@
 {% load custom_tags %}
 <div class="row" style="margin:20px 0px 0px; ">
   <div class="col-md-6 col-sm-12">
-    <h3 style="line-height: 40px;" class="main_heading">Account/Product & Collaterals Mapping</h3>
+    <h3 style="line-height: 40px;" class="main_heading">Account, Product & Collaterals Mapping</h3>
+  </div>
+  <div class="col-md-6 col-sm-12 heading_buttons_container">
+    <div class="btn-group" role="group" aria-label="Basic example">
+      <a href="{% url 'manage_imports' %}" class="btn btn-default btn-sm" style="width:100px; color:#000000;">
+        <i class="la la-angle-double-left"></i> <strong>Back</strong>
+      </a>
+      <button href="" onclick="delete_collateral()" class="btn btn-default btn-sm" style="width:100px; color:#000000;">
+        <i class="la la-trash"></i> <strong>Delete</strong>
+      </button>
+    </div>
   </div>
 </div>
 <hr style="margin-top:0px;" />
@@ -23,12 +33,34 @@
     <tbody style="font-size:13px;">
       {% for row in items_list %}
       <tr>
-        <td>{{row.Account_no|default_if_none:''}}</td>
+        <td>{{row.id|default_if_none:''}}</td>
         <td>{{row.product_code|default_if_none:''}}</td>
         <td>{{row.product_name|default_if_none:''}}</td>
-        <td>{{row.basel_collateral_code|default_if_none:''}}</td>
+        <td>{{row.basel_collateral_code_grp|default_if_none:''|replace:",|, "}}</td>
       </tr>
       {% endfor %}
     </tbody>
   </table>
 </div>
+
+<script>
+
+function delete_collateral(){
+
+  num_records = {{ items_list|length }};
+
+  if(num_records == 0){
+    alert("No records to delete.");
+  }else{
+    var r1 = confirm("Do you want to continue? This will delete all the records");
+    if (r1 == true) {
+      $.get("{% url 'delete_collateral' %}", function(data){
+        location.reload();
+      });
+    }
+  }
+
+
+}
+
+</script>

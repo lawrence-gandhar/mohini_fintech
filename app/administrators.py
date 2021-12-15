@@ -878,20 +878,28 @@ def pd_report(request, s_type=0):
 
     #
     #
-    if start_date is not None:
-        if start_date.strip() == "":
-            start_date = None
+    try:
+        if start_date is not None:
+            if start_date.strip() == "":
+                start_date = None
+    except AttributeError:
+        pass
 
-    if end_date is not None:
-        if end_date.strip() == "":
-            end_date = None
+    try:
+        if end_date is not None:
+            if end_date.strip() == "":
+                end_date = None
+    except AttributeError:
+        pass
 
-    if account_no is not None:
-        if account_no.strip() == "":
-            account_no = None
-        else:
-            account_no = [helpers.clean_data(x) for x in account_no.split(",")]
-
+    try:
+        if account_no is not None:
+            if account_no.strip() == "":
+                account_no = None
+            else:
+                account_no = [helpers.clean_data(x) for x in account_no.split(",")]
+    except AttributeError:
+        pass
     #
     #
 
@@ -957,14 +965,23 @@ def lgd_report(request, s_type=0):
 
     #
     #
-    if start_date.strip() == "":
-        start_date = None
+    try:
+        if start_date.strip() == "":
+            start_date = None
+    except AttributeError:
+        pass
 
-    if end_date.strip() == "":
-        end_date = None
+    try:
+        if end_date.strip() == "":
+            end_date = None
+    except AttributeError:
+        pass
 
-    if account_no.strip() == "":
-        account_no = None
+    try:
+        if account_no.strip() == "":
+            account_no = None
+    except AttributeError:
+        pass
 
     #
     #
@@ -1014,14 +1031,23 @@ def stage_report(request, s_type=0):
     account_no = request.POST.get("account_no", None)
     id_selected = request.POST.getlist("checkbox_one", None)
 
-    if start_date.strip() == "":
-        start_date = None
+    try:
+        if start_date.strip() == "":
+            start_date = None
+    except AttributeError:
+        pass
 
-    if end_date.strip() == "":
-        end_date = None
+    try:
+        if end_date.strip() == "":
+            end_date = None
+    except AttributeError:
+        pass
 
-    if account_no.strip() == "":
-        account_no = None
+    try:
+        if account_no.strip() == "":
+            account_no = None
+    except AttributeError:
+        pass
 
     #
     #
@@ -1077,14 +1103,23 @@ def ead_report(request):
 
     #
     #
-    if start_date.strip() == "":
-        start_date = None
+    try:
+        if start_date.strip() == "":
+            start_date = None
+    except AttributeError:
+        pass
 
-    if end_date.strip() == "":
-        end_date = None
+    try:
+        if end_date.strip() == "":
+            end_date = None
+    except AttributeError:
+        pass
 
-    if account_no.strip() == "":
-        account_no = None
+    try:
+        if account_no.strip() == "":
+            account_no = None
+    except AttributeError:
+        pass
 
     #
     #
@@ -1334,7 +1369,7 @@ def collateral_upload(request):
 
         #
         # Delete Collateral Enteries for account Number found
-        Collateral.objects.filter(account_no = account_ins).delete()
+        # Collateral.objects.filter(account_no = account_ins).delete()
 
         only_product = []
 
@@ -1348,8 +1383,12 @@ def collateral_upload(request):
             if row[x].strip() != "":
                 #
                 #
+
+                collateral_values = row[x].strip().split("|")
+
                 try:
-                    collateral_ins = Basel_Collateral_Master.objects.get(basel_collateral_code = row[x].strip())
+
+                    collateral_ins = Basel_Collateral_Master.objects.get(basel_collateral_code = collateral_values[0])
 
                     if account_ins is not None and product_ins is not None:
                         obj = Collateral.objects.create(
@@ -1357,6 +1396,20 @@ def collateral_upload(request):
                             product = product_ins,
                             collateral_code = collateral_ins
                         )
+
+                        try:
+                            obj.collateral_value = collateral_values[1] if collateral_values[1].strip() !="" else None
+                        except IndexError:
+                            pass
+
+                        try:
+                            obj.collateral_rating = collateral_values[2] if collateral_values[2].strip() !="" else None
+                        except IndexError:
+                            pass
+
+                        
+
+                        obj.save()
 
                 except ObjectDoesNotExist:
                     if row[x].strip() != "":
@@ -1369,10 +1422,14 @@ def collateral_upload(request):
         only_product = list(filter(None, only_product))
 
         if len(only_product) == 0:
-            obj = Collateral.objects.create(
-                account_no = account_ins,
-                product = product_ins
-            )
+            if account_ins is not None and product_ins is not None:
+                try:
+                    obj = Collateral.objects.update_or_create(
+                        account_no = account_ins,
+                        product = product_ins
+                    )
+                except:
+                    pass
 
     # Mapping Errors into message framework
     #=================================================================
@@ -1497,12 +1554,13 @@ def download_reports(request, tab_status=None, ftype=0):
 #**********************************************************************
 # ENDPOINT: SHOW COLLATERALS
 #**********************************************************************
-
 def show_collateral_mapping(request):
 
     data = defaultdict()
 
     results = Collateral.objects.all().select_related('account_no', 'collateral_code', 'product').values(Account_no = F('account_no__account_no'), product_name = F('product__product_name'), product_code = F('product__product_code'), basel_collateral_code = F('collateral_code__basel_collateral_code'))
+
+    results = Collateral.objects.raw("select main_query.account_no as id, main_query.product_code, main_query.product_name, group_concat(main_query.basel_collateral_code) as basel_collateral_code_grp from ({}) main_query group by main_query.account_no".format(results.query))
 
     #
     # DATA
@@ -1515,3 +1573,12 @@ def show_collateral_mapping(request):
     data["items_list"] = results
 
     return render(request, "administrator/index.html", data)
+
+
+#**********************************************************************
+# ENDPOINT: DELETE COLLATERALS
+#**********************************************************************
+def delete_collateral(request):
+    Collateral.objects.all().delete()
+    messages.success(request, "Records Deleted Successfully")
+    return HttpResponse(1)

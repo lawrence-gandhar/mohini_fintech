@@ -55,6 +55,8 @@ urlpatterns += [
     path('admin/delete_single_collateral_data/', decorators.admin_required(admin.delete_single_collateral_data), name="delete_single_collateral_data"),
     path('admin/delete_all_collaterals/', decorators.admin_required(admin.delete_all_collaterals), name="delete_all_collaterals"),
     path('admin/show_collateral_mapping/', decorators.admin_required(admin.show_collateral_mapping), name="show_collateral_mapping"),
+    path('admin/delete_collateral/', decorators.admin_required(admin.delete_collateral), name="delete_collateral"),
+
 ]
 
 # Output & Reports
@@ -81,6 +83,8 @@ urlpatterns += [
     path('admin/run_lgd_report/<int:s_type>/', decorators.admin_required(admin.lgd_report), name='lgd_report'),
     path('admin/run_stage_report/', decorators.admin_required(admin.stage_report), name='stage_report'),
     path('admin/run_stage_report/<int:s_type>/', decorators.admin_required(admin.stage_report), name='stage_report'),
+    path('admin/run_ead_report/', decorators.admin_required(admin.ead_report), name='ead_report'),
+    path('admin/run_ead_report/<int:s_type>/', decorators.admin_required(admin.ead_report), name='ead_report'),
 ]
 
 
