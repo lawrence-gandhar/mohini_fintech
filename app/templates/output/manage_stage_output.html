@@ -43,7 +43,7 @@
 
     <!-- Tab panes start -->
     <div class="tab-content" style="padding:10px 0px;">
-      <form method="post" action="{% url 'stage_report' %}">
+      <form method="post" action="{% url 'stage_report' %}" id="run_report_form">
       <div class="table-responsive" style="overflow:auto;">
 
           {% csrf_token %}
@@ -66,7 +66,7 @@
               </td>
             </tr>
           </table>
-
+        </form>
       </div>
 
       <div class="table-responsive">
@@ -95,7 +95,6 @@
               <th>Day Bucket 5</th>
               <th>Day Bucket 6</th>
               <th>Day Bucket 7</th>
-              <th>Day Bucket </th>
               <th>Day Bucket 8</th>
               <th>Day Bucket 9</th>
               <th>Day Bucket 10</th>
@@ -122,13 +121,11 @@
                     <input type="checkbox" value="{{row.id}}" class="checkbox_one" name="checkbox_one">
                   </td>
                   <td>{{row.date|default_if_none:''}}</td>
-                  <td>{{row.account_no__account_no|default_if_none:''}}</td>
+                  <td>{{row.Account_No|default_if_none:''}}</td>
                   <td>{{row.account_type|default_if_none:''}}</td>
                   <td>{{row.cin|default_if_none:''}}</td>
                   <td>{{row.product_name|default_if_none:''}}</td>
                   <td>{{row.sectors|default_if_none:''}}</td>
-                  <td>{{row.stage|default_if_none:''}}</td>
-                  <td>{{row.state|default_if_none:''}}</td>
                   <td>{{row.old_rating|default_if_none:''}}</td>
                   <td>{{row.new_rating|default_if_none:''}}</td>
                   <td>{{row.rating_3|default_if_none:''}}</td>
@@ -171,9 +168,8 @@
               {% endfor %}
             </tbody>
           </table>
-        </form>  
+        </form>
       </div>
-      </form>
 
       {% if items_list.has_other_pages %}
         <ul class="pagination">

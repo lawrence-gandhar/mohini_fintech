@@ -54,6 +54,7 @@ urlpatterns += [
     path('admin/get_collateral_data/<int:ins>/', decorators.admin_required(admin.get_collateral_data), name="get_collateral_data"),
     path('admin/delete_single_collateral_data/', decorators.admin_required(admin.delete_single_collateral_data), name="delete_single_collateral_data"),
     path('admin/delete_all_collaterals/', decorators.admin_required(admin.delete_all_collaterals), name="delete_all_collaterals"),
+    path('admin/show_collateral_mapping/', decorators.admin_required(admin.show_collateral_mapping), name="show_collateral_mapping"),
 ]
 
 # Output & Reports
@@ -64,6 +65,7 @@ urlpatterns += [
     path('admin/show_reports/<str:tab_status>/', decorators.admin_required(admin.show_reports), name='show_reports'),
     path('admin/delete_final_records/<str:tab_status>/', decorators.admin_required(admin.delete_final_records), name="delete_final_records"),
     path('admin/delete_report_records/<str:tab_status>/', decorators.admin_required(admin.delete_report_records), name="delete_report_records"),
+    path('admin/download_reports/<str:tab_status>/<int:ftype>/', decorators.admin_required(admin.download_reports), name="download_reports"),
 ]
 
 # Process Management

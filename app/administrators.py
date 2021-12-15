@@ -35,7 +35,8 @@ import csv
 import calendar
 import time
 import json
-from collections import defaultdict
+from collections import defaultdict, Counter
+import os
 
 
 
@@ -152,7 +153,7 @@ def manage_new_users(request):
 def accept_new_users(request, ids=None):
 
     if request.POST:
-        ids = request.POST.getlist("ids",None)
+        ids = request.POST.getlist("checkbox_one",None)
         error_found = False
         error_count = 0
 
@@ -346,6 +347,8 @@ def search_data(model_obj = None, form_data = None, tab_status = None):
 
         form_fields = form_data.keys()
 
+        print(form_data)
+
         qry = model_obj
 
         #
@@ -369,8 +372,6 @@ def search_data(model_obj = None, form_data = None, tab_status = None):
                 if "product_code" in form_fields:
                     qry = qry.filter(product_code__icontains = form_data["product_code"])
 
-                    print(qry.query)
-
                 if "collateral_code" in form_fields:
                     qry = qry.filter(Q(collateral_code__icontains = form_data["collateral_code"]) | Q(basel_collateral_code__icontains = form_data["collateral_code"]))
             else:
@@ -378,8 +379,13 @@ def search_data(model_obj = None, form_data = None, tab_status = None):
                 # Check & Fetch Account Number Parameter
                 if "account_no" in form_fields:
                     if form_data["account_no"].strip()!="":
-                        acc = [x[0] for x in AccountMaster.objects.filter(account_no__icontains = form_data["account_no"]).values_list("id")]
-                        qry = qry.filter(id__in = acc)
+                        acc_list = [ x.strip() for x in form_data["account_no"].split(",")]
+
+                        for i in acc_list:
+                            acc = [x[0] for x in AccountMaster.objects.filter(account_no__icontains = i).values_list("id")]
+                            qry = qry.filter(Q(account_no_id__in = acc))
+
+
 
         #
         # Date Range Data Filter
@@ -432,8 +438,23 @@ def import_data_from_file(request):
 
         data_set = csv.DictReader(io_string, delimiter=',', quotechar='"')
 
-        ts = calendar.timegm(time.gmtime())
-        background_tasks.insert_data(data_set, import_type, ts)
+        # Get header names
+        column_names = data_set.fieldnames
+
+        missing_columns = [x for x in constants.TAB_ACTIVE[import_type][2] if x not in column_names]
+
+        if len(missing_columns) == 0:
+            if Counter(column_names) != Counter(constants.TAB_ACTIVE[import_type][2]):
+                messages.error(request, "Unable to process the file, please check the column headers")
+            else:
+                ts = calendar.timegm(time.gmtime())
+                row_num, row_failed, total_rows = background_tasks.insert_data(data_set, import_type, ts)
+                messages.success(request, "<p>Total Rows : {}</p><p>Inserted/Updated : {}</p><p>Failed : {}</p>".format(total_rows, row_num, row_failed))
+        else:
+            messages.error(request, "Unable to process the file. Columns Not Found : "+', '.join(missing_columns))
+
+
+
         return redirect("manage_imports", import_type)
     return redirect("manage_imports")
 
@@ -742,29 +763,38 @@ def show_final_records(request, tab_status=None):
     data["js_files"] = ['custom_js/imports.js']
     data["sidebar_active"] = 4
 
-
-    product_qry = """select product_name from app_basel_product_master where id = (select distinct(product_id) from app_collateral where account_no_id = app_pd_final.account_no_id)"""
-
-    results = constants.TAB_ACTIVE[tab_status][4].extra(select={'product_name': product_qry}).select_related("account_no")
-
-
     #
     # TAB- PD
     #==============================================================
     if tab_status == "pd":
+        product_qry = """select product_name from app_basel_product_master where id = (select distinct(product_id) from app_collateral where account_no_id = app_pd_final.account_no_id)"""
+
+        results = constants.TAB_ACTIVE[tab_status][4].extra(select={'product_name': product_qry}).select_related("account_no")
+
         results = results.values('id', 'date', 'account_no_id', 'product_name', 'factor_1', 'factor_2', 'factor_3', 'factor_4', 'default_col', 'factor_5', 'factor_6', 'mgmt_overlay_1', 'mgmt_overlay_2', Account_No = F('account_no__account_no'), cin = F('account_no__cin'), sectors = F('account_no__sectors'), account_type = F('account_no__account_type'))
 
     #
     # TAB- LGD
     #==============================================================
     if tab_status == "lgd":
+
+        product_qry = """select product_name from app_basel_product_master where id = (select distinct(product_id) from app_collateral where account_no_id = app_lgd_final.account_no_id)"""
+
+        results = constants.TAB_ACTIVE[tab_status][4].extra(select={'product_name': product_qry}).select_related("account_no")
+
         results = results.values('id', 'date', 'account_no_id', 'ead_os', 'pv_cashflows', 'pv_cost', 'beta_value', 'sec_flag', 'factor_4', 'factor_5', 'avg_1', 'avg_2', 'avg_3', 'avg_4', 'avg_5', 'mgmt_overlay_1', 'mgmt_overlay_2', Account_No = F('account_no__account_no'), cin = F('account_no__cin'), sectors = F('account_no__sectors'), account_type = F('account_no__account_type')).order_by("id")
 
     #
     # TAB- Stage
     #==============================================================
     if tab_status == "stage":
-        results.values('id', 'date', 'account_no_id', 'old_rating', 'new_rating', 'rating_3', 'rating_4', 'rating_5', 'rating_6', 'rating_7', 'day_bucket_1', 'day_bucket_2', 'day_bucket_3', 'day_bucket_4', 'day_bucket_5', 'day_bucket_6', 'day_bucket_7', 'day_bucket_8', 'day_bucket_9', 'day_bucket_10', 'day_bucket_11', 'day_bucket_12','day_bucket_13', 'day_bucket_14', 'day_bucket_15', 'criteria', 'cooling_period_1', 'cooling_period_2', 'cooling_period_3', 'cooling_period_4', 'cooling_period_5', 'rbi_window', 'mgmt_overlay_1', 'mgmt_overlay_2', Account_No = F('account_no__account_no'), cin = F('account_no__cin'), sectors = F('account_no__sectors'), account_type = F('account_no__account_type')).order_by("id")
+
+        product_qry = """select product_name from app_basel_product_master where id = (select distinct(product_id) from app_collateral where account_no_id = app_stage_final.account_no_id)"""
+
+        results = constants.TAB_ACTIVE[tab_status][4].extra(select={'product_name': product_qry}).select_related("account_no")
+
+        results = results.values('id', 'date', 'account_no_id', 'product_name', 'old_rating', 'new_rating', 'rating_3', 'rating_4', 'rating_5', 'rating_6', 'rating_7', 'day_bucket_1', 'day_bucket_2', 'day_bucket_3', 'day_bucket_4', 'day_bucket_5', 'day_bucket_6', 'day_bucket_7', 'day_bucket_8', 'day_bucket_9', 'day_bucket_10', 'day_bucket_11', 'day_bucket_12','day_bucket_13', 'day_bucket_14', 'day_bucket_15', 'criteria', 'cooling_period_1', 'cooling_period_2', 'cooling_period_3', 'cooling_period_4', 'cooling_period_5', 'rbi_window', 'mgmt_overlay_1', 'mgmt_overlay_2', Account_No = F('account_no__account_no'), cin = F('account_no__cin'), sectors = F('account_no__sectors'), account_type = F('account_no__account_type')).order_by("id")
+
 
     #
     # TAB- EAD
@@ -866,8 +896,7 @@ def pd_report(request, s_type=0):
     #
 
     if account_no is not None or start_date is not None or end_date is not None:
-        if len(id_selected) == 0:
-            id_selected = None
+        id_selected = None
 
     #
     #
@@ -894,11 +923,10 @@ def pd_report(request, s_type=0):
                 results = results.filter(account_no__account_no__in = account_no)
 
 
-        product_qry = """select product_name from app_basel_product_master where id = (select distinct(product_id) from app_collateral where account_no_id = app_pd_final.account_no_id)"""
+        product_qry = """select product_name from app_basel_product_master where id = (select distinct(product_id) from app_collateral where account_no_id = app_pd_report.account_no_id)"""
 
-        results = results.extra(select={'product_name': product_qry}).select_related('account_no').values('id','date', 'account_no__account_no', 'product_name', 'factor_1', 'factor_2', 'factor_3', 'factor_4', 'factor_5', 'factor_6', 'default_col', 'mgmt_overlay_1', 'mgmt_overlay_2', 'intercept', 'coeff_fact1', 'coeff_fact2', 'coeff_fact3', 'coeff_fact4', 'zscore', 'pd')
+        results = results.extra(select={'product_name': product_qry}).select_related('account_no').values('id', 'date' ,'product_name', 'factor_1', 'factor_2', 'factor_3', 'factor_4', 'factor_5', 'factor_6', 'default_col', 'mgmt_overlay_1', 'mgmt_overlay_2', 'intercept', 'coeff_fact1', 'coeff_fact2', 'coeff_fact3', 'coeff_fact4', 'zscore', 'pd', Account_no = F('account_no__account_no'), cin = F('account_no__cin'), account_type = F('account_no__account_type'), sectors = F('account_no__sectors'))
 
-        messages.success(request, "Report Generated Successfully")
 
     if request.is_ajax():
         if ret:
@@ -906,17 +934,21 @@ def pd_report(request, s_type=0):
         else:
             return JsonResponse({"ret":ret, "msg":"PD Report Creation Failed"})
     else:
-        rev = reverse("show_reports")
+        messages.success(request, "Report Generated Successfully")
 
-        params = request.POST.urlencode()
-        rev = '{}?{}'.format(rev, params)
-        return redirect(rev)
+        if account_no is None and start_date is not None and end_date is not None and id_selected is not None:
+            rev = reverse("show_reports")
+            params = request.POST.urlencode()
+            rev = '{}?{}'.format(rev, params)
+            return redirect(rev)
+        else:
 
+            return redirect("show_reports", "pd")
 
 #**********************************************************************
 # ENDPOINT: GENERATE REPORT - LGD
 #**********************************************************************
-def lgd_report(request):
+def lgd_report(request, s_type=0):
     ret = False
     start_date = request.POST.get("start_date", None)
     end_date = request.POST.get("end_date", None)
@@ -937,7 +969,7 @@ def lgd_report(request):
     #
     #
 
-    ret = background_tasks.lgd_report(start_date = start_date, end_date = end_date, account_no = account_no)
+    ret = background_tasks.lgd_report(start_date = start_date, end_date = end_date, account_no = account_no, s_type = s_type, id_selected = id_selected)
     if ret:
 
         results = LGD_Report.objects
@@ -958,8 +990,9 @@ def lgd_report(request):
             if account_no is not None:
                 results = results.filter(account_no__account_no__in = account_no)
 
-        results = results.select_related('account_no').values('id','date', 'account_no__account_no', 'account_type', 'cin', 'product_name', 'sectors', 'ead_os', 'pv_cost', 'pv_cashflows', 'beta_value', 'sec_flag', 'factor_4', 'factor_5', 'avg_1', 'avg_2', 'avg_3', 'avg_4', 'avg_5', 'mgmt_overlay_1', 'mgmt_overlay_2',
-        'rec_rate', 'est_rr', 'est_lgd', 'final_lgd')
+        product_qry = """select product_name from app_basel_product_master where id = (select distinct(product_id) from app_collateral where account_no_id = app_pd_report.account_no_id)"""
+
+        results = results.extra(select={'product_name': product_qry}).select_related('account_no').values('id','date', 'product_name', 'ead_os', 'pv_cost', 'pv_cashflows', 'beta_value', 'sec_flag', 'factor_4', 'factor_5', 'avg_1', 'avg_2', 'avg_3', 'avg_4', 'avg_5', 'mgmt_overlay_1', 'mgmt_overlay_2', 'rec_rate', 'est_rr', 'est_lgd', 'final_lgd',  Account_no = F('account_no__account_no'), cin = F('account_no__cin'), account_type = F('account_no__account_type'), sectors = F('account_no__sectors'))
 
     if request.is_ajax():
         if ret:
@@ -973,7 +1006,7 @@ def lgd_report(request):
 #**********************************************************************
 # ENDPOINT: GENERATE REPORT - STAGE
 #**********************************************************************
-def stage_report(request):
+def stage_report(request, s_type=0):
 
     ret = False
     start_date = request.POST.get("start_date", None)
@@ -981,8 +1014,6 @@ def stage_report(request):
     account_no = request.POST.get("account_no", None)
     id_selected = request.POST.getlist("checkbox_one", None)
 
-    #
-    #
     if start_date.strip() == "":
         start_date = None
 
@@ -994,7 +1025,10 @@ def stage_report(request):
 
     #
     #
-    ret = background_tasks.stage_report(start_date = start_date, end_date = end_date, account_no = account_no)
+
+    #
+    #
+    ret = background_tasks.stage_report(start_date = start_date, end_date = end_date, account_no = account_no, s_type = s_type, id_selected = id_selected)
     if ret:
 
         results = Stage_Report.objects
@@ -1015,7 +1049,9 @@ def stage_report(request):
             if account_no is not None:
                 results = results.filter(account_no__account_no__in = account_no)
 
-        results = results.select_related('account_no').values('id', 'date', 'account_no__account_no', 'account_type', 'cin', 'product_name', 'sectors', 'stage', 'state', 'old_rating', 'new_rating', 'rating_3', 'rating_4', 'rating_5', 'rating_6', 'rating_7', 'day_bucket_1', 'day_bucket_2', 'day_bucket_3', 'day_bucket_4', 'day_bucket_5', 'day_bucket_6', 'day_bucket_7', 'day_bucket_8', 'day_bucket_9', 'day_bucket_10', 'day_bucket_11', 'day_bucket_12', 'day_bucket_13', 'day_bucket_14', 'day_bucket_15', 'criteria', 'cooling_period_1', 'cooling_period_2', 'cooling_period_3', 'cooling_period_4', 'cooling_period_5', 'rbi_window', 'mgmt_overlay_1', 'mgmt_overlay_2')
+        product_qry = """select product_name from app_basel_product_master where id = (select distinct(product_id) from app_collateral where account_no_id = app_stage_report.account_no_id)"""
+
+        results = results.extra(select={'product_name': product_qry}).values('id', 'date', 'stage', 'state', 'old_rating', 'new_rating', 'rating_3', 'rating_4', 'rating_5', 'rating_6', 'rating_7', 'day_bucket_1', 'day_bucket_2', 'day_bucket_3', 'day_bucket_4', 'day_bucket_5', 'day_bucket_6', 'day_bucket_7', 'day_bucket_8', 'day_bucket_9', 'day_bucket_10', 'day_bucket_11', 'day_bucket_12', 'day_bucket_13', 'day_bucket_14', 'day_bucket_15', 'criteria', 'cooling_period_1', 'cooling_period_2', 'cooling_period_3', 'cooling_period_4', 'cooling_period_5', 'rbi_window', 'mgmt_overlay_1', 'mgmt_overlay_2', Account_no = F('account_no__account_no'), cin = F('account_no__cin'), account_type = F('account_no__account_type'), sectors = F('account_no__sectors'))
 
     if request.is_ajax():
         if ret:
@@ -1023,6 +1059,7 @@ def stage_report(request):
         else:
             return JsonResponse({"ret":ret, "msg":"Stage Report Creation Failed"})
     else:
+
         return redirect("show_reports", "stage")
 
 
@@ -1092,15 +1129,33 @@ def show_reports(request, tab_status=None):
 
     data = defaultdict()
 
+    account_no = None
+    start_date = None
+    end_date = None
+
     if tab_status is None:
         tab_status = "pd"
 
     #
     # GET REQUESTS
     #==============================================================
-    start_date = request.GET.get("start_date").strip() if request.GET.get("start_date") else None
-    end_date = request.GET.get("end_date").strip() if request.GET.get("end_date") else None
-    account_no = [helpers.clean_data(x) for x in request.GET.get("account_no").strip().split(",")] if request.GET.get("account_no") else None
+
+    if request.GET:
+        start_date = request.GET.get("start_date").strip() if request.GET.get("start_date") else None
+        end_date = request.GET.get("end_date").strip() if request.GET.get("end_date") else None
+        acc_list = [helpers.clean_data(x) for x in request.GET.get("account_no").strip().split(",")]
+        account_no = list(filter(None, acc_list))
+
+    if request.POST:
+        start_date = request.POST.get("start_date").strip() if request.POST.get("start_date") else None
+        end_date = request.POST.get("end_date").strip() if request.POST.get("end_date") else None
+        acc_list = [helpers.clean_data(x) for x in request.POST.get("account_no").strip().split(",")]
+        account_no = list(filter(None, acc_list))
+        messages.success(request, "Search Results Generated Successfully")
+
+    if account_no is not None:
+        if len(account_no) == 0:
+            account_no = None
 
     #
     # TAB- PD
@@ -1108,6 +1163,10 @@ def show_reports(request, tab_status=None):
     if tab_status == "pd":
         results = PD_Report.objects
 
+        product_qry = """select product_name from app_basel_product_master where id = (select distinct(product_id) from app_collateral where account_no_id = app_pd_report.account_no_id)"""
+
+        results = results.extra(select={'product_name': product_qry}).select_related('account_no')
+
         if start_date is None and end_date is None and account_no is None:
             results = results.all()
 
@@ -1118,11 +1177,12 @@ def show_reports(request, tab_status=None):
                 results = results.filter(date__gte = start_date)
 
         if account_no is not None:
-            results = results.filter(account_no__account_no__in = account_no)
+            for i in account_no:
+                acc = [x[0] for x in AccountMaster.objects.filter(account_no__icontains = i).values_list("id")]
+                results = results.filter(Q(account_no_id__in = acc))
 
-        product_qry = """select product_name from app_basel_product_master where id = (select distinct(product_id) from app_collateral where account_no_id = app_pd_report.account_no_id)"""
+        results = results.values('id', 'date', 'account_no__account_no', 'product_name', 'factor_1', 'factor_2', 'factor_3', 'factor_4', 'factor_5', 'factor_6', 'default_col', 'mgmt_overlay_1', 'mgmt_overlay_2', 'intercept', 'coeff_fact1', 'coeff_fact2', 'coeff_fact3', 'coeff_fact4', 'zscore', 'pd', Account_No = F('account_no__account_no'), cin = F('account_no__cin'), sectors = F('account_no__sectors'), account_type = F('account_no__account_type')).order_by("id")
 
-        results = results.extra(select={'product_name': product_qry}).select_related('account_no').values('id', 'date', 'account_no__account_no', 'product_name', 'factor_1', 'factor_2', 'factor_3', 'factor_4', 'factor_5', 'factor_6', 'default_col', 'mgmt_overlay_1', 'mgmt_overlay_2', 'intercept', 'coeff_fact1', 'coeff_fact2', 'coeff_fact3', 'coeff_fact4', 'zscore', 'pd', Account_No = F('account_no__account_no'), cin = F('account_no__cin'), sectors = F('account_no__sectors'), account_type = F('account_no__account_type')).order_by("id")
 
     #
     # TAB- LGD
@@ -1130,6 +1190,10 @@ def show_reports(request, tab_status=None):
     if tab_status == "lgd":
         results = LGD_Report.objects
 
+        product_qry = """select product_name from app_basel_product_master where id = (select distinct(product_id) from app_collateral where account_no_id = app_lgd_report.account_no_id)"""
+
+        results = results.extra(select={'product_name': product_qry}).select_related('account_no')
+
         if start_date is None and end_date is None and account_no is None:
             results = results.all()
 
@@ -1140,11 +1204,11 @@ def show_reports(request, tab_status=None):
                 results = results.filter(date__gte = start_date)
 
         if account_no is not None:
-            results = results.filter(account_no__account_no__in = account_no)
+            for i in account_no:
+                acc = [x[0] for x in AccountMaster.objects.filter(account_no__icontains = i).values_list("id")]
+                results = results.filter(Q(account_no_id__in = acc))
 
-        product_qry = """select product_name from app_basel_product_master where id = (select distinct(product_id) from app_collateral where account_no_id = app_lgd_report.account_no_id)"""
-
-        results = results.extra(select={'product_name': product_qry}).select_related('account_no').values('id', 'date', 'account_no__account_no', 'product_name', 'ead_os', 'pv_cashflows', 'pv_cost', 'beta_value', 'factor_5', 'sec_flag', 'factor_4', 'factor_5', 'avg_1', 'avg_2', 'avg_3', 'avg_4', 'avg_5', 'mgmt_overlay_2', 'rec_rate', 'est_rr', 'est_lgd', 'final_lgd', Account_No = F('account_no__account_no'), cin = F('account_no__cin'), sectors = F('account_no__sectors'), account_type = F('account_no__account_type')).order_by("id")
+        results = results.values('id', 'date', 'account_no__account_no', 'product_name', 'ead_os', 'pv_cashflows', 'pv_cost', 'beta_value', 'factor_5', 'sec_flag', 'factor_4', 'factor_5', 'avg_1', 'avg_2', 'avg_3', 'avg_4', 'avg_5', 'mgmt_overlay_1', 'mgmt_overlay_2', 'rec_rate', 'est_rr', 'est_lgd', 'final_lgd', Account_No = F('account_no__account_no'), cin = F('account_no__cin'), sectors = F('account_no__sectors'), account_type = F('account_no__account_type')).order_by("id")
 
     #
     # TAB- STAGE
@@ -1152,6 +1216,10 @@ def show_reports(request, tab_status=None):
     if tab_status == "stage":
         results = Stage_Report.objects
 
+        product_qry = """select product_name from app_basel_product_master where id = (select distinct(product_id) from app_collateral where account_no_id = app_stage_report.account_no_id)"""
+
+        results = results.extra(select={'product_name': product_qry}).select_related('account_no')
+
         if start_date is None and end_date is None and account_no is None:
             results = results.all()
 
@@ -1162,11 +1230,11 @@ def show_reports(request, tab_status=None):
                 results = results.filter(date__gte = start_date)
 
         if account_no is not None:
-            results = results.filter(account_no__account_no__in = account_no)
+            for i in account_no:
+                acc = [x[0] for x in AccountMaster.objects.filter(account_no__icontains = i).values_list("id")]
+                results = results.filter(Q(account_no_id__in = acc))
 
-        product_qry = """select product_name from app_basel_product_master where id = (select distinct(product_id) from app_collateral where account_no_id = app_stage_report.account_no_id)"""
-
-        results = results.extra(select={'product_name': product_qry}).select_related('account_no').values('id', 'date', 'account_no__account_no', 'product_name', 'stage', 'state', 'old_rating', 'new_rating', 'rating_3', 'rating_4', 'rating_5', 'rating_6', 'rating_7', 'day_bucket_1', 'day_bucket_2', 'day_bucket_3', 'day_bucket_4', 'day_bucket_5', 'day_bucket_6', 'day_bucket_7', 'day_bucket_8', 'day_bucket_9', 'day_bucket_10', 'day_bucket_11', 'day_bucket_12', 'day_bucket_13', 'day_bucket_14', 'day_bucket_15', 'criteria', 'cooling_period_1', 'cooling_period_2', 'cooling_period_3', 'cooling_period_4', 'cooling_period_5', 'rbi_window', 'mgmt_overlay_1', 'mgmt_overlay_2', Account_No = F('account_no__account_no'), cin = F('account_no__cin'), sectors = F('account_no__sectors'), account_type = F('account_no__account_type')).order_by("id")
+        results = results.values('id', 'date', 'account_no__account_no', 'product_name', 'stage', 'state', 'old_rating', 'new_rating', 'rating_3', 'rating_4', 'rating_5', 'rating_6', 'rating_7', 'day_bucket_1', 'day_bucket_2', 'day_bucket_3', 'day_bucket_4', 'day_bucket_5', 'day_bucket_6', 'day_bucket_7', 'day_bucket_8', 'day_bucket_9', 'day_bucket_10', 'day_bucket_11', 'day_bucket_12', 'day_bucket_13', 'day_bucket_14', 'day_bucket_15', 'criteria', 'cooling_period_1', 'cooling_period_2', 'cooling_period_3', 'cooling_period_4', 'cooling_period_5', 'rbi_window', 'mgmt_overlay_1', 'mgmt_overlay_2', Account_No = F('account_no__account_no'), cin = F('account_no__cin'), sectors = F('account_no__sectors'), account_type = F('account_no__account_type')).order_by("id")
 
     #
     # TAB- EAD
@@ -1174,6 +1242,10 @@ def show_reports(request, tab_status=None):
     if tab_status == "ead":
         results = EAD_Report.objects
 
+        product_qry = """select product_name from app_basel_product_master where id = (select distinct(product_id) from app_collateral where account_no_id = app_ead_report.account_no_id)"""
+
+        results = results.extra(select={'product_name': product_qry}).select_related('account_no')
+
         if start_date is None and end_date is None and account_no is None:
             results = results.all()
 
@@ -1184,11 +1256,11 @@ def show_reports(request, tab_status=None):
                 results = results.filter(date__gte = start_date)
 
         if account_no is not None:
-            results = results.filter(account_no__account_no__in = account_no)
+            for i in account_no:
+                acc = [x[0] for x in AccountMaster.objects.filter(account_no__icontains = i).values_list("id")]
+                results = results.filter(Q(account_no_id__in = acc))
 
-        product_qry = """select product_name from app_basel_product_master where id = (select distinct(product_id) from app_collateral where account_no_id = app_ead_report.account_no_id)"""
-
-        results = results.extra(select={'product_name': product_qry}).select_related('account_no').values('id', 'date', 'account_no__account_no', 'product_name', 'outstanding_amount', 'undrawn_upto_1_yr', 'undrawn_greater_than_1_yr', 'collateral_1_value', 'collateral_1_rating', 'collateral_1_residual_maturity', 'collateral_2_value', 'collateral_2_rating', 'collateral_2_residual_maturity', Account_No = F('account_no__account_no'), cin = F('account_no__cin'), sectors = F('account_no__sectors'), account_type = F('account_no__account_type')).order_by("id")
+        results = results.values('id', 'date', 'account_no__account_no', 'product_name', 'outstanding_amount', 'undrawn_upto_1_yr', 'undrawn_greater_than_1_yr', 'collateral_1_value', 'collateral_1_rating', 'collateral_1_residual_maturity', 'collateral_2_value', 'collateral_2_rating', 'collateral_2_residual_maturity', Account_No = F('account_no__account_no'), cin = F('account_no__cin'), sectors = F('account_no__sectors'), account_type = F('account_no__account_type')).order_by("id")
 
     #
     # PAGINATIONS
@@ -1264,25 +1336,43 @@ def collateral_upload(request):
         # Delete Collateral Enteries for account Number found
         Collateral.objects.filter(account_no = account_ins).delete()
 
+        only_product = []
+
         #
         # INSERT COLLATERAL
         #===================================================================
         for x in collateral_cols:
 
-            try:
-                collateral_ins = Basel_Collateral_Master.objects.get(basel_collateral_code = row[x].strip())
+            #
+            #
+            if row[x].strip() != "":
+                #
+                #
+                try:
+                    collateral_ins = Basel_Collateral_Master.objects.get(basel_collateral_code = row[x].strip())
 
-                if account_ins is not None and product_ins is not None:
-                    obj = Collateral.objects.create(
-                        account_no = account_ins,
-                        product = product_ins,
-                        collateral_code = collateral_ins
-                    )
+                    if account_ins is not None and product_ins is not None:
+                        obj = Collateral.objects.create(
+                            account_no = account_ins,
+                            product = product_ins,
+                            collateral_code = collateral_ins
+                        )
 
-            except ObjectDoesNotExist:
-                if row[x].strip() != "":
-                    err_msg["collateral_code"].append(row[x])
+                except ObjectDoesNotExist:
+                    if row[x].strip() != "":
+                        err_msg["collateral_code"].append(row[x])
+            else:
+                only_product.append(None)
 
+        #
+        #
+        only_product = list(filter(None, only_product))
+
+        if len(only_product) == 0:
+            obj = Collateral.objects.create(
+                account_no = account_ins,
+                product = product_ins
+            )
 
     # Mapping Errors into message framework
     #=================================================================
@@ -1367,3 +1457,61 @@ def delete_report_records(request, tab_status):
     messages.success(request, "Records Deleted Successfully")
 
     return HttpResponse("1")
+
+
+#**********************************************************************
+# ENDPOINT: DOWNLOAD REPORTS
+#**********************************************************************
+
+def download_reports(request, tab_status=None, ftype=0):
+
+    if request.POST["start_date"].strip() == "":
+        start_date = None
+    else:
+        start_date = request.POST["start_date"].strip()
+
+    if request.POST["end_date"].strip() == "":
+        end_date = None
+    else:
+        end_date = request.POST["end_date"].strip()
+
+
+    if ftype == 0:
+        path = background_tasks.download_reports(tab_status=tab_status, start_date=start_date, end_date=end_date, ftype=0)
+        if os.path.exists(path):
+            with open(path, "rb") as report:
+                data = report.read()
+                response = HttpResponse(data,content_type='application/vnd.openxmlformats-officedocument.spreadsheetml.sheet')
+                response['Content-Disposition'] = 'attachment; filename={}_Report.xlsx'.format(tab_status)
+                return response
+    elif ftype == 1:
+        df = background_tasks.download_reports(tab_status=tab_status, start_date=start_date, end_date=end_date, ftype=1)
+        response = HttpResponse(content_type='text/csv')
+        response['Content-Disposition'] = 'attachment; filename={}_Report.csv'.format(tab_status)
+        df.to_csv(path_or_buf=response, float_format='%.5f', index=False)
+        return response
+    else:
+        return redirect("show_reports")
+
+
+#**********************************************************************
+# ENDPOINT: SHOW COLLATERALS
+#**********************************************************************
+
+def show_collateral_mapping(request):
+
+    data = defaultdict()
+
+    results = Collateral.objects.all().select_related('account_no', 'collateral_code', 'product').values(Account_no = F('account_no__account_no'), product_name = F('product__product_name'), product_code = F('product__product_code'), basel_collateral_code = F('collateral_code__basel_collateral_code'))
+
+    #
+    # DATA
+    #==============================================================
+    data["tab_status"] = None
+    data["tab_active"] = 1
+    data["content_template"] = 'administrator/show_collaterals.html'
+    data["js_files"] = ['']
+    data["sidebar_active"] = 3
+    data["items_list"] = results
+
+    return render(request, "administrator/index.html", data)

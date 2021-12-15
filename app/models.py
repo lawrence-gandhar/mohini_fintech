@@ -71,7 +71,7 @@ class PD_Initial(models.Model):
     mgmt_overlay_1 = models.CharField(blank=True, null=True, max_length=255, db_index=True)
     mgmt_overlay_2 = models.CharField(blank=True, null=True, max_length=255, db_index=True)
     file_identifier = models.CharField(blank=True, null=True, max_length=255, db_index=True)
-    created_on = models.DateTimeField(auto_now_add=True, db_index=True)
+    created_on = models.DateTimeField(auto_now=True, db_index=True)
     edited_by = models.ForeignKey(User, on_delete=models.SET_NULL, null=True, blank=True, db_index=True)
     edited_on = models.DateTimeField(db_index=True, null=True, blank=True)
 
@@ -153,7 +153,7 @@ class LGD_Initial(models.Model):
     mgmt_overlay_1 = models.CharField(blank=True, null=True, max_length=255, db_index=True)
     mgmt_overlay_2 = models.CharField(blank=True, null=True, max_length=255, db_index=True)
     file_identifier = models.CharField(blank=True, null=True, max_length=255, db_index=True)
-    created_on = models.DateTimeField(auto_now_add=True, db_index=True)
+    created_on = models.DateTimeField(auto_now=True, db_index=True)
     edited_by = models.ForeignKey(User, on_delete=models.SET_NULL, null=True, blank=True, db_index=True)
     edited_on = models.DateTimeField(db_index=True, null=True, blank=True)
 
@@ -259,7 +259,7 @@ class Stage_Initial(models.Model):
     mgmt_overlay_1 = models.CharField(blank=True, null=True, max_length=255, db_index=True)
     mgmt_overlay_2 = models.CharField(blank=True, null=True, max_length=255, db_index=True)
     file_identifier = models.CharField(blank=True, null=True, max_length=255, db_index=True)
-    created_on = models.DateTimeField(auto_now_add=True, db_index=True)
+    created_on = models.DateTimeField(auto_now=True, db_index=True)
     edited_by = models.ForeignKey(User, on_delete=models.SET_NULL, null=True, blank=True, db_index=True)
     edited_on = models.DateTimeField(db_index=True, null=True, blank=True)
 
@@ -307,6 +307,7 @@ class Stage_Final(models.Model):
     mgmt_overlay_2 = models.CharField(blank=True, null=True, max_length=255, db_index=True)
     edited_by = models.ForeignKey(User, on_delete=models.SET_NULL, null=True, blank=True, db_index=True)
     edited_on = models.DateTimeField(db_index=True, null=True, blank=True)
+    created_on = models.DateTimeField(auto_now_add=True, db_index=True, null=True, blank=True)
 
     @classmethod
     def truncate(cls):
@@ -319,6 +320,7 @@ class Stage_Final(models.Model):
 class Stage_Report(models.Model):
     date = models.DateField(auto_now_add=False, null=True, blank=True,)
     account_no = models.ForeignKey(AccountMaster, on_delete=models.SET_NULL, null=True, blank=True, db_index=True)
+    state = models.CharField(blank=True, null=True, max_length=255, db_index=True)
     stage = models.CharField(blank=True, null=True, max_length=255, db_index=True)
     old_rating = models.CharField(blank=True, null=True, max_length=255, db_index=True)
     new_rating = models.CharField(blank=True, null=True, max_length=255, db_index=True)
@@ -378,7 +380,7 @@ class EIR_Initial(models.Model):
     col_2 = models.CharField(blank=True, null=True, max_length=255, db_index=True)
     col_3 = models.CharField(blank=True, null=True, max_length=255, db_index=True)
     file_identifier = models.CharField(blank=True, null=True, max_length=255, db_index=True)
-    created_on = models.DateTimeField(auto_now_add=True, db_index=True)
+    created_on = models.DateTimeField(auto_now=True, db_index=True)
     edited_by = models.ForeignKey(User, on_delete=models.SET_NULL, null=True, blank=True, db_index=True)
     edited_on = models.DateTimeField(db_index=True, null=True, blank=True)
 
@@ -538,7 +540,7 @@ class EAD_Initial(models.Model):
     collateral_2_rating = models.CharField(blank=True, null=True, max_length=255, db_index=True)
     collateral_2_residual_maturity = models.CharField(blank=True, null=True, max_length=255, db_index=True)
     file_identifier = models.CharField(blank=True, null=True, max_length=255, db_index=True)
-    created_on = models.DateTimeField(auto_now_add=True, db_index=True)
+    created_on = models.DateTimeField(auto_now=True, db_index=True)
     edited_by = models.ForeignKey(User, on_delete=models.SET_NULL, null=True, blank=True, db_index=True)
     edited_on = models.DateTimeField(db_index=True, null=True, blank=True)
 

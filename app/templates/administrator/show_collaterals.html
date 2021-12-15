@@ -1,0 +1,34 @@
+{% load custom_tags %}
+<div class="row" style="margin:20px 0px 0px; ">
+  <div class="col-md-6 col-sm-12">
+    <h3 style="line-height: 40px;" class="main_heading">Account/Product & Collaterals Mapping</h3>
+  </div>
+</div>
+<hr style="margin-top:0px;" />
+
+{% include 'base/alert_components.html' %}
+
+<div class="row row_counter">
+  <span>No.of Records{% if search_view %} Searched{% endif %} : {{ items_list|length }}</span>
+</div>
+
+<div class="row table-responsive" style="overflow:scroll; margin:1px;">
+  <table class="table table-bordered" id="manage_user_table" style="margin-top:10px;">
+    <thead style="background-color:#eeeeee;">
+      <th class="text-center">Account No</th>
+      <th class="text-center">Product Code</th>
+      <th class="text-center">Product Name</th>
+      <th class="text-center">Basel Collateral Code</th>
+    </thead>
+    <tbody style="font-size:13px;">
+      {% for row in items_list %}
+      <tr>
+        <td>{{row.Account_no|default_if_none:''}}</td>
+        <td>{{row.product_code|default_if_none:''}}</td>
+        <td>{{row.product_name|default_if_none:''}}</td>
+        <td>{{row.basel_collateral_code|default_if_none:''}}</td>
+      </tr>
+      {% endfor %}
+    </tbody>
+  </table>
+</div>

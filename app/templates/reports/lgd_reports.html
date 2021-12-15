@@ -8,6 +8,12 @@
         <button type="button" class="btn btn-default btn-sm" style="width:100px; color:#000000;" onclick="delete_report_selected_records()">
           <i class="la la-trash"></i> <strong>Delete</strong>
         </button>
+        <button type="button" onclick="download_reports(0)" class="btn btn-default btn-sm">
+          <i class="la la-file-excel"></i> <strong>XLS Report</strong>
+        </button>
+        <button type="button" onclick="download_reports(1)" class="btn btn-default btn-sm">
+          <i class="la la-file-alt"></i> <strong>CSV Report</strong>
+        </button>
       </div>
   </div>
 </div>
@@ -45,7 +51,7 @@
     <div class="tab-content" style="padding:10px 0px;">
 
       <div class="table-responsive" style="overflow:auto;">
-        <form method="post" action="{% url 'lgd_report' %}">
+        <form method="post" action="#" id="search_download_form">
           {% csrf_token %}
           <table class="table table-bordered" style="background-color: #dee2e6;">
             <tr>
@@ -62,7 +68,7 @@
                 <input type="date" name="end_date" class="form-control">
               </td>
               <td>
-                <button type="submit" class="btn btn-success">Run Report</button>
+                <button type="button" onclick="search_reports()" class="btn btn-success">Search</button>
               </td>
             </tr>
           </table>
@@ -173,7 +179,36 @@
 
 
 <script>
+
+  //
+  //
+  //
+
   var status = {{tab_active}};
   var delete_selected_url = '{% url "delete_report_records" "lgd" %}';
+
+  var report_url = "{% url 'show_reports' 'lgd' %}";
+  var download_report_url_xls = "{% url 'download_reports' 'lgd' '0' %}";
+  var download_report_url_csv = "{% url 'download_reports' 'lgd' '1' %}";
+
+  //
+  //
+  //
+
+  function download_reports(ftype){
+    if(ftype == 0) download_report_url = download_report_url_xls;
+    if(ftype == 1) download_report_url = download_report_url_csv;
+
+    $("form#search_download_form").attr("action", download_report_url).submit();
+  }
+
+  //
+  //
+  //
+
+  function search_reports(){
+    $("form#search_download_form").attr("action", report_url).submit();
+  }
+
 
 </script>

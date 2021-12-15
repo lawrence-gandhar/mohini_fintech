@@ -8,6 +8,12 @@
         <button type="button" class="btn btn-default btn-sm" style="width:100px; color:#000000;" onclick="delete_report_selected_records()">
           <i class="la la-trash"></i> <strong>Delete</strong>
         </button>
+        <button type="button" onclick="download_reports(0)" class="btn btn-default btn-sm">
+          <i class="la la-file-excel"></i> <strong>XLS Report</strong>
+        </button>
+        <button type="button" onclick="download_reports(1)" class="btn btn-default btn-sm">
+          <i class="la la-file-alt"></i> <strong>CSV Report</strong>
+        </button>
       </div>
   </div>
 </div>
@@ -45,7 +51,7 @@
     <div class="tab-content" style="padding:10px 0px;">
 
       <div class="table-responsive" style="overflow:auto;">
-        <form method="post" action="{% url 'stage_report' %}">
+        <form method="post" action="#" id="search_download_form">
           {% csrf_token %}
           <table class="table table-bordered" style="background-color: #dee2e6;">
             <tr>
@@ -62,7 +68,7 @@
                 <input type="date" name="end_date" class="form-control">
               </td>
               <td>
-                <button type="submit" class="btn btn-success">Run Report</button>
+                <button type="button" onclick="search_reports()" class="btn btn-success">Search</button>
               </td>
             </tr>
           </table>
@@ -94,7 +100,6 @@
               <th>Day Bucket 5</th>
               <th>Day Bucket 6</th>
               <th>Day Bucket 7</th>
-              <th>Day Bucket </th>
               <th>Day Bucket 8</th>
               <th>Day Bucket 9</th>
               <th>Day Bucket 10</th>
@@ -112,6 +117,8 @@
               <th>RBI Window</th>
               <th>Management Overlay 1</th>
               <th>Management Overlay 2</th>
+              <th>State</th>
+              <th>Stage</th>
               <th>Action</th>
             </thead>
             <tbody style="font-size:12px; white-space: nowrap;">
@@ -123,8 +130,6 @@
                   <td>{{row.cin|default_if_none:''}}</td>
                   <td>{{row.product_name|default_if_none:''}}</td>
                   <td>{{row.sectors|default_if_none:''}}</td>
-                  <td>{{row.stage|default_if_none:''}}</td>
-                  <td>{{row.state|default_if_none:''}}</td>
                   <td>{{row.old_rating|default_if_none:''}}</td>
                   <td>{{row.new_rating|default_if_none:''}}</td>
                   <td>{{row.rating_3|default_if_none:''}}</td>
@@ -156,6 +161,8 @@
                   <td>{{row.rbi_window|default_if_none:''}}</td>
                   <td>{{row.mgmt_overlay_1|default_if_none:''}}</td>
                   <td>{{row.mgmt_overlay_2|default_if_none:''}}</td>
+                  <td>{{row.state|default_if_none:''}}</td>
+                  <td>{{row.stage|default_if_none:''}}</td>
                   <td class="text-center p-0">
                     <div class="btn-group" role="group" aria-label="Basic example">
                       <button type="button" params="" class="btn btn-icon btn-sm" onclick="delete_single_record(this)">
@@ -201,8 +208,38 @@
 </div>
 
 
+
 <script>
+
+  //
+  //
+  //
+
   var status = {{tab_active}};
   var delete_selected_url = '{% url "delete_report_records" "stage" %}';
+
+  var report_url = "{% url 'show_reports' 'stage' %}";
+  var download_report_url_xls = "{% url 'download_reports' 'stage' '0' %}";
+  var download_report_url_csv = "{% url 'download_reports' 'stage' '1' %}";
+
+  //
+  //
+  //
+
+  function download_reports(ftype){
+    if(ftype == 0) download_report_url = download_report_url_xls;
+    if(ftype == 1) download_report_url = download_report_url_csv;
+
+    $("form#search_download_form").attr("action", download_report_url).submit();
+  }
+
+  //
+  //
+  //
+
+  function search_reports(){
+    $("form#search_download_form").attr("action", report_url).submit();
+  }
+
 
 </script>

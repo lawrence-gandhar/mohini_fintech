@@ -8,6 +8,7 @@ from django.core.exceptions import ObjectDoesNotExist, MultipleObjectsReturned
 from django.utils import timezone
 from django.db import connection
 from django.db.models import F
+from django.conf import settings
 
 from . import helpers
 from . import constants
@@ -20,6 +21,8 @@ import pandas as pd
 import numpy as np
 import math
 from sklearn.linear_model import LogisticRegression, LinearRegression
+import os
+
 
 
 #**********************************************************************
@@ -27,7 +30,12 @@ from sklearn.linear_model import LogisticRegression, LinearRegression
 #**********************************************************************
 def insert_data(data_set, import_type, file_identifier=None):
 
+    row_num = 0
+    row_failed = 0
+    total_rows = 0
+
     for row in data_set:
+        total_rows += 1
         col_names = row.keys()
 
         try:
@@ -43,6 +51,7 @@ def insert_data(data_set, import_type, file_identifier=None):
                     raise Exception("exception")
                 else:
                     update_record(account_ins, import_type, row, file_identifier)
+
             elif import_type == "product" and row["product_code"].strip()!="":
                 ins_const = constants.TAB_ACTIVE[import_type][3].get(product_code = row["product_code"].strip())
             elif import_type == "collateral" and row["basel_collateral_code"].strip()!="":
@@ -54,7 +63,7 @@ def insert_data(data_set, import_type, file_identifier=None):
                     ins_const = constants.TAB_ACTIVE[import_type][3].get(account_no_temp = row["account_no"].strip(), date = row["date"].strip())
 
                 update_record(ins_const, import_type, row, file_identifier)
-
+            row_num += 1
         except:
 
             #
@@ -217,10 +226,11 @@ def insert_data(data_set, import_type, file_identifier=None):
             try:
                 ins.file_identifier = file_identifier
                 ins.save()
+                row_num += 1
             except:
-                pass
+                row_failed += 1
 
-
+    return row_num, row_failed, total_rows
 #**********************************************************************
 # METHOD TO UPDATE DATA INTO RELEVANT MODELS
 #**********************************************************************
@@ -296,7 +306,7 @@ def update_record(ins_const=None, import_type=None, row=None, file_identifier=No
     if import_type == "lgd":
 
          ins_const.date = helpers.clean_data(row["date"]) if "date" in col_names else None
-         ins_const.ead_os = helpers.clean_data(row["ead_os"]) if "ead_os" in col_names else None,
+         ins_const.ead_os = helpers.clean_data(row["ead_os"]) if "ead_os" in col_names else None
          ins_const.pv_cashflows = helpers.clean_data(row["pv_cashflows"]) if "pv_cashflows" in col_names else None
          ins_const.pv_cost = helpers.clean_data(row["pv_cost"]) if "pv_cost" in col_names else None
          ins_const.beta_value = helpers.clean_data(row["beta_value"]) if "beta_value" in col_names else None
@@ -388,101 +398,190 @@ def update_record(ins_const=None, import_type=None, row=None, file_identifier=No
 #**********************************************************************
 def move_record(tab_status=None, obj=None):
 
+    try:
+        ins = constants.TAB_ACTIVE[tab_status][4].get(date = obj.date, account_no = obj.account_no)
+    except ObjectDoesNotExist:
+        ins = None
+
     if tab_status == "pd" and obj is not None:
-        constants.TAB_ACTIVE[tab_status][4].create(
-            date = obj.date,
-            account_no = obj.account_no,
-            factor_1 = obj.factor_1,
-            factor_2 = obj.factor_2,
-            factor_3 = obj.factor_3,
-            factor_4 = obj.factor_4,
-            factor_5 = obj.factor_5,
-            factor_6 = obj.factor_6,
-            default_col = obj.default_col,
-            mgmt_overlay_1 = obj.mgmt_overlay_1,
-            mgmt_overlay_2 = obj.mgmt_overlay_2,
-        )
+
+        if ins is None:
+            constants.TAB_ACTIVE[tab_status][4].create(
+                date = obj.date,
+                account_no = obj.account_no,
+                factor_1 = obj.factor_1,
+                factor_2 = obj.factor_2,
+                factor_3 = obj.factor_3,
+                factor_4 = obj.factor_4,
+                factor_5 = obj.factor_5,
+                factor_6 = obj.factor_6,
+                default_col = obj.default_col,
+                mgmt_overlay_1 = obj.mgmt_overlay_1,
+                mgmt_overlay_2 = obj.mgmt_overlay_2,
+            )
+        else:
+            ins.date = obj.date
+            ins.account_no = obj.account_no
+            ins.factor_1 = obj.factor_1
+            ins.factor_2 = obj.factor_2
+            ins.factor_3 = obj.factor_3
+            ins.factor_4 = obj.factor_4
+            ins.factor_5 = obj.factor_5
+            ins.factor_6 = obj.factor_6
+            ins.default_col = obj.default_col
+            ins.mgmt_overlay_1 = obj.mgmt_overlay_1
+            ins.mgmt_overlay_2 = obj.mgmt_overlay_2
+            ins.save()
 
         obj.delete()
         return True
 
     elif tab_status == "lgd" and obj is not None:
-        constants.TAB_ACTIVE[tab_status][4].create(
-            date = obj.date,
-            account_no = obj.account_no,
-            ead_os = obj.ead_os,
-            pv_cashflows = obj.pv_cashflows,
-            pv_cost = obj.pv_cost,
-            beta_value = obj.beta_value,
-            sec_flag = obj.sec_flag,
-            factor_4 = obj.factor_4,
-            factor_5 = obj.factor_5,
-            avg_1 = obj.avg_1,
-            avg_2 = obj.avg_2,
-            avg_3 = obj.avg_3,
-            avg_4 = obj.avg_4,
-            avg_5 = obj.avg_5,
-            mgmt_overlay_1 = obj.mgmt_overlay_1,
-            mgmt_overlay_2 = obj.mgmt_overlay_2,
-        )
+        if ins is None:
+            constants.TAB_ACTIVE[tab_status][4].create(
+                date = obj.date,
+                account_no = obj.account_no,
+                ead_os = obj.ead_os,
+                pv_cashflows = obj.pv_cashflows,
+                pv_cost = obj.pv_cost,
+                beta_value = obj.beta_value,
+                sec_flag = obj.sec_flag,
+                factor_4 = obj.factor_4,
+                factor_5 = obj.factor_5,
+                avg_1 = obj.avg_1,
+                avg_2 = obj.avg_2,
+                avg_3 = obj.avg_3,
+                avg_4 = obj.avg_4,
+                avg_5 = obj.avg_5,
+                mgmt_overlay_1 = obj.mgmt_overlay_1,
+                mgmt_overlay_2 = obj.mgmt_overlay_2,
+            )
+        else:
+            ins.date = obj.date,
+            ins.account_no = obj.account_no
+            ins.ead_os = obj.ead_os
+            ins.pv_cashflows = obj.pv_cashflows
+            ins.pv_cost = obj.pv_cost
+            ins.beta_value = obj.beta_value
+            ins.sec_flag = obj.sec_flag
+            ins.factor_4 = obj.factor_4
+            ins.factor_5 = obj.factor_5
+            ins.avg_1 = obj.avg_1
+            ins.avg_2 = obj.avg_2
+            ins.avg_3 = obj.avg_3
+            ins.avg_4 = obj.avg_4
+            ins.avg_5 = obj.avg_5
+            ins.mgmt_overlay_1 = obj.mgmt_overlay_1
+            ins.mgmt_overlay_2 = obj.mgmt_overlay_2
+            ins.save()
 
         obj.delete()
         return True
 
     elif tab_status == "stage" and obj is not None:
-        constants.TAB_ACTIVE[tab_status][4].create(
-            date = obj.date,
-            account_no = obj.account_no,
-            old_rating = obj.old_rating,
-            new_rating = obj.new_rating,
-            rating_3 = obj.rating_3,
-            rating_4 = obj.rating_4,
-            rating_5 = obj.rating_5,
-            rating_6 = obj.rating_6,
-            rating_7 = obj.rating_7,
-            day_bucket_1 = obj.day_bucket_1,
-            day_bucket_2 = obj.day_bucket_2,
-            day_bucket_3 = obj.day_bucket_3,
-            day_bucket_4 = obj.day_bucket_4,
-            day_bucket_5 = obj.day_bucket_5,
-            day_bucket_6 = obj.day_bucket_6,
-            day_bucket_7 = obj.day_bucket_7,
-            day_bucket_8 = obj.day_bucket_8,
-            day_bucket_9 = obj.day_bucket_9,
-            day_bucket_10 = obj.day_bucket_10,
-            day_bucket_11 = obj.day_bucket_11,
-            day_bucket_12 = obj.day_bucket_12,
-            day_bucket_13 = obj.day_bucket_13,
-            day_bucket_14 = obj.day_bucket_14,
-            day_bucket_15 = obj.day_bucket_15,
-            criteria = obj.criteria,
-            cooling_period_1 = obj.cooling_period_1,
-            cooling_period_2 = obj.cooling_period_2,
-            cooling_period_3 = obj.cooling_period_3,
-            cooling_period_4 = obj.cooling_period_4,
-            cooling_period_5 = obj.cooling_period_5,
-            rbi_window = obj.rbi_window,
-            mgmt_overlay_1 = obj.mgmt_overlay_1,
-            mgmt_overlay_2 = obj.mgmt_overlay_2
-        )
+        if ins is None:
+            constants.TAB_ACTIVE[tab_status][4].create(
+                date = obj.date,
+                account_no = obj.account_no,
+                old_rating = obj.old_rating,
+                new_rating = obj.new_rating,
+                rating_3 = obj.rating_3,
+                rating_4 = obj.rating_4,
+                rating_5 = obj.rating_5,
+                rating_6 = obj.rating_6,
+                rating_7 = obj.rating_7,
+                day_bucket_1 = obj.day_bucket_1,
+                day_bucket_2 = obj.day_bucket_2,
+                day_bucket_3 = obj.day_bucket_3,
+                day_bucket_4 = obj.day_bucket_4,
+                day_bucket_5 = obj.day_bucket_5,
+                day_bucket_6 = obj.day_bucket_6,
+                day_bucket_7 = obj.day_bucket_7,
+                day_bucket_8 = obj.day_bucket_8,
+                day_bucket_9 = obj.day_bucket_9,
+                day_bucket_10 = obj.day_bucket_10,
+                day_bucket_11 = obj.day_bucket_11,
+                day_bucket_12 = obj.day_bucket_12,
+                day_bucket_13 = obj.day_bucket_13,
+                day_bucket_14 = obj.day_bucket_14,
+                day_bucket_15 = obj.day_bucket_15,
+                criteria = obj.criteria,
+                cooling_period_1 = obj.cooling_period_1,
+                cooling_period_2 = obj.cooling_period_2,
+                cooling_period_3 = obj.cooling_period_3,
+                cooling_period_4 = obj.cooling_period_4,
+                cooling_period_5 = obj.cooling_period_5,
+                rbi_window = obj.rbi_window,
+                mgmt_overlay_1 = obj.mgmt_overlay_1,
+                mgmt_overlay_2 = obj.mgmt_overlay_2
+            )
+        else:
+            ins.date = obj.date
+            ins.account_no = obj.account_no
+            ins.old_rating = obj.old_rating
+            ins.new_rating = obj.new_rating
+            ins.rating_3 = obj.rating_3
+            ins.rating_4 = obj.rating_4
+            ins.rating_5 = obj.rating_5
+            ins.rating_6 = obj.rating_6
+            ins.rating_7 = obj.rating_7
+            ins.day_bucket_1 = obj.day_bucket_1
+            ins.day_bucket_2 = obj.day_bucket_2
+            ins.day_bucket_3 = obj.day_bucket_3
+            ins.day_bucket_4 = obj.day_bucket_4
+            ins.day_bucket_5 = obj.day_bucket_5
+            ins.day_bucket_6 = obj.day_bucket_6
+            ins.day_bucket_7 = obj.day_bucket_7
+            ins.day_bucket_8 = obj.day_bucket_8
+            ins.day_bucket_9 = obj.day_bucket_9
+            ins.day_bucket_10 = obj.day_bucket_10
+            ins.day_bucket_11 = obj.day_bucket_11
+            ins.day_bucket_12 = obj.day_bucket_12
+            ins.day_bucket_13 = obj.day_bucket_13
+            ins.day_bucket_14 = obj.day_bucket_14
+            ins.day_bucket_15 = obj.day_bucket_15
+            ins.criteria = obj.criteria
+            ins.cooling_period_1 = obj.cooling_period_1
+            ins.cooling_period_2 = obj.cooling_period_2
+            ins.cooling_period_3 = obj.cooling_period_3
+            ins.cooling_period_4 = obj.cooling_period_4
+            ins.cooling_period_5 = obj.cooling_period_5
+            ins.rbi_window = obj.rbi_window
+            ins.mgmt_overlay_1 = obj.mgmt_overlay_1
+            ins.mgmt_overlay_2 = obj.mgmt_overlay_2
+            ins.save()
 
         obj.delete()
         return True
 
     elif tab_status == "ead" and obj is not None:
-        constants.TAB_ACTIVE[tab_status][4].create(
-            date = obj.date,
-            account_no = obj.account_no,
-            outstanding_amount = obj.outstanding_amount,
-            undrawn_upto_1_yr = obj.undrawn_upto_1_yr,
-            undrawn_greater_than_1_yr = obj.undrawn_greater_than_1_yr,
-            collateral_1_value = obj.collateral_1_value,
-            collateral_1_rating = obj.collateral_1_rating,
-            collateral_1_residual_maturity = obj.collateral_1_residual_maturity,
-            collateral_2_value = obj.collateral_2_value,
-            collateral_2_rating = obj.collateral_2_rating,
-            collateral_2_residual_maturity = obj.collateral_2_residual_maturity,
-        )
+        if ins is None:
+            constants.TAB_ACTIVE[tab_status][4].create(
+                date = obj.date,
+                account_no = obj.account_no,
+                outstanding_amount = obj.outstanding_amount,
+                undrawn_upto_1_yr = obj.undrawn_upto_1_yr,
+                undrawn_greater_than_1_yr = obj.undrawn_greater_than_1_yr,
+                collateral_1_value = obj.collateral_1_value,
+                collateral_1_rating = obj.collateral_1_rating,
+                collateral_1_residual_maturity = obj.collateral_1_residual_maturity,
+                collateral_2_value = obj.collateral_2_value,
+                collateral_2_rating = obj.collateral_2_rating,
+                collateral_2_residual_maturity = obj.collateral_2_residual_maturity,
+            )
+        else:
+            ins.date = obj.date
+            ins.account_no = obj.account_no
+            ins.outstanding_amount = obj.outstanding_amount
+            ins.undrawn_upto_1_yr = obj.undrawn_upto_1_yr
+            ins.undrawn_greater_than_1_yr = obj.undrawn_greater_than_1_yr
+            ins.collateral_1_value = obj.collateral_1_value
+            ins.collateral_1_rating = obj.collateral_1_rating
+            ins.collateral_1_residual_maturity = obj.collateral_1_residual_maturity
+            ins.collateral_2_value = obj.collateral_2_value
+            ins.collateral_2_rating = obj.collateral_2_rating
+            ins.collateral_2_residual_maturity = obj.collateral_2_residual_maturity
+            ins.save()
 
         obj.delete()
         return True
@@ -520,44 +619,51 @@ def move_data_bg_process(request, tab_status=None):
         # Valid Records found for movement
         records_valid = qry.count()
 
+        # Create Insert statement for each tab_status
+        if tab_status == "pd":
+            result_set = qry.values_list('id', 'date', 'account_no', 'factor_1', 'factor_2', 'factor_3', 'factor_4', 'factor_5', 'factor_6', 'default_col', 'mgmt_overlay_1', 'mgmt_overlay_2')
+
+        if tab_status == "lgd":
+            result_set = qry.values_list('id', 'date', 'account_no', 'ead_os', 'pv_cashflows', 'pv_cost', 'beta_value', 'sec_flag', 'factor_4', 'factor_5', 'avg_1', 'avg_2', 'avg_3', 'avg_4', 'avg_5', 'mgmt_overlay_1', 'mgmt_overlay_2')
+
+        if tab_status == "stage":
+            result_set = qry.values_list('id', 'date', 'account_no', 'old_rating', 'new_rating', 'rating_3', 'rating_4', 'rating_5', 'rating_6', 'rating_7', 'day_bucket_1', 'day_bucket_2', 'day_bucket_3', 'day_bucket_4', 'day_bucket_5', 'day_bucket_6', 'day_bucket_7', 'day_bucket_8', 'day_bucket_9', 'day_bucket_10', 'day_bucket_11', 'day_bucket_12','day_bucket_13', 'day_bucket_14', 'day_bucket_15', 'criteria', 'cooling_period_1', 'cooling_period_2', 'cooling_period_3', 'cooling_period_4', 'cooling_period_5', 'rbi_window', 'mgmt_overlay_1', 'mgmt_overlay_2')
+
         #
         # If valid records found : then capture & iterate to insert
         if records_valid > 0:
 
-            # Create Insert statement for each tab_status
-            if tab_status == "pd":
-                result_set = qry.values_list('id', 'date', 'account_no', 'factor_1', 'factor_2', 'factor_3', 'factor_4', 'factor_5', 'factor_6', 'default_col', 'mgmt_overlay_1', 'mgmt_overlay_2')
-
-                insert_qry = """
-                    insert into {0} (date, account_no_id, factor_1, factor_2, factor_3, factor_4, factor_5, factor_6, default_col, mgmt_overlay_1, mgmt_overlay_2, created_on)""".format(constants.TAB_ACTIVE[tab_status][6])
-
-                update_qry = """
-                    update {0} set factor_1='{3}', factor_2='{4}', factor_3='{5}', factor_4='{6}', factor_5='{7}', factor_6='{8}', default_col='{9}', mgmt_overlay_1='{10}', mgmt_overlay_2='{11}', created_on='{12}' where date='{1}' and account_no_id='{2}'
-                    """
-
-            if tab_status == "lgd":
-                result_set = qry.values_list('id', 'date', 'account_no', 'ead_os', 'pv_cashflows', 'pv_cost', 'beta_value', 'sec_flag', 'factor_4', 'factor_5', 'avg_1', 'avg_2', 'avg_3', 'avg_4', 'avg_5', 'mgmt_overlay_1', 'mgmt_overlay_2', 'rec_rate')
-
-                insert_qry = """
-                    insert into {0} (date, account_no_id, ead_os, pv_cashflows, pv_cost, beta_value, sec_flag, factor_4, factor_5, avg_1, avg_2, avg_3, avg_4, avg_5, mgmt_overlay_1, mgmt_overlay_2, rec_rate, created_on)""".format(constants.TAB_ACTIVE[tab_status][6])
-
-                update_qry = """
-                    update {0} set ead_os='{3}', pv_cashflows='{4}', pv_cost='{5}', beta_value='{6}', sec_flag='{7}', factor_4='{8}', factor_5='{9}', avg_1='{10}', avg_2='{11}', avg_3='{12}', avg_4='{13}', avg_5='{14}', mgmt_overlay_1='{15}', mgmt_overlay_2='{16}', rec_rate='{17}', created_on='{18}' where date='{1}' and account_no_id='{2}'
-                    """
-
-            if tab_status == "stage":
-                result_set = qry.values_list('id', 'date', 'account_no', 'old_rating', 'new_rating', 'rating_3', 'rating_4', 'rating_5', 'rating_6', 'rating_7', 'day_bucket_1', 'day_bucket_2', 'day_bucket_3', 'day_bucket_4', 'day_bucket_5', 'day_bucket_6', 'day_bucket_7', 'day_bucket_8', 'day_bucket_9', 'day_bucket_10', 'day_bucket_11', 'day_bucket_12','day_bucket_13', 'day_bucket_14', 'day_bucket_15', 'criteria', 'cooling_period_1', 'cooling_period_2', 'cooling_period_3', 'cooling_period_4', 'cooling_period_5', 'rbi_window', 'mgmt_overlay_1', 'mgmt_overlay_2')
-
-                insert_qry = """
-                    insert into {0} (date, account_no_id, old_rating, new_rating, rating_3, rating_4, rating_5, rating_6, rating_7, day_bucket_1, day_bucket_2, day_bucket_3, day_bucket_4, day_bucket_5, day_bucket_6, day_bucket_7, day_bucket_8, day_bucket_9, day_bucket_10, day_bucket_11, day_bucket_12, day_bucket_13, day_bucket_14, day_bucket_15, criteria, cooling_period_1, cooling_period_2, cooling_period_3, cooling_period_4, cooling_period_5, rbi_window, mgmt_overlay_1, mgmt_overlay_2, created_on)""".format(constants.TAB_ACTIVE[tab_status][6])
-
-                update_qry = """
-                    update {0} set old_rating='{3}', new_rating, rating_3='{4}', rating_4='{5}', rating_5='{6}', rating_6='{7}', rating_7='{8}', day_bucket_1='{9}', day_bucket_2='{10}', day_bucket_3='{11}', day_bucket_4='{12}', day_bucket_5='{13}', day_bucket_6='{14}', day_bucket_7='{15}', day_bucket_8='{16}', day_bucket_9='{17}', day_bucket_10='{18}', day_bucket_11='{19}', day_bucket_12='{20}', day_bucket_13='{21}', day_bucket_14='{22}', day_bucket_15='{23}', criteria='{24}', cooling_period_1='{25}', cooling_period_2='{26}', cooling_period_3='{27}', cooling_period_4='{28}', cooling_period_5='{29}', rbi_window='{30}', mgmt_overlay_1='{31}', mgmt_overlay_2='{32}', created_on='{33}' where date='{1}' and account_no_id='{2}'
-                """
 
             #
             # Iterate over each row & insert
             for row in result_set:
+
+                # Create Insert statement for each tab_status
+                if tab_status == "pd":
+                    insert_qry = """
+                        insert into {0} (date, account_no_id, factor_1, factor_2, factor_3, factor_4, factor_5, factor_6, default_col, mgmt_overlay_1, mgmt_overlay_2, created_on)""".format(constants.TAB_ACTIVE[tab_status][6])
+
+                    update_qry = """
+                        update {0} set factor_1='{3}', factor_2='{4}', factor_3='{5}', factor_4='{6}', factor_5='{7}', factor_6='{8}', default_col='{9}', mgmt_overlay_1='{10}', mgmt_overlay_2='{11}', created_on='{12}' where date='{1}' and account_no_id='{2}'
+                        """
+
+                if tab_status == "lgd":
+                    insert_qry = """
+                        insert into {0} (date, account_no_id, ead_os, pv_cashflows, pv_cost, beta_value, sec_flag, factor_4, factor_5, avg_1, avg_2, avg_3, avg_4, avg_5, mgmt_overlay_1, mgmt_overlay_2, created_on)""".format(constants.TAB_ACTIVE[tab_status][6])
+
+                    update_qry = """
+                        update {0} set ead_os='{3}', pv_cashflows='{4}', pv_cost='{5}', beta_value='{6}', sec_flag='{7}', factor_4='{8}', factor_5='{9}', avg_1='{10}', avg_2='{11}', avg_3='{12}', avg_4='{13}', avg_5='{14}', mgmt_overlay_1='{15}', mgmt_overlay_2='{16}', created_on='{17}' where date='{1}' and account_no_id='{2}'
+                        """
+
+                if tab_status == "stage":
+                    insert_qry = """
+                        insert into {0} (date, account_no_id, old_rating, new_rating, rating_3, rating_4, rating_5, rating_6, rating_7, day_bucket_1, day_bucket_2, day_bucket_3, day_bucket_4, day_bucket_5, day_bucket_6, day_bucket_7, day_bucket_8, day_bucket_9, day_bucket_10, day_bucket_11, day_bucket_12, day_bucket_13, day_bucket_14, day_bucket_15, criteria, cooling_period_1, cooling_period_2, cooling_period_3, cooling_period_4, cooling_period_5, rbi_window, mgmt_overlay_1, mgmt_overlay_2, created_on)""".format(constants.TAB_ACTIVE[tab_status][6])
+
+                    update_qry = """
+                        update {0} set old_rating='{3}', new_rating='{4}', rating_3='{5}', rating_4='{6}', rating_5='{7}', rating_6='{8}', rating_7='{9}', day_bucket_1='{10}', day_bucket_2='{11}', day_bucket_3='{12}', day_bucket_4='{13}', day_bucket_5='{14}', day_bucket_6='{15}', day_bucket_7='{16}', day_bucket_8='{17}', day_bucket_9='{18}', day_bucket_10='{19}', day_bucket_11='{20}', day_bucket_12='{21}', day_bucket_13='{22}', day_bucket_14='{23}', day_bucket_15='{24}', criteria='{25}', cooling_period_1='{26}', cooling_period_2='{27}', cooling_period_3='{28}', cooling_period_4='{29}', cooling_period_5='{30}', rbi_window='{31}', mgmt_overlay_1='{32}', mgmt_overlay_2='{33}', created_on='{34}' where date='{1}' and account_no_id='{2}'
+                    """
+
+
 
                 row = list(row)
                 row_id = row[0]
@@ -672,9 +778,10 @@ def pd_report(account_no=None, start_date=None, end_date=None, s_type = 0, id_se
     else:
         results = constants.TAB_ACTIVE["pd"][4]
 
+
     #
     #
-    if id_selected is None:
+    if id_selected is None or len(id_selected) == 0:
 
         if start_date is None and end_date is None and account_no is None:
             results = results.all()
@@ -690,13 +797,15 @@ def pd_report(account_no=None, start_date=None, end_date=None, s_type = 0, id_se
     else:
         if s_type == 0:
             results = results.filter(id__in = id_selected)
-            
+
     #
     #
     move_res = results
     results = results.select_related("account_no")
 
     results = results.values('id','date', 'account_no_id', 'factor_1', 'factor_2', 'factor_3', 'factor_4', 'default_col', 'factor_5', 'factor_6', 'mgmt_overlay_1', 'mgmt_overlay_2', Account_No = F('account_no__account_no'))
+
+
 
     if results.exists() is False:
         return False
@@ -739,12 +848,12 @@ def pd_report(account_no=None, start_date=None, end_date=None, s_type = 0, id_se
 
             try:
                 pd_report = PD_Report.objects.get(date = row["date"], account_no = acc)
-                pd_report.factor_1 = row["factor_1"]
-                pd_report.factor_2 = row["factor_2"]
-                pd_report.factor_3 = row["factor_3"]
-                pd_report.factor_4 = row["factor_4"]
-                pd_report.factor_5 = row["factor_5"]
-                pd_report.factor_6 = row["factor_6"]
+                pd_report.factor_1 = round(row["factor_1"], 5) if row["factor_1"] is not None else None
+                pd_report.factor_2 = round(row["factor_2"], 5) if row["factor_2"] is not None else None
+                pd_report.factor_3 = round(row["factor_3"], 5) if row["factor_3"] is not None else None
+                pd_report.factor_4 = round(row["factor_4"], 5) if row["factor_4"] is not None else None
+                pd_report.factor_5 = round(row["factor_5"], 5) if row["factor_5"] is not None else None
+                pd_report.factor_6 = round(row["factor_6"], 5) if row["factor_6"] is not None else None
                 pd_report.default_col = row["default_col"]
                 pd_report.mgmt_overlay_1 = row["mgmt_overlay_1"]
                 pd_report.mgmt_overlay_2 = row["mgmt_overlay_2"]
@@ -758,15 +867,15 @@ def pd_report(account_no=None, start_date=None, end_date=None, s_type = 0, id_se
                 pd_report.save()
 
             except ObjectDoesNotExist:
-                pd_report = PD_Report(
+                pd_report = PD_Report.objects.create(
                     date = row["date"],
                     account_no = acc,
-                    factor_1 = row["factor_1"],
-                    factor_2 = row["factor_2"],
-                    factor_3 = row["factor_3"],
-                    factor_4 = row["factor_4"],
-                    factor_5 = row["factor_5"],
-                    factor_6 = row["factor_6"],
+                    factor_1 = round(row["factor_1"], 5) if row["factor_1"] is not None else None,
+                    factor_2 = round(row["factor_2"], 5) if row["factor_2"] is not None else None,
+                    factor_3 = round(row["factor_3"], 5) if row["factor_3"] is not None else None,
+                    factor_4 = round(row["factor_4"], 5) if row["factor_4"] is not None else None,
+                    factor_5 = round(row["factor_5"], 5) if row["factor_5"] is not None else None,
+                    factor_6 = round(row["factor_6"], 5) if row["factor_6"] is not None else None,
                     default_col = row["default_col"],
                     mgmt_overlay_1 = row["mgmt_overlay_1"],
                     mgmt_overlay_2 = row["mgmt_overlay_2"],
@@ -779,8 +888,6 @@ def pd_report(account_no=None, start_date=None, end_date=None, s_type = 0, id_se
                     pd = round(row["PD"],5)
                 )
 
-                pd_report.save()
-
         if s_type == 1:
             for row_mov in move_res:
                 move_record("pd", row_mov)
@@ -790,7 +897,7 @@ def pd_report(account_no=None, start_date=None, end_date=None, s_type = 0, id_se
 # **********************************************************************
 # LGD REPORT CALCULATION & DATA LOAD
 # **********************************************************************
-def lgd_report(account_no=None, start_date=None, end_date=None):
+def lgd_report(account_no=None, start_date=None, end_date=None, s_type = 0, id_selected=None):
 
     #
     # Loading the data
@@ -849,7 +956,9 @@ def lgd_report(account_no=None, start_date=None, end_date=None):
 
         #
         # Reset Data for insert/update into Report table
-        rows = df.to_dict('index')
+        rows = Output_LGD.to_dict('index')
+
+        #print(rows)
 
         for idx, row in rows.items():
 
@@ -861,10 +970,6 @@ def lgd_report(account_no=None, start_date=None, end_date=None):
             try:
                 lgd_report = LGD_Report.objects.get(date = row["date"], account_no = acc)
 
-                lgd_report.account_type = acc.account_type
-                lgd_report.cin = acc.cin
-                lgd_report.product_name = acc.product_name
-                lgd_report.sectors = acc.sectors
                 lgd_report.ead_os = row["ead_os"]
                 lgd_report.pv_cashflows = row["pv_cashflows"]
                 lgd_report.pv_cost = row["pv_cost"]
@@ -879,20 +984,16 @@ def lgd_report(account_no=None, start_date=None, end_date=None):
                 lgd_report.avg_5 = row["avg_5"]
                 lgd_report.mgmt_overlay_1 = row["mgmt_overlay_1"]
                 lgd_report.mgmt_overlay_2 = row["mgmt_overlay_2"]
-                lgd_report.rec_rate = row["rec_rate"]
-                lgd_report.est_rr = row["est_rr"]
-                lgd_report.est_lgd = row["est_lgd"]
-                lgd_report.final_lgd = row["final_lgd"]
+                lgd_report.rec_rate = round(row["rec_rate"], 5)
+                lgd_report.est_rr = round(row["est_rr"], 5)
+                lgd_report.est_lgd = round(row["est_lgd"], 5)
+                lgd_report.final_lgd = round(row["lgd"], 5)
                 lgd_report.save()
 
             except ObjectDoesNotExist:
                 lgd_report = LGD_Report(
                     date = row["date"],
                     account_no = acc,
-                    account_type = acc.account_type,
-                    cin = acc.cin,
-                    product_name = acc.product_name,
-                    sectors = acc.sectors,
                     ead_os = row["ead_os"],
                     pv_cashflows = row["pv_cashflows"],
                     pv_cost = row["pv_cost"],
@@ -907,10 +1008,10 @@ def lgd_report(account_no=None, start_date=None, end_date=None):
                     avg_5 = row["avg_5"],
                     mgmt_overlay_1 = row["mgmt_overlay_1"],
                     mgmt_overlay_2 = row["mgmt_overlay_2"],
-                    rec_rate = row["rec_rate"],
-                    est_rr = row["est_rr"],
-                    est_lgd = row["est_lgd"],
-                    final_lgd = row["final_lgd"]
+                    rec_rate = round(row["rec_rate"], 5),
+                    est_rr = round(row["est_rr"], 5),
+                    est_lgd = round(row["est_lgd"], 5),
+                    final_lgd = round(row["lgd"], 5)
                 )
 
                 lgd_report.save()
@@ -925,7 +1026,7 @@ def lgd_report(account_no=None, start_date=None, end_date=None):
 # STAGE REPORT CALCULATION & DATA LOAD
 # **********************************************************************
 
-def stage_report(account_no=None, start_date=None, end_date=None):
+def stage_report(account_no=None, start_date=None, end_date=None, s_type = 0, id_selected=None):
 
     #
     # Loading the data
@@ -949,6 +1050,7 @@ def stage_report(account_no=None, start_date=None, end_date=None):
     move_res = results
     results = results.select_related("account_no")
 
+
     results = results.values('id', 'date', 'account_no_id', 'old_rating', 'new_rating', 'rating_3', 'rating_4', 'rating_5', 'rating_6', 'rating_7', 'day_bucket_1', 'day_bucket_2', 'day_bucket_3', 'day_bucket_4', 'day_bucket_5', 'day_bucket_6', 'day_bucket_7', 'day_bucket_8', 'day_bucket_9', 'day_bucket_10', 'day_bucket_11', 'day_bucket_12','day_bucket_13', 'day_bucket_14', 'day_bucket_15', 'criteria', 'cooling_period_1', 'cooling_period_2', 'cooling_period_3', 'cooling_period_4', 'cooling_period_5', 'rbi_window', 'mgmt_overlay_1', 'mgmt_overlay_2', Account_No = F('account_no__account_no'), sectors = F('account_no__sectors'))
 
     if results.exists() is False:
@@ -959,17 +1061,23 @@ def stage_report(account_no=None, start_date=None, end_date=None):
         df = df.set_index('id')
 
         df["state"] = "No Change"
-        df["stage"] = "Stage One"
+        df["stage"] = "1"
 
-        for i in range(0, df.shape[0]):
-            if((df["old_rating"][i] == "BBB" and df["new_rating"] == "BB") or (df["old_rating"][i] == "BBB" and df["new_rating"] == "BB")):
-                df["state"] = "Downgrade"
-                df["stage"] = "Stage 2"
+        ssd = df.index.tolist()
 
-            if((df["old_rating"] == "C" or df["old_rating"] == "D") and df["new_rating"]=="D"):
-                df["state"] = "Default"
-                df["stage"] = "Stage 3"
-
+        for i in ssd:
+            if ((df["old_rating"][i]=="BBB") and (df["new_rating"][i]=="BB")):
+                df["state"][i]="Downgrade"
+            if ((df["old_rating"][i]=="BB") and (df["new_rating"][i]=="B")):
+                df["state"][i]="Downgrade"
+            if ((df["old_rating"][i]=="C") and (df["new_rating"][i]=="D")):
+                df["state"][i]="Default"
+            if ((df["old_rating"][i]=="D") and (df["new_rating"][i]=="D")):
+                df["state"][i]="Default"
+            if (df["state"][i]=="Downgrade"):
+                df["stage"][i]="2"
+            if (df["state"][i]=="Default"):
+                df["stage"][i]="3"
 
         #
         # Reset Data for insert/update into Report table
@@ -985,11 +1093,6 @@ def stage_report(account_no=None, start_date=None, end_date=None):
             try:
                 # Edit
                 stage_report = Stage_Report.objects.get(date = row["date"], account_no = acc)
-
-                stage_report.account_type = acc.account_type
-                stage_report.cin = acc.cin
-                stage_report.sectors = acc.sector
-                stage_report.product_name = acc.product_name
                 stage_report.stage = row["stage"]
                 stage_report.state = row["state"]
                 stage_report.old_rating = row["old_rating"]
@@ -1030,10 +1133,6 @@ def stage_report(account_no=None, start_date=None, end_date=None):
                 stage_report = Stage_Report(
                     date = row["date"],
                     account_no = acc,
-                    account_type = acc.account_type,
-                    cin = acc.cin,
-                    sectors = acc.sector,
-                    product_name = acc.product_name,
                     stage = row["stage"],
                     state = row["state"],
                     old_rating = row["old_rating"],
@@ -1081,6 +1180,7 @@ def stage_report(account_no=None, start_date=None, end_date=None):
 # **********************************************************************
 # PD REPORT CALCULATION & DATA LOAD
 # **********************************************************************
+
 def ead_report(account_no=None, start_date=None, end_date=None):
 
     #
@@ -1111,3 +1211,41 @@ def ead_report(account_no=None, start_date=None, end_date=None):
         return False
     else:
         return True
+
+
+# **********************************************************************
+# DOWNLOAD REPORTS
+# **********************************************************************
+
+def download_reports(tab_status=None, start_date=None, end_date=None, ftype=0):
+
+    results = constants.TAB_ACTIVE[tab_status][9]
+
+    if start_date is not None:
+        results = results.filter(date__gte = start_date)
+
+        if end_date is not None:
+            results = results.filter(date__lte = end_date)
+
+
+    if tab_status == "pd":
+        product_qry = """select product_name from app_basel_product_master where id = (select distinct(product_id) from app_collateral where account_no_id = app_pd_report.account_no_id)"""
+
+        results = results.extra(select={'product_name': product_qry}).select_related('account_no').values('id', 'date', 'account_no__account_no', 'account_no__cin', 'account_no__account_type', 'account_no__sectors', 'product_name', 'factor_1', 'factor_2', 'factor_3', 'factor_4', 'factor_5', 'factor_6', 'default_col', 'mgmt_overlay_1', 'mgmt_overlay_2', 'intercept', 'coeff_fact1', 'coeff_fact2', 'coeff_fact3', 'coeff_fact4', 'zscore', 'pd')
+
+    if tab_status == "lgd":
+        product_qry = """select product_name from app_basel_product_master where id = (select distinct(product_id) from app_collateral where account_no_id = app_lgd_report.account_no_id)"""
+
+        results = results.extra(select={'product_name': product_qry}).select_related('account_no').values('id', 'date', 'account_no__account_no', 'account_no__cin', 'account_no__account_type', 'account_no__sectors', 'product_name', 'ead_os', 'pv_cashflows', 'pv_cost', 'beta_value', 'factor_5', 'sec_flag', 'factor_4', 'factor_5', 'avg_1', 'avg_2', 'avg_3', 'avg_4', 'avg_5', 'mgmt_overlay_2', 'rec_rate', 'est_rr', 'est_lgd', 'final_lgd')
+
+    df = pd.DataFrame(results)
+    df = df.set_index('id')
+
+    df.rename({'account_no__account_no':'account_no', 'account_no__cin':'cin', 'account_no__account_type':'account_type', 'account_no__sectors':'sectors'}, axis=1, inplace=True)
+
+    if ftype == 0:
+        file_name = os.path.join(settings.REPORTS_DIR, "output.xlsx")
+        df.to_excel(file_name, sheet_name='Sheet_name_1', float_format='%.5f', index=False)
+        return file_name
+    else:
+        return df
