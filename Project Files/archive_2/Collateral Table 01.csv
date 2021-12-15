@@ -1,0 +1,11 @@
+account_no,product_code,collateral_1_code,collateral_2_code,collateral_3_code,collateral_4_code
+AA12,P01,Collateral01,Collateral10,,
+AA13,P02,Collateral02,Collateral01,Collateral02,Collateral02
+AA14,P03,Collateral03,Collateral02,Collateral03,Collateral03
+AA15,P04,Collateral04,Collateral03,Collateral04,Collateral04
+AA16,P05,Collateral05,Collateral04,Collateral05,Collateral05
+AA17,P06,Collateral06,Collateral05,Collateral06,Collateral05
+AA18,P07,Collateral07,Collateral06,Collateral07,Collateral07
+AA19,P08,Collateral08,Collateral07,Collateral08,Collateral08
+AA20,P09,Collateral09,Collateral08,Collateral08,Collateral08
+AA21,P10,Collateral10,Collateral09,Collateral09,Collateral09

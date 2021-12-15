@@ -1,4 +1,4 @@
-date,cin,product_name,account_no,sector,old_rating,new_rating
+Date,CIN,Product Name,Account_ID,Sector,Old_Rating,New_Rating
 9/19/2021,CL2266549,Corporate_Loans,D_AA12,Materials,A,A
 9/19/2021,CL2266550,Corporate_Loans,D_AA13,Industrials,BBB,BBB
 9/19/2021,CL2266551,Corporate_Loans,D_AA14,Financials,BB,BB

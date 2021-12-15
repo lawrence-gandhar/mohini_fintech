@@ -1,0 +1,57 @@
+collateral_code,collateral_type,issuer_type,collateral_eligibity,rating_available,collateral_rating,residual_maturity,basel_collateral_type,basel_collateral_subtype,basel_collateral_code,basel_collateral_rating,soverign_issuer,other_issuer
+Collateral01,Financial Collaterals,1,1,0,,less than equal to 1,Financial Collaterals,Debt Securities,B_coll_01,AAA,0.5,1
+Collateral01,Financial Collaterals,1,1,0,,Greater than 1 less than equal to 5,Financial Collaterals,Debt Securities,B_coll_01,AAA,2,4
+Collateral01,Financial Collaterals,1,1,0,,greater than 5,Financial Collaterals,Debt Securities,B_coll_01,AAA,4,8,,,,,,,,,,,,
+Collateral01,Financial Collaterals,1,1,1,AAA,less than equal to 1,Financial Collaterals,Debt Securities,B_coll_01,AAA,0.5,1
+Collateral01,Financial Collaterals,1,1,1,AAA,Greater than 1 less than equal to 5,Financial Collaterals,Debt Securities,B_coll_01,AAA,2,4
+Collateral01,Financial Collaterals,1,1,1,AAA,greater than 5,Financial Collaterals,Debt Securities,B_coll_01,AAA,4,8,,,,,,,,,,,,
+Collateral02,Financial Collaterals,0,1,1,AA,less than equal to 1,Financial Collaterals,Debt Securities,B_coll_02,AA,0.5,1
+Collateral02,Financial Collaterals,0,1,1,AA,Greater than 1 less than equal to 5,Financial Collaterals,Debt Securities,B_coll_02,AA,2,4
+Collateral02,Financial Collaterals,0,1,1,AA,greater than 5,Financial Collaterals,Debt Securities,B_coll_02,AA,4,8,,,,,,,,,,,,
+Collateral03,Financial Collaterals,0,1,1,AA-,less than equal to 1,Financial Collaterals,Debt Securities,B_coll_03,AA-,0.5,1
+Collateral03,Financial Collaterals,0,1,1,AA-,Greater than 1 less than equal to 5,Financial Collaterals,Debt Securities,B_coll_03,AA-,2,4
+Collateral03,Financial Collaterals,0,1,1,AA-,greater than 5,Financial Collaterals,Debt Securities,B_coll_03,AA-,4,8,,,,,,,,,,,,
+Collateral04,Financial Collaterals,1,1,1,A1,less than equal to 1,Financial Collaterals,Debt Securities,B_coll_04,A1,0.5,1
+Collateral04,Financial Collaterals,1,1,1,A1,Greater than 1 less than equal to 5,Financial Collaterals,Debt Securities,B_coll_04,A1,2,4
+Collateral04,Financial Collaterals,1,1,1,A1,greater than 5,Financial Collaterals,Debt Securities,B_coll_04,A1,4,8,,,,,,,,,,,,
+Collateral04,Financial Collaterals,0,1,1,A1,less than equal to 1,Financial Collaterals,Debt Securities,B_coll_04,A1,,1
+Collateral04,Financial Collaterals,0,1,1,A1,Greater than 1 less than equal to 5,Financial Collaterals,Debt Securities,B_coll_04,A1,,4
+Collateral04,Financial Collaterals,0,1,1,A1,greater than 5,Financial Collaterals,Debt Securities,B_coll_04,A1,,8,,,,,,,,,,,,
+Collateral05,Financial Collaterals,1,1,1,A,less than equal to 1,Financial Collaterals,Debt Securities,B_coll_05,A,1,2
+Collateral05,Financial Collaterals,1,1,1,A,Greater than 1 less than equal to 5,Financial Collaterals,Debt Securities,B_coll_05,A,3,6
+Collateral05,Financial Collaterals,1,1,1,A,greater than 5,Financial Collaterals,Debt Securities,B_coll_05,A,6,12,,,,,,,,,,,,
+Collateral06,Financial Collaterals,1,1,1,BBB,less than equal to 1,Financial Collaterals,Debt Securities,B_coll_06,BBB,1,2
+Collateral06,Financial Collaterals,1,1,1,BBB,Greater than 1 less than equal to 5,Financial Collaterals,Debt Securities,B_coll_06,BBB,3,6
+Collateral06,Financial Collaterals,1,1,1,BBB,greater than 5,Financial Collaterals,Debt Securities,B_coll_06,BBB,6,12,,,,,,,,,,,,
+Collateral07,Financial Collaterals,1,1,1,A2,less than equal to 1,Financial Collaterals,Debt Securities,B_coll_07,A2,1,2
+Collateral07,Financial Collaterals,1,1,1,A2,Greater than 1 less than equal to 5,Financial Collaterals,Debt Securities,B_coll_07,A2,3,6
+Collateral07,Financial Collaterals,1,1,1,A2,greater than 5,Financial Collaterals,Debt Securities,B_coll_07,A2,6,12,,,,,,,,,,,,
+Collateral08,Financial Collaterals,0,1,1,A3 / Unrated,less than equal to 1,Financial Collaterals,Debt Securities,B_coll_08,A3 / Unrated,,2
+Collateral08,Financial Collaterals,0,1,1,A3 / Unrated,Greater than 1 less than equal to 5,Financial Collaterals,Debt Securities,B_coll_08,A3 / Unrated,,6
+Collateral08,Financial Collaterals,0,1,1,A3 / Unrated,greater than 5,Financial Collaterals,Debt Securities,B_coll_08,A3 / Unrated,,12,,,,,,,,,,,,
+Collateral09,Securitisation Exposures,0,1,1,AAA,less than equal to 1,Financial Collaterals,,B_coll_09,AAA,,2
+Collateral09,Securitisation Exposures,0,1,1,AAA,Greater than 1 less than equal to 5,Financial Collaterals,,B_coll_09,AAA,,8
+Collateral09,Securitisation Exposures,0,1,1,AAA,greater than 5,Financial Collaterals,,B_coll_09,AAA,,16,,,,,,,,,,,,
+Collateral10,Securitisation Exposures,0,1,1,AA,less than equal to 1,Financial Collaterals,,B_coll_10,AA,,2
+Collateral10,Securitisation Exposures,0,1,1,AA,Greater than 1 less than equal to 5,Financial Collaterals,,B_coll_10,AA,,8
+Collateral10,Securitisation Exposures,0,1,1,AA,greater than 5,Financial Collaterals,,B_coll_10,AA,,16,,,,,,,,,,,,
+Collateral11,Securitisation Exposures,0,1,1,A,less than equal to 1,Financial Collaterals,Debt Securities,B_coll_11,A,,4
+Collateral11,Securitisation Exposures,0,1,1,A,Greater than 1 less than equal to 5,Financial Collaterals,Debt Securities,B_coll_11,A,,12
+Collateral11,Securitisation Exposures,0,1,1,A,greater than 5,Financial Collaterals,Debt Securities,B_coll_11,A,,24,,,,,,,,,,,,
+Collateral12,Securitisation Exposures,1,1,1,BBB,less than equal to 1,Financial Collaterals,Debt Securities,B_coll_12,BBB,,4
+Collateral12,Securitisation Exposures,1,1,1,BBB,Greater than 1 less than equal to 5,Financial Collaterals,Debt Securities,B_coll_12,BBB,,12
+Collateral12,Securitisation Exposures,1,1,1,BBB,greater than 5,Financial Collaterals,Debt Securities,B_coll_12,BBB,,24
+,,,,,,,,,,,,
+Collateral13,Securitisation Exposures,1,1,1,A3,less than equal to 1,Financial Collaterals,Debt Securities,B_coll_13,A3,,4
+Collateral13,Securitisation Exposures,1,1,1,A3,Greater than 1 less than equal to 5,Financial Collaterals,Debt Securities,B_coll_13,A3,,12
+Collateral13,Securitisation Exposures,1,1,1,A3 / Unrated,greater than 5,Financial Collaterals,Debt Securities,B_coll_13,A3 / Unrated,,24
+,,,,,,,,,,,,
+Collateral14,Financial Collaterals - Currency Risk,0,1,0,,,Financial Collaterals,Cash in the same currency,B_coll_14,,,0
+Collateral15,Financial Collaterals - Units of Mutual Fund,0,1,0,,,Financial Collaterals,Units of Mutual Fund,B_coll_15,,,12
+Collateral16,Financial Collaterals - Gold,0,1,0,,,Financial Collaterals,Gold,B_coll_16,,,15
+Collateral17,Financial Collaterals - Currency Risk,0,1,0,,,Financial Collaterals,Cash in different currency,B_coll_17,,,8
+Collateral18,Commercial Real Estate,0,1,0,,,Commercial Real Estate,,B_coll_18,,,50
+Collateral19,Residential Real Estate,0,1,0,,,Residential Real Estate,,B_coll_19,,,50
+Collateral20,Other Physical Collateral,0,1,0,,,Other Physical Collateral,,B_coll_20,,,60
+Collateral21,Financial Receivables,0,1,0,,,Financial Receivables,,B_coll_21,,,50
+Collateral22,Ineligible Collateral,0,0,0,,,Ineligible Collateral,,B_coll_22,,,100

@@ -1,0 +1,22 @@
+date,account_no,outstanding_amount,undrawn_upto_1_yr,undrawn_greater_than_1_yr,collateral_1_value,collateral_1_rating,collateral_1_residual_maturity,collateral_2_value,collateral_2_rating,collateral_2_residual_maturity
+2020-11-11,AA12,10000,10000,5000,20000,AA,less than equal to 1,1000,AA,less than equal to 1
+2020-11-11,AA13,10000,10000,5000,20000,AAA,Greater than 1 less than equal to 5,1000,AAA,Greater than 1 less than equal to 5
+2020-11-11,AA14,10000,10000,5000,20000,A,greater than 5,1000,A,greater than 5
+2020-11-11,AA15,10000,10000,5000,20000,A1,less than equal to 1,1000,A1,less than equal to 1
+2020-11-11,AA16,10000,10000,5000,20000,A1,Greater than 1 less than equal to 5,1000,A1,Greater than 1 less than equal to 5
+2020-11-11,AA17,10000,10000,5000,20000,BBB,greater than 5,1000,BBB,greater than 5
+2020-11-11,AA18,10000,10000,5000,20000,BBB,greater than 5,1000,BBB,greater than 5
+2020-11-11,AA19,10000,10000,5000,20000,BBB,greater than 5,1000,BBB,greater than 5
+2020-11-11,AA20,10000,10000,5000,20000,BBB,greater than 5,1000,BBB,greater than 5
+2020-11-11,AA21,,,,,,,,,
+2020-11-11,AA22,,,,,,,,,
+2020-11-11,AA23,,,,,,,,,
+2020-11-11,AA24,,,,,,,,,
+2020-11-11,AA25,,,,,,,,,
+2020-11-11,AA26,,,,,,,,,
+2020-11-11,AA27,,,,,,,,,
+2020-11-11,AA28,,,,,,,,,
+2020-11-11,AA29,,,,,,,,,
+2020-11-11,AA30,,,,,,,,,
+2020-11-11,AA31,,,,,,,,,
+2020-11-11,AA32,,,,,,,,,

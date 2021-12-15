@@ -1,0 +1,24 @@
+product_name,product_code,product_catgory,basel_product,basel_product_code,drawn_cff,cff_upto_1_yr,cff_gt_1_yr
+Product 01,P01,On Balance Sheet,Basel_Product_01,B01,100%,20%,50%
+Product 02,P02,On Balance Sheet,Basel_Product_02,B02,100%,20%,50%
+Product 03,P03,On Balance Sheet,Basel_Product_03,B03,100%,20%,50%
+Product 04,P04,On Balance Sheet,Basel_Product_04,B04,100%,20%,50%
+Product 05,P05,On Balance Sheet,Basel_Product_05,B05,100%,20%,50%
+Product 06,P06,On Balance Sheet,Basel_Product_06,B06,100%,20%,50%
+Product 07,P07,On Balance Sheet,Basel_Product_07,B07,100%,20%,50%
+Product 08,P08,On Balance Sheet,Basel_Product_08,B08,100%,20%,50%
+Product 09,P09,On Balance Sheet,Basel_Product_09,B09,100%,20%,50%
+Product 10,P10,On Balance Sheet,Basel_Product_10,B10,100%,20%,50%
+Product 11,P11,Receivables,Basel_Product_11,B11,,20%,50%
+Product 12,P12,Other,Basel_Product_12,B12,,20%,50%
+Asset sale with recourse,P11,Off Balance Sheet,Basel_Product_11,B11,100%,20%,50%
+Conditional take-out finance,P12,Off Balance Sheet,Basel_Product_12,B12,50%,20%,50%
+Forward Forward deposit ,P13,Off Balance Sheet,Basel_Product_13,B13,100%,20%,50%
+Forward asset purchase ,P14,Off Balance Sheet,Basel_Product_14,B14,100%,20%,50%
+Acceptance and Endorsements,P15,Off Balance Sheet,Basel_Product_15,B15,100%,20%,50%
+Guarantees - Financial - Direct credit substitutes ,P16,Off Balance Sheet,Basel_Product_16,B16,100%,20%,50%
+Guarantees - Others ,P17,Off Balance Sheet,Basel_Product_17,B17,50%,20%,50%
+Letter of Credit (Clean) ,P18,Off Balance Sheet,Basel_Product_18,B18,100%,20%,50%
+Letter of Credit (Documentary) ,P19,Off Balance Sheet,Basel_Product_19,B19,20%,20%,50%
+Underwriting and Standby commitments ,P20,Off Balance Sheet,Basel_Product_20,B20,50%,20%,50%
+NIFs - Note issuance Facilities ,P21,Off Balance Sheet,Basel_Product_21,B21,50%,20%,50%
