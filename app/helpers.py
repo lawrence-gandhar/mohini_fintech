@@ -292,3 +292,22 @@ def send_email_reject_user(user=None):
     subject = 'FinECL - Forgot Password'.format(user)
 
     sendmymail(subject, email_html_template,send_to=[user.email])
+
+
+
+
+# ******************************************************************************
+# Audit trail function
+# ******************************************************************************
+
+def audit_trail(request, **kwargs):
+    ins = Audit_Trail.objects.create(edited_by = request.user)
+
+    ins.report_download = False
+    ins.report_run = None
+    ins.moved_data = False
+    ins.moved_data_params = None
+    ins.deleted_data = False
+    ins.deleted_data_params = None
+
+    ins.save()

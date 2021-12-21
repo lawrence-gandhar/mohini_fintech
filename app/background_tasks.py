@@ -22,7 +22,7 @@ import numpy as np
 import math
 from sklearn.linear_model import LogisticRegression, LinearRegression
 import os
-
+from collections import defaultdict
 
 
 #**********************************************************************
@@ -201,13 +201,7 @@ def insert_data(data_set, import_type, file_identifier=None):
                     date = helpers.clean_data(row["date"]) if "date" in col_names else None,
                     outstanding_amount = helpers.clean_data(row["outstanding_amount"]) if "outstanding_amount" in col_names else None,
                     undrawn_upto_1_yr = helpers.clean_data(row["undrawn_upto_1_yr"]) if "undrawn_upto_1_yr" in col_names else None,
-                    undrawn_greater_than_1_yr = helpers.clean_data(row["undrawn_greater_than_1_yr"]) if "undrawn_greater_than_1_yr" in col_names else None,
-                    collateral_1_value = helpers.clean_data(row["collateral_1_value"]) if "collateral_1_value" in col_names else None,
-                    collateral_1_rating = helpers.clean_data(row["collateral_1_rating"]) if "collateral_1_rating" in col_names else None,
-                    collateral_1_residual_maturity = helpers.clean_data(row["collateral_1_residual_maturity"]) if "collateral_1_residual_maturity" in col_names else None,
-                    collateral_2_value = helpers.clean_data(row["collateral_2_value"]) if "collateral_2_value" in col_names else None,
-                    collateral_2_rating = helpers.clean_data(row["collateral_2_rating"]) if "collateral_2_rating" in col_names else None,
-                    collateral_2_residual_maturity = helpers.clean_data(row["collateral_2_residual_maturity"]) if "collateral_2_residual_maturity" in col_names else None,
+                    undrawn_greater_than_1_yr = helpers.clean_data(row["undrawn_greater_than_1_yr"]) if "undrawn_greater_than_1_yr" in col_names else None
                 )
 
             #
@@ -366,12 +360,6 @@ def update_record(ins_const=None, import_type=None, row=None, file_identifier=No
         ins_const.outstanding_amount = helpers.clean_data(row["outstanding_amount"]) if "outstanding_amount" in col_names else None
         ins_const.undrawn_upto_1_yr = helpers.clean_data(row["undrawn_upto_1_yr"]) if "undrawn_upto_1_yr" in col_names else None
         ins_const.undrawn_greater_than_1_yr = helpers.clean_data(row["undrawn_greater_than_1_yr"]) if "undrawn_greater_than_1_yr" in col_names else None
-        ins_const.collateral_1_value = helpers.clean_data(row["collateral_1_value"]) if "collateral_1_value" in col_names else None
-        ins_const.collateral_1_rating = helpers.clean_data(row["collateral_1_rating"]) if "collateral_1_rating" in col_names else None
-        ins_const.collateral_1_residual_maturity = helpers.clean_data(row["collateral_1_residual_maturity"]) if "collateral_1_residual_maturity" in col_names else None
-        ins_const.collateral_2_value = helpers.clean_data(row["collateral_2_value"]) if "collateral_2_value" in col_names else None
-        ins_const.collateral_2_rating = helpers.clean_data(row["collateral_2_rating"]) if "collateral_2_rating" in col_names else None
-        ins_const.collateral_2_residual_maturity = helpers.clean_data(row["collateral_2_residual_maturity"]) if "collateral_2_residual_maturity" in col_names else None
 
     #
     # Fetch Account Number Instance
@@ -561,13 +549,7 @@ def move_record(tab_status=None, obj=None):
                 account_no = obj.account_no,
                 outstanding_amount = obj.outstanding_amount,
                 undrawn_upto_1_yr = obj.undrawn_upto_1_yr,
-                undrawn_greater_than_1_yr = obj.undrawn_greater_than_1_yr,
-                collateral_1_value = obj.collateral_1_value,
-                collateral_1_rating = obj.collateral_1_rating,
-                collateral_1_residual_maturity = obj.collateral_1_residual_maturity,
-                collateral_2_value = obj.collateral_2_value,
-                collateral_2_rating = obj.collateral_2_rating,
-                collateral_2_residual_maturity = obj.collateral_2_residual_maturity,
+                undrawn_greater_than_1_yr = obj.undrawn_greater_than_1_yr
             )
         else:
             ins.date = obj.date
@@ -575,12 +557,6 @@ def move_record(tab_status=None, obj=None):
             ins.outstanding_amount = obj.outstanding_amount
             ins.undrawn_upto_1_yr = obj.undrawn_upto_1_yr
             ins.undrawn_greater_than_1_yr = obj.undrawn_greater_than_1_yr
-            ins.collateral_1_value = obj.collateral_1_value
-            ins.collateral_1_rating = obj.collateral_1_rating
-            ins.collateral_1_residual_maturity = obj.collateral_1_residual_maturity
-            ins.collateral_2_value = obj.collateral_2_value
-            ins.collateral_2_rating = obj.collateral_2_rating
-            ins.collateral_2_residual_maturity = obj.collateral_2_residual_maturity
             ins.save()
 
         obj.delete()
@@ -629,6 +605,9 @@ def move_data_bg_process(request, tab_status=None):
         if tab_status == "stage":
             result_set = qry.values_list('id', 'date', 'account_no', 'old_rating', 'new_rating', 'rating_3', 'rating_4', 'rating_5', 'rating_6', 'rating_7', 'day_bucket_1', 'day_bucket_2', 'day_bucket_3', 'day_bucket_4', 'day_bucket_5', 'day_bucket_6', 'day_bucket_7', 'day_bucket_8', 'day_bucket_9', 'day_bucket_10', 'day_bucket_11', 'day_bucket_12','day_bucket_13', 'day_bucket_14', 'day_bucket_15', 'criteria', 'cooling_period_1', 'cooling_period_2', 'cooling_period_3', 'cooling_period_4', 'cooling_period_5', 'rbi_window', 'mgmt_overlay_1', 'mgmt_overlay_2')
 
+        if tab_status == "ead":
+            result_set = qry.values_list('id', 'date', 'account_no', 'outstanding_amount', 'undrawn_upto_1_yr', 'undrawn_greater_than_1_yr')
+
         #
         # If valid records found : then capture & iterate to insert
         if records_valid > 0:
@@ -663,6 +642,13 @@ def move_data_bg_process(request, tab_status=None):
                         update {0} set old_rating='{3}', new_rating='{4}', rating_3='{5}', rating_4='{6}', rating_5='{7}', rating_6='{8}', rating_7='{9}', day_bucket_1='{10}', day_bucket_2='{11}', day_bucket_3='{12}', day_bucket_4='{13}', day_bucket_5='{14}', day_bucket_6='{15}', day_bucket_7='{16}', day_bucket_8='{17}', day_bucket_9='{18}', day_bucket_10='{19}', day_bucket_11='{20}', day_bucket_12='{21}', day_bucket_13='{22}', day_bucket_14='{23}', day_bucket_15='{24}', criteria='{25}', cooling_period_1='{26}', cooling_period_2='{27}', cooling_period_3='{28}', cooling_period_4='{29}', cooling_period_5='{30}', rbi_window='{31}', mgmt_overlay_1='{32}', mgmt_overlay_2='{33}', created_on='{34}' where date='{1}' and account_no_id='{2}'
                     """
 
+                if tab_status == "ead":
+                    insert_qry = """
+                        insert into {0} (date, account_no_id, outstanding_amount, undrawn_upto_1_yr, undrawn_greater_than_1_yr, created_on)""".format(constants.TAB_ACTIVE[tab_status][6])
+
+                    update_qry = """
+                        update {0} set outstanding_amount='{3}', undrawn_upto_1_yr='{4}', undrawn_greater_than_1_yr='{5}', created_on='{6}' where date='{1}' and account_no_id='{2}'
+                    """
 
 
                 row = list(row)
@@ -1181,36 +1167,167 @@ def stage_report(account_no=None, start_date=None, end_date=None, s_type = 0, id
 # PD REPORT CALCULATION & DATA LOAD
 # **********************************************************************
 
-def ead_report(account_no=None, start_date=None, end_date=None):
+def ead_report(account_no=None, start_date=None, end_date=None, s_type = 0, id_selected=None):
 
     #
     # Loading the data
-    if s_type == 1:
-        results = constants.TAB_ACTIVE["ead"][3].filter(account_no__isnull = False)
-    else:
-        results = constants.TAB_ACTIVE["ead"][4]
+
+    where_clause = False
+    dates_cond = ""
+    acc_cond = ""
 
     if start_date is None and end_date is None and account_no is None:
-        results = results.all()
-
-    if start_date is not None:
-        if end_date is not None:
-            results = results.filter(date__gte = start_date, date__lte = end_date)
-        else:
-            results = results.filter(date__gte = start_date)
+        dates_cond = ""
+    else:
+        if start_date is not None:
+            if end_date is not None:
+                dates_cond = " where ED.date >='{}' and ED.date <='{}'".format(start_date, end_date)
+                where_clause = True
+            else:
+                dates_cond = " where ED.date >='{}'".format(start_date)
+                where_clause = True
 
     if account_no is not None:
-        results = results.filter(account_no__account_no__in = account_no)
+        if where_clause:
+            acc_cond = " and ED.account_no_id = {}".format(account_no)
+        else:
+            acc_cond = " where ED.account_no_id = {}".format(account_no)
 
-    move_res = results
-    results = results.select_related("account_no")
+    #
+    #
+    #
+    if s_type == 1:
+        qry = """select BP.product_name, AC.account_no as Account_no, AC.cin, AC.sectors, AC.account_type, ED.id as id, C1.collateral_value, C1.collateral_rating, C1.collateral_residual_maturity, ED.outstanding_amount, ED.undrawn_upto_1_yr, ED.date as ead_date, ED.undrawn_greater_than_1_yr,  ED.account_no_id, C1.id as collateral_id, BC.basel_collateral_code, BC.collateral_rating as b_col_rating, BP.drawn_cff, BP.cff_upto_1_yr, BP.cff_gt_1_yr, BC.issuer_type, BC.collateral_code as c_code, BC.collateral_type, BC.collateral_eligibity, BC.rating_available, BC.residual_maturity, BC.basel_collateral_type, BC.basel_collateral_subtype, BC.basel_collateral_rating, BC.soverign_issuer, BC.other_issuer
+        from app_ead_initial ED
+        left join app_collateral C1 on C1.account_no_id = ED.account_no_id
+		left join app_accountmaster AC on ED.account_no_id = AC.id
+        left join app_basel_product_master BP on C1.product_id = BP.id
+        left join app_basel_collateral_master BC on C1.collateral_code_id = BC.id {} {} and ED.account_no_id is not null
+        order by id
+        """.format(dates_cond, acc_cond)
 
-    results = results.values('id', 'date', 'account_no_id', 'outstanding_amount', 'undrawn_upto_1_yr', 'undrawn_greater_than_1_yr', 'collateral_1_value', 'collateral_1_rating', 'collateral_1_residual_maturity', 'collateral_2_value', 'collateral_2_rating', 'collateral_2_residual_maturity', Account_No = F('account_no__account_no'), sectors = F('account_no__sectors'))
-
-    if results.exists() is False:
-        return False
+        qs = constants.TAB_ACTIVE["ead"][4].raw(qry)
     else:
-        return True
+        qry = """select BP.product_name, AC.account_no as Account_no, AC.cin, AC.sectors, AC.account_type, ED.id as id, C1.collateral_value, C1.collateral_rating, C1.collateral_residual_maturity, ED.outstanding_amount, ED.undrawn_upto_1_yr, ED.date as ead_date, ED.undrawn_greater_than_1_yr,  ED.account_no_id, C1.id as collateral_id, BC.basel_collateral_code, BC.collateral_rating as b_col_rating, BP.drawn_cff, BP.cff_upto_1_yr, BP.cff_gt_1_yr, BC.issuer_type, BC.collateral_code as c_code, BC.collateral_type, BC.collateral_eligibity, BC.rating_available, BC.residual_maturity, BC.basel_collateral_type, BC.basel_collateral_subtype, BC.basel_collateral_rating, BC.soverign_issuer, BC.other_issuer
+        from app_ead_final ED
+        left join app_collateral C1 on C1.account_no_id = ED.account_no_id
+		left join app_accountmaster AC on ED.account_no_id = AC.id
+        left join app_basel_product_master BP on C1.product_id = BP.id
+        left join app_basel_collateral_master BC on C1.collateral_code_id = BC.id {} {}
+        order by id
+        """.format(dates_cond, acc_cond)
+
+        qs = constants.TAB_ACTIVE["ead"][4].raw(qry)
+
+    #
+    #
+    cus_dict = defaultdict()
+
+    for row in qs:
+        cus_dict[row.id] = {
+            "ead_date":row.ead_date,
+            "account_no":row.Account_no,
+            "account_no_id":row.account_no_id,
+            "outstanding_amount":row.outstanding_amount,
+            "undrawn_upto_1_yr":row.undrawn_upto_1_yr,
+            "undrawn_greater_than_1_yr":row.undrawn_greater_than_1_yr,
+            "drawn_cff":row.drawn_cff,
+            "cff_upto_1_yr":row.cff_upto_1_yr,
+            "cff_gt_1_yr":row.cff_gt_1_yr,
+            "collaterals":[],
+            "ead_total":0,
+        }
+
+    for row in qs:
+
+        b_col_rating = row.b_col_rating if row.b_col_rating is not None else "-"
+        col_rating = row.collateral_rating if row.collateral_rating is not None else "-"
+
+        cus_dict[row.id]["collaterals"].append({
+            "basel_collateral_code":row.basel_collateral_code,
+            "collateral_value":row.collateral_value,
+            "issuer_type":row.issuer_type,
+            "soverign_issuer":row.soverign_issuer,
+            "other_issuer":row.other_issuer,
+        })
+
+    #
+    #
+    for key, row in cus_dict.items():
+        drawn_cff = 1.0
+        cff_upto_1_yr = 1.0
+        cff_gt_1_yr = 1.0
+        ead_total = 0
+
+        try:
+            drawn_cff = (float(row["drawn_cff"].replace("%", ""))/100)
+            ead_total += float(row["outstanding_amount"]) * drawn_cff
+        except:
+            ead_total += drawn_cff * (float(row["outstanding_amount"]) if row["outstanding_amount"] !="" else 0)
+
+        try:
+            cff_upto_1_yr = (float(row["cff_upto_1_yr"].replace("%", ""))/100)
+            ead_total += float(row["undrawn_upto_1_yr"]) * cff_upto_1_yr
+        except:
+            ead_total += cff_upto_1_yr * (float(row["undrawn_upto_1_yr"]) if row["undrawn_upto_1_yr"] !="" else 0)
+
+        try:
+            cff_gt_1_yr = (float(row["cff_gt_1_yr"].replace("%", ""))/100)
+            ead_total += float(row["undrawn_greater_than_1_yr"]) * cff_gt_1_yr
+        except:
+            ead_total += cff_gt_1_yr * (float(row["undrawn_greater_than_1_yr"]) if row["undrawn_greater_than_1_yr"] !="" else 0)
+
+
+        # if collteral found
+        #
+
+        total_coll = 0
+
+        for coll in row["collaterals"]:
+            if coll["basel_collateral_code"] is not None:
+
+                if coll["issuer_type"] == "1":
+                    try:
+                        total_coll += float(coll["collateral_value"]) * (1 - float(coll["soverign_issuer"])/100)
+                    except:
+                        pass
+                else:
+                    try:
+                        total_coll += float(coll["collateral_value"]) * (1 - float(coll["other_issuer"])/100)
+                    except:
+                        pass
+
+        cus_dict[key]["ead_total"] = ead_total - total_coll
+
+        #
+        # Load data into Report Table
+        try:
+            acc = AccountMaster.objects.get(pk = int(row["account_no_id"]))
+        except ObjectDoesNotExist:
+            return False
+
+        try:
+            # Edit
+            ead_report = EAD_Report.objects.get(date = row["ead_date"], account_no = acc)
+            ead_report.outstanding_amount = row["outstanding_amount"]
+            ead_report.undrawn_upto_1_yr = row["undrawn_upto_1_yr"]
+            ead_report.undrawn_greater_than_1_yr = row["undrawn_greater_than_1_yr"]
+            ead_report.ead_total = round(row["ead_total"],2)
+            ead_report.save()
+        except:
+            EAD_Report.objects.create(
+                date = row["ead_date"],
+                account_no = acc,
+                outstanding_amount = row["outstanding_amount"],
+                undrawn_upto_1_yr = row["undrawn_upto_1_yr"],
+                undrawn_greater_than_1_yr = row["undrawn_greater_than_1_yr"],
+                ead_total = round(row["ead_total"],2)
+            )
+
+
+    return True
+
+
 
 
 # **********************************************************************
