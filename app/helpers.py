@@ -13,6 +13,7 @@ import json
 from django.conf import settings
 from app.models import *
 
+from django.utils import timezone
 from django.core.mail import EmailMessage
 from django.core.serializers.json import DjangoJSONEncoder
 
@@ -300,14 +301,62 @@ def send_email_reject_user(user=None):
 # Audit trail function
 # ******************************************************************************
 
-def audit_trail(request, **kwargs):
-    ins = Audit_Trail.objects.create(edited_by = request.user)
+def audit_trail(request, data={}):
 
-    ins.report_download = False
-    ins.report_run = None
-    ins.moved_data = False
-    ins.moved_data_params = None
-    ins.deleted_data = False
-    ins.deleted_data_params = None
+    """
+    Example : {
+        "parent" : tab_status,
+        "edited_data" : True,
+        "params":{"handler_table": "initial", "selected_ids":[obj.id]}
+    }
+    """
+
+
+    ins = Audit_Trail.objects.create(user = request.user, date = timezone.now())
+
+    dict_keys = data.keys()
+
+    if "parent" in dict_keys:
+        ins.parent = data["parent"]
+
+    #
+    # Edit Mode
+    if "edited_data" in dict_keys:
+        ins.edited_data = data["edited_data"]
+
+        if "params" in dict_keys:
+            ins.edited_data_params = json.dumps(data["params"])
+
+    #
+    # Moded Data Mode
+    if "moved_data" in dict_keys:
+        ins.moved_data = data["moved_data"]
+
+        if "params" in dict_keys:
+            ins.moved_data_params = json.dumps(data["params"])
+
+    #
+    # Deleted Data Mode
+    if "deleted_data" in dict_keys:
+        ins.deleted_data = data["deleted_data"]
+
+        if "params" in dict_keys:
+            ins.deleted_data_params = json.dumps(data["params"])
+
+    #
+    # Report Download Mode
+    if "report_download" in dict_keys:
+        ins.report_download = data["report_download"]
+
+        if "params" in dict_keys:
+            ins.report_download_params = json.dumps(data["params"])
+
+    #
+    # Report Run Mode
+    if "report_run" in dict_keys:
+        ins.report_run = data["report_run"]
+
+        if "params" in dict_keys:
+            ins.report_run_params = json.dumps(data["params"])
 
     ins.save()

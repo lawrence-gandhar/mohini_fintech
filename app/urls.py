@@ -73,6 +73,7 @@ urlpatterns += [
 # Process Management
 urlpatterns += [
     path('admin/database_management/', decorators.admin_required(dbase.database_management), name='database_management'),
+    path('admin/show_audit_trail/', decorators.admin_required(admin.show_audit_trail), name='show_audit_trail'),
 ]
 
 #Background tasks

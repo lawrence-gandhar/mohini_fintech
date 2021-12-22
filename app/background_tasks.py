@@ -384,17 +384,20 @@ def update_record(ins_const=None, import_type=None, row=None, file_identifier=No
 # USED IN @move_to_final and @move_all_to_final
 # @obj is the instance of the queryset
 #**********************************************************************
-def move_record(tab_status=None, obj=None):
-
+def move_record(request, tab_status=None, obj=None):
+    created = None
     try:
         ins = constants.TAB_ACTIVE[tab_status][4].get(date = obj.date, account_no = obj.account_no)
     except ObjectDoesNotExist:
         ins = None
 
+    if obj is None:
+        return False
+
     if tab_status == "pd" and obj is not None:
 
         if ins is None:
-            constants.TAB_ACTIVE[tab_status][4].create(
+            created = constants.TAB_ACTIVE[tab_status][4].create(
                 date = obj.date,
                 account_no = obj.account_no,
                 factor_1 = obj.factor_1,
@@ -421,12 +424,9 @@ def move_record(tab_status=None, obj=None):
             ins.mgmt_overlay_2 = obj.mgmt_overlay_2
             ins.save()
 
-        obj.delete()
-        return True
-
     elif tab_status == "lgd" and obj is not None:
         if ins is None:
-            constants.TAB_ACTIVE[tab_status][4].create(
+            created = constants.TAB_ACTIVE[tab_status][4].create(
                 date = obj.date,
                 account_no = obj.account_no,
                 ead_os = obj.ead_os,
@@ -463,12 +463,9 @@ def move_record(tab_status=None, obj=None):
             ins.mgmt_overlay_2 = obj.mgmt_overlay_2
             ins.save()
 
-        obj.delete()
-        return True
-
     elif tab_status == "stage" and obj is not None:
         if ins is None:
-            constants.TAB_ACTIVE[tab_status][4].create(
+            created = constants.TAB_ACTIVE[tab_status][4].create(
                 date = obj.date,
                 account_no = obj.account_no,
                 old_rating = obj.old_rating,
@@ -539,12 +536,9 @@ def move_record(tab_status=None, obj=None):
             ins.mgmt_overlay_2 = obj.mgmt_overlay_2
             ins.save()
 
-        obj.delete()
-        return True
-
     elif tab_status == "ead" and obj is not None:
         if ins is None:
-            constants.TAB_ACTIVE[tab_status][4].create(
+            created = constants.TAB_ACTIVE[tab_status][4].create(
                 date = obj.date,
                 account_no = obj.account_no,
                 outstanding_amount = obj.outstanding_amount,
@@ -559,11 +553,16 @@ def move_record(tab_status=None, obj=None):
             ins.undrawn_greater_than_1_yr = obj.undrawn_greater_than_1_yr
             ins.save()
 
-        obj.delete()
-        return True
+    #
+    # Audit Trail
+    helpers.audit_trail(request, {
+        "parent" : tab_status,
+        "moved_data" : True,
+        "params":{"handler_table": "initial", "selected_ids":[obj.id], "created_ids":[created.id if created is not None else ins.id], "all":False}
+    })
 
-    else:
-        return False
+    obj.delete()
+    return True
 
 
 
@@ -581,7 +580,8 @@ def move_data_bg_process(request, tab_status=None):
 
     if tab_status in constants.TAB_ACTIVE.keys():
 
-        #constants.TAB_ACTIVE[tab_status][4].all().delete()
+        selected_ids = []
+        created_ids = []
 
         #
         # Queryset
@@ -617,7 +617,7 @@ def move_data_bg_process(request, tab_status=None):
             # Iterate over each row & insert
             for row in result_set:
 
-                # Create Insert statement for each tab_status
+                # Create Insert/Update statement for each tab_status
                 if tab_status == "pd":
                     insert_qry = """
                         insert into {0} (date, account_no_id, factor_1, factor_2, factor_3, factor_4, factor_5, factor_6, default_col, mgmt_overlay_1, mgmt_overlay_2, created_on)""".format(constants.TAB_ACTIVE[tab_status][6])
@@ -653,6 +653,7 @@ def move_data_bg_process(request, tab_status=None):
 
                 row = list(row)
                 row_id = row[0]
+
                 del row[0]
 
                 #
@@ -681,32 +682,15 @@ def move_data_bg_process(request, tab_status=None):
                         #
                         # Delete record
                         if ret_val:
+
+                            selected_ids.append(row_id)
+                            created_ids.append(ins.id)
+
                             constants.TAB_ACTIVE[tab_status][3].get(pk = row_id).delete()
 
-                except MultipleObjectsReturned:
+                except MultipleObjectsReturned or ObjectDoesNotExist:
+                    constants.TAB_ACTIVE[tab_status][4].filter(date = row[0], account_no_id = row[1]).delete()
 
-                    with connection.cursor() as cursor:
-
-                        formatted_data = [x if x is not None else '' for x in row]
-                        formatted_data.append(timezone.now())
-
-                        update_qry = update_qry.format(constants.TAB_ACTIVE[tab_status][6], *formatted_data)
-
-                        ret_val = False
-                        try:
-                            cursor.execute(update_qry)
-                            records_moved += 1
-
-                            ret_val = True
-                        except:
-                            records_failed += 1
-
-                        #
-                        # Delete record
-                        if ret_val:
-                            constants.TAB_ACTIVE[tab_status][3].get(pk = row_id).delete()
-
-                except ObjectDoesNotExist:
                     #
                     # Insert record
                     with connection.cursor() as cursor:
@@ -732,6 +716,11 @@ def move_data_bg_process(request, tab_status=None):
                         #
                         # Delete record
                         if ret_val:
+                            latest = constants.TAB_ACTIVE[tab_status][4].latest('id')
+
+                            selected_ids.append(row_id)
+                            created_ids.append(latest.id)
+
                             constants.TAB_ACTIVE[tab_status][3].get(pk = row_id).delete()
 
         else:
@@ -741,6 +730,14 @@ def move_data_bg_process(request, tab_status=None):
     if records_moved >0 :
         msg = "Records Moved Successfully"
         ret = True
+
+        #
+        # Audit Trail
+        helpers.audit_trail(request, {
+            "parent" : tab_status,
+            "moved_data" : True,
+            "params":{"handler_table": "initial", "selected_ids":list(set(selected_ids)), "created_ids":list(set(created_ids)), "all":True}
+        })
 
     return dict({
             "ret": ret,
@@ -763,7 +760,6 @@ def pd_report(account_no=None, start_date=None, end_date=None, s_type = 0, id_se
         results = constants.TAB_ACTIVE["pd"][3].filter(account_no__isnull = False)
     else:
         results = constants.TAB_ACTIVE["pd"][4]
-
 
     #
     #
@@ -790,7 +786,6 @@ def pd_report(account_no=None, start_date=None, end_date=None, s_type = 0, id_se
     results = results.select_related("account_no")
 
     results = results.values('id','date', 'account_no_id', 'factor_1', 'factor_2', 'factor_3', 'factor_4', 'default_col', 'factor_5', 'factor_6', 'mgmt_overlay_1', 'mgmt_overlay_2', Account_No = F('account_no__account_no'))
-
 
 
     if results.exists() is False:
@@ -834,12 +829,12 @@ def pd_report(account_no=None, start_date=None, end_date=None, s_type = 0, id_se
 
             try:
                 pd_report = PD_Report.objects.get(date = row["date"], account_no = acc)
-                pd_report.factor_1 = round(row["factor_1"], 5) if row["factor_1"] is not None else None
-                pd_report.factor_2 = round(row["factor_2"], 5) if row["factor_2"] is not None else None
-                pd_report.factor_3 = round(row["factor_3"], 5) if row["factor_3"] is not None else None
-                pd_report.factor_4 = round(row["factor_4"], 5) if row["factor_4"] is not None else None
-                pd_report.factor_5 = round(row["factor_5"], 5) if row["factor_5"] is not None else None
-                pd_report.factor_6 = round(row["factor_6"], 5) if row["factor_6"] is not None else None
+                pd_report.factor_1 = round(row["factor_1"], 5) if row["factor_1"] is not None and row["factor_1"] !="" else None
+                pd_report.factor_2 = round(row["factor_2"], 5) if row["factor_2"] is not None and row["factor_2"] !="" else None
+                pd_report.factor_3 = round(row["factor_3"], 5) if row["factor_3"] is not None and row["factor_3"] !="" else None
+                pd_report.factor_4 = round(row["factor_4"], 5) if row["factor_4"] is not None and row["factor_4"] !="" else None
+                pd_report.factor_5 = round(row["factor_5"], 5) if row["factor_5"] is not None and row["factor_5"] !="" else None
+                pd_report.factor_6 = round(row["factor_6"], 5) if row["factor_6"] is not None and row["factor_6"] !="" else None
                 pd_report.default_col = row["default_col"]
                 pd_report.mgmt_overlay_1 = row["mgmt_overlay_1"]
                 pd_report.mgmt_overlay_2 = row["mgmt_overlay_2"]
@@ -856,12 +851,12 @@ def pd_report(account_no=None, start_date=None, end_date=None, s_type = 0, id_se
                 pd_report = PD_Report.objects.create(
                     date = row["date"],
                     account_no = acc,
-                    factor_1 = round(row["factor_1"], 5) if row["factor_1"] is not None else None,
-                    factor_2 = round(row["factor_2"], 5) if row["factor_2"] is not None else None,
-                    factor_3 = round(row["factor_3"], 5) if row["factor_3"] is not None else None,
-                    factor_4 = round(row["factor_4"], 5) if row["factor_4"] is not None else None,
-                    factor_5 = round(row["factor_5"], 5) if row["factor_5"] is not None else None,
-                    factor_6 = round(row["factor_6"], 5) if row["factor_6"] is not None else None,
+                    factor_1 = round(row["factor_1"], 5) if row["factor_1"] is not None and row["factor_1"] !="" else None,
+                    factor_2 = round(row["factor_2"], 5) if row["factor_2"] is not None and row["factor_2"] !="" else None,
+                    factor_3 = round(row["factor_3"], 5) if row["factor_3"] is not None and row["factor_3"] !="" else None,
+                    factor_4 = round(row["factor_4"], 5) if row["factor_4"] is not None and row["factor_4"] !="" else None,
+                    factor_5 = round(row["factor_5"], 5) if row["factor_5"] is not None and row["factor_5"] !="" else None,
+                    factor_6 = round(row["factor_6"], 5) if row["factor_6"] is not None and row["factor_6"] !="" else None,
                     default_col = row["default_col"],
                     mgmt_overlay_1 = row["mgmt_overlay_1"],
                     mgmt_overlay_2 = row["mgmt_overlay_2"],
@@ -877,6 +872,7 @@ def pd_report(account_no=None, start_date=None, end_date=None, s_type = 0, id_se
         if s_type == 1:
             for row_mov in move_res:
                 move_record("pd", row_mov)
+
         return True
 
 

@@ -662,10 +662,15 @@ def replace_account_nos(sender, instance, **kwargs):
 #==================================================================================
 class Audit_Trail(models.Model):
     date = models.DateField(auto_now_add=False, null=True, blank=True, db_index=True)
-    edited_by = models.ForeignKey(User, on_delete=models.CASCADE, null=True, blank=True, db_index=True)
+    user = models.ForeignKey(User, on_delete=models.CASCADE, null=True, blank=True, db_index=True)
+    parent = models.CharField(max_length=255, null=True, blank=True, db_index=True)
+    edited_data = models.BooleanField(blank=True, default=False, db_index=True, null=True)
+    edited_data_params = models.TextField(blank=True, null=True) # JSON {"table":"initial", selected_ids: [], all:false}
     report_download = models.BooleanField(blank=True, default=False, db_index=True, null=True)
-    report_run = models.BooleanField(blank=True, default=False, db_index=True, null=True) # JSON {from_initial:false, from_final:false, selected_ids: [], all:false}
+    report_download_params = models.BooleanField(blank=True, default=False, db_index=True, null=True) # JSON {from_initial:false, from_final:false, selected_ids: [], all:false}
     moved_data = models.BooleanField(blank=True, default=False, db_index=True, null=True)
-    moved_data_params = models.TextField(blank=True, null=True) # JSON {tab_status: "pd", from_initial:false, selected_ids: [], all:false}
+    moved_data_params = models.TextField(blank=True, null=True) # JSON {from_initial:false, selected_ids: [], all:false}
     deleted_data = models.BooleanField(blank=True, default=False, db_index=True, null=True)
     deleted_data_params = models.TextField(blank=True, null=True) # JSON {from_initial:false, from_final:false, from_report:false, selected_ids: [], all:false}
+    report_run = models.BooleanField(blank=True, default=False, db_index=True, null=True)
+    report_run_params = models.TextField(blank=True, null=True)

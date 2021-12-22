@@ -347,8 +347,6 @@ def search_data(model_obj = None, form_data = None, tab_status = None):
 
         form_fields = form_data.keys()
 
-        print(form_data)
-
         qry = model_obj
 
         #
@@ -452,8 +450,6 @@ def import_data_from_file(request):
                 messages.success(request, "<p>Total Rows : {}</p><p>Inserted/Updated : {}</p><p>Failed : {}</p>".format(total_rows, row_num, row_failed))
         else:
             messages.error(request, "Unable to process the file. Columns Not Found : "+', '.join(missing_columns))
-
-
 
         return redirect("manage_imports", import_type)
     return redirect("manage_imports")
@@ -658,6 +654,14 @@ def edit_record(request, tab_status=None):
         obj.edited_by = request.user
         obj.edited_on = timezone.now()
 
+        #
+        # Audit Trail
+        helpers.audit_trail(request, {
+            "parent" : tab_status,
+            "edited_data" : True,
+            "params":{"handler_table": "initial", "selected_ids":[obj.id]}
+        })
+
         obj.save()
 
         messages.success(request, "Record Edited Successfully")
@@ -690,7 +694,7 @@ def move_all_to_final(request, tab_status=None):
                 if obj.account_no is None:
                     no_account = True
                 else:
-                    if background_tasks.move_record(tab_status, obj):
+                    if background_tasks.move_record(request, tab_status, obj):
                         record_failed = False
 
             except ObjectDoesNotExist:
@@ -727,7 +731,8 @@ def move_to_final(request, tab_status=None, ins=None):
             messages.error(request, "Record Cannot Be Moved. Account Number is not found in master. Please update the record")
             return redirect("manage_imports", tab_status)
 
-        if background_tasks.move_record(tab_status, obj):
+        if background_tasks.move_record(request, tab_status, obj):
+
             messages.success(request, "Record Moved Successfully")
         else:
             messages.error(request, "Operation Failed.")
@@ -743,6 +748,7 @@ def move_to_final(request, tab_status=None, ins=None):
 #**********************************************************************
 def move_data_bg_process(request, tab_status=None):
     if tab_status is not None and tab_status in constants.TAB_ACTIVE.keys():
+
         json_res = background_tasks.move_data_bg_process(request, tab_status)
         return JsonResponse(json_res)
     return JsonResponse({"ret":False})
@@ -906,8 +912,24 @@ def pd_report(request, s_type=0):
     if account_no is not None or start_date is not None or end_date is not None:
         id_selected = None
 
+
     #
-    #
+    # Audit Trail
+    if s_type == 1:
+        helpers.audit_trail(request, {
+            "parent" : "pd",
+            "report_run" : True,
+            "params":{"handler_table": "initial", "start_date":start_date, "end_date":end_date, "account_no":account_no, "selected_ids":id_selected}
+        })
+    else:
+        #
+        # Audit Trail
+        helpers.audit_trail(request, {
+            "parent" : "pd",
+            "report_run" : True,
+            "params":{"handler_table": "final", "start_date":start_date, "end_date":end_date, "account_no":account_no, "selected_ids":id_selected}
+        })
+
 
     ret = background_tasks.pd_report(start_date = start_date, end_date = end_date, account_no = account_no, s_type = s_type, id_selected = id_selected)
     if ret:
@@ -950,7 +972,6 @@ def pd_report(request, s_type=0):
             rev = '{}?{}'.format(rev, params)
             return redirect(rev)
         else:
-
             return redirect("show_reports", "pd")
 
 #**********************************************************************
@@ -982,6 +1003,23 @@ def lgd_report(request, s_type=0):
             account_no = None
     except AttributeError:
         pass
+
+    #
+    # Audit Trail
+    if s_type == 1:
+        helpers.audit_trail(request, {
+            "parent" : "lgd",
+            "report_run" : True,
+            "params":{"handler_table": "initial", "start_date":start_date, "end_date":end_date, "account_no":account_no, "selected_ids":id_selected}
+        })
+    else:
+        #
+        # Audit Trail
+        helpers.audit_trail(request, {
+            "parent" : "lgd",
+            "report_run" : True,
+            "params":{"handler_table": "final", "start_date":start_date, "end_date":end_date, "account_no":account_no, "selected_ids":id_selected}
+        })
 
     #
     #
@@ -1017,7 +1055,15 @@ def lgd_report(request, s_type=0):
         else:
             return JsonResponse({"ret":ret, "msg":"LGD Report Creation Failed"})
     else:
-        return redirect("show_reports", "lgd")
+        messages.success(request, "Report Generated Successfully")
+
+        if account_no is None and start_date is not None and end_date is not None and id_selected is not None:
+            rev = reverse("show_reports")
+            params = request.POST.urlencode()
+            rev = '{}?{}'.format(rev, params)
+            return redirect(rev)
+        else:
+            return redirect("show_reports", "lgd")
 
 
 #**********************************************************************
@@ -1050,7 +1096,21 @@ def stage_report(request, s_type=0):
         pass
 
     #
-    #
+    # Audit Trail
+    if s_type == 1:
+        helpers.audit_trail(request, {
+            "parent" : "stage",
+            "report_run" : True,
+            "params":{"handler_table": "initial", "start_date":start_date, "end_date":end_date, "account_no":account_no, "selected_ids":id_selected}
+        })
+    else:
+        #
+        # Audit Trail
+        helpers.audit_trail(request, {
+            "parent" : "stage",
+            "report_run" : True,
+            "params":{"handler_table": "final", "start_date":start_date, "end_date":end_date, "account_no":account_no, "selected_ids":id_selected}
+        })
 
     #
     #
@@ -1085,8 +1145,15 @@ def stage_report(request, s_type=0):
         else:
             return JsonResponse({"ret":ret, "msg":"Stage Report Creation Failed"})
     else:
+        messages.success(request, "Report Generated Successfully")
 
-        return redirect("show_reports", "stage")
+        if account_no is None and start_date is not None and end_date is not None and id_selected is not None:
+            rev = reverse("show_reports")
+            params = request.POST.urlencode()
+            rev = '{}?{}'.format(rev, params)
+            return redirect(rev)
+        else:
+            return redirect("show_reports", "stage")
 
 
 
@@ -1122,6 +1189,23 @@ def ead_report(request):
         pass
 
     #
+    # Audit Trail
+    if s_type == 1:
+        helpers.audit_trail(request, {
+            "parent" : "ead",
+            "report_run" : True,
+            "params":{"handler_table": "initial", "start_date":start_date, "end_date":end_date, "account_no":account_no, "selected_ids":id_selected}
+        })
+    else:
+        #
+        # Audit Trail
+        helpers.audit_trail(request, {
+            "parent" : "ead",
+            "report_run" : True,
+            "params":{"handler_table": "final", "start_date":start_date, "end_date":end_date, "account_no":account_no, "selected_ids":id_selected}
+        })
+
+    #
     #
 
     ret = background_tasks.ead_report(start_date = start_date, end_date = end_date, account_no = account_no)
@@ -1153,7 +1237,15 @@ def ead_report(request):
         else:
             return JsonResponse({"ret":ret, "msg":"EAD Report Creation Failed"})
     else:
-        return redirect("show_reports", "ead")
+        messages.success(request, "Report Generated Successfully")
+
+        if account_no is None and start_date is not None and end_date is not None and id_selected is not None:
+            rev = reverse("show_reports")
+            params = request.POST.urlencode()
+            rev = '{}?{}'.format(rev, params)
+            return redirect(rev)
+        else:
+            return redirect("show_reports", "ead")
 
 
 
@@ -1407,7 +1499,7 @@ def collateral_upload(request):
                         except IndexError:
                             pass
 
-                        
+
 
                         obj.save()
 
@@ -1574,6 +1666,12 @@ def show_collateral_mapping(request):
 
     return render(request, "administrator/index.html", data)
 
+#
+#
+#
+def edit_collateral(request):
+    pass
+
 
 #**********************************************************************
 # ENDPOINT: DELETE COLLATERALS
@@ -1582,3 +1680,94 @@ def delete_collateral(request):
     Collateral.objects.all().delete()
     messages.success(request, "Records Deleted Successfully")
     return HttpResponse(1)
+
+
+
+#**********************************************************************
+# ENDPOINT: SHOW AUDIT TRAILS
+#**********************************************************************
+def show_audit_trail(request):
+
+    data = defaultdict()
+
+    audit_list = Audit_Trail.objects.all()
+
+    data["items_list"] = defaultdict()
+    data["content_template"] = "administrator/show_audit_trails.html"
+    data["js_files"] = []
+    data["sidebar_active"] = 6
+
+    data["items_list"] = defaultdict()
+
+    queryset = None
+    options = None
+
+    for row in audit_list:
+
+        #
+        #
+        if row.edited_data:
+            bgc_color = "#fdf7a0"
+
+            jdata = json.loads(row.edited_data_params)
+            options = jdata["handler_table"]
+
+            if row.parent not in ["master", "product", "collateral"]:
+                if jdata["handler_table"] == "initial":
+                    queryset = constants.TAB_ACTIVE[row.parent][3].select_related("account_no")
+                    queryset = queryset.filter(id__in = jdata["selected_ids"]).values_list("account_no__account_no")
+            else:
+                if jdata["handler_table"] == "initial" and row.parent == "master":
+                    queryset = constants.TAB_ACTIVE[row.parent][3].filter(id__in = jdata["selected_ids"]).values_list("account_no")
+
+                    query_output = ', '.join([x[0] for x in queryset])
+
+        #
+        #
+        if row.moved_data:
+            bgc_color = "#c1f18c"
+
+            jdata = json.loads(row.moved_data_params)
+            options = jdata["handler_table"]
+
+            queryset = constants.TAB_ACTIVE[row.parent][4].select_related("account_no")
+            queryset = queryset.filter(id__in = jdata["created_ids"]).values_list("account_no__account_no", "date")
+
+            query_output = [{"date":x[1], "account_no":x[0]} for x in queryset]
+
+        #
+        #
+        if row.deleted_data:
+            bgc_color = "#F66965"
+
+
+        #
+        #
+        if row.report_run:
+            bgc_color = "#f3c3ed"
+
+        #
+        #
+        if row.report_download:
+            bgc_color = "#8072F8"
+
+
+        main_data = {
+            "date": row.date,
+            "parent": row.parent,
+            "user_id": row.user_id,
+            "edited_data": row.edited_data,
+            "edit_params": query_output,
+            "moved_data": row.moved_data,
+            "moved_params": query_output,
+            "deleted_data": row.deleted_data,
+            "report_run": row.report_run,
+            "report_download": row.report_download,
+            "bgcolor":bgc_color,
+            "option":options
+        }
+
+        data["items_list"][row.id]= main_data
+
+
+    return render(request, "administrator/index.html", data)

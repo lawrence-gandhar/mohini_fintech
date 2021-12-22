@@ -1,0 +1,66 @@
+{% load custom_tags %}
+<div class="row" style="margin:20px 0px 0px; ">
+  <div class="col-md-6 col-sm-12">
+    <h3 style="line-height: 40px;" class="main_heading">Audit Trails</h3>
+  </div>
+  <div class="col-md-6 col-sm-12 heading_buttons_container">
+    <div class="btn-group" role="group" aria-label="Basic example">
+      <a href="{% url 'manage_imports' %}" class="btn btn-default btn-sm" style="width:100px; color:#000000;">
+        <i class="la la-angle-double-left"></i> <strong>Back</strong>
+      </a>
+      <button href="" onclick="delete_collateral()" class="btn btn-default btn-sm" style="width:100px; color:#000000;">
+        <i class="la la-trash"></i> <strong>Delete</strong>
+      </button>
+    </div>
+  </div>
+</div>
+<hr style="margin-top:0px;" />
+
+{% include 'base/alert_components.html' %}
+
+<div class="row row_counter">
+  <span>No.of Records{% if search_view %} Searched{% endif %} : {{ items_list|length }}</span>
+</div>
+
+<div class="row table-responsive" style="overflow:scroll; margin:1px;">
+  <table class="table table-bordered" id="manage_user_table" style="margin-top:10px;">
+    <thead style="background-color:#eeeeee;">
+      <th class="text-center">Date</th>
+      <th class="text-center">Parent</th>
+      <th class="text-center">Section</th>
+      <th class="text-center">Method</th>
+      <th class="text-center">Data</th>
+      <th class="text-center">Action</th>
+    </thead>
+    <tbody style="font-size:13px;">
+      {% for id, row in items_list.items %}
+        <tr style="background-color:{{row.bgcolor}};">
+          <td>{{ row.date }}</td>
+          <td><strong>{{ row.parent|upper }}</strong></td>
+          <td>{{ row.option.upper }}</td>
+          <td>
+            {% if row.edited_data %} Edited
+            {% elif row.deleted_data %} Deleted
+            {% elif row.moved_data %} Moved
+            {% elif row.report_run %} Report
+            {% elif row.report_download %} Download
+            {% endif %}
+          </td>
+          <td>
+            {% if row.edited_data %}
+              {{ row.edit_params }}
+            {% elif row.moved_data %}
+              {% for i in row.moved_params %}
+                <span style="display:inline-block; margin:5px; border:1px solid #000000; padding:5px;">
+                  <label>{{ i.date }} : </label>
+                  <label style="font-weight:bold;">{{ i.account_no }}</label>
+                </span>
+              {% endfor %}
+            {% endif %}
+          </td>
+          <td style="text-align:center; background-color:#FFFFFF;"></td>
+        </tr>
+      {% endfor %}
+    </tbody>
+  </table>
+</div>
