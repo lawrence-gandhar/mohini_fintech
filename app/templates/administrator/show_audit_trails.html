@@ -35,6 +35,7 @@
     <tbody style="font-size:13px;">
       {% for id, row in items_list.items %}
         <tr style="background-color:{{row.bgcolor}};">
+          <>
           <td>{{ row.date }}</td>
           <td><strong>{{ row.parent|upper }}</strong></td>
           <td>{{ row.option.upper }}</td>
