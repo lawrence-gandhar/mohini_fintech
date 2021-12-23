@@ -10,6 +10,8 @@ import random
 import string
 import re
 import json
+import secrets
+
 from django.conf import settings
 from app.models import *
 
@@ -295,8 +297,6 @@ def send_email_reject_user(user=None):
     sendmymail(subject, email_html_template,send_to=[user.email])
 
 
-
-
 # ******************************************************************************
 # Audit trail function
 # ******************************************************************************
@@ -360,3 +360,11 @@ def audit_trail(request, data={}):
             ins.report_run_params = json.dumps(data["params"])
 
     ins.save()
+
+
+# ******************************************************************************
+# BACKGROUND COLOR CODINGS
+# ******************************************************************************
+
+def bg_color_codes():
+    return "#"+secrets.token_hex(3)+"32"

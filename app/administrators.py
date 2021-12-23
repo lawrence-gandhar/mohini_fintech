@@ -806,24 +806,84 @@ def show_final_records(request, tab_status=None):
     # TAB- EAD
     #==============================================================
     if tab_status == "ead":
-        results.values('id', 'date', 'account_no_id', 'outstanding_amount', 'undrawn_upto_1_yr', 'undrawn_greater_than_1_yr', 'collateral_1_value', 'collateral_1_rating', 'collateral_1_residual_maturity', 'collateral_2_value', 'collateral_2_rating', 'collateral_2_residual_maturity', Account_No = F('account_no__account_no'), cin = F('account_no__cin'), sectors = F('account_no__sectors'), account_type = F('account_no__account_type')).order_by("id")
+
+        data["counter"] = [1]
+        counters = constants.TAB_ACTIVE[tab_status][4].raw("""select max(ads.id) as id from (select count(*) as id from app_collateral group by account_no_id) ads""")
+
+        for x in counters:
+            data["counter"] = range(1, int(x.id)+1)
+
+        qry = """
+            select ED.date, ED.id, ED.outstanding_amount, ED.undrawn_upto_1_yr, ED.undrawn_greater_than_1_yr, AC.account_no as Account_no, AC.account_type, AC.sectors, AC.cin, C.collateral_value, C.collateral_rating as c_rating, C.collateral_residual_maturity as c_r_maturity, BP.product_name, BP.product_code, BC.collateral_code, BC.collateral_type, BC.issuer_type, BC.collateral_eligibity, BC.rating_available, BC.collateral_rating as b_c_rating, BC.residual_maturity, BC.basel_collateral_type, BC.basel_collateral_subtype, BC.basel_collateral_code, BC.basel_collateral_rating, BC.soverign_issuer, BC.other_issuer
+            from app_ead_final ED
+            left join app_accountmaster AC on AC.id = ED.account_no_id
+            left join app_collateral C on C.account_no_id = AC.id
+            left join app_basel_product_master BP on BP.id = C.product_id
+            left join app_basel_collateral_master BC on BC.id = C.collateral_code_id
+        """
+
+        items_list = {}
+
+        results = constants.TAB_ACTIVE[tab_status][4].raw(qry)
+
+        for row in results:
+            items_list[row.id] = {
+                "date":row.date,
+                "Account_no":row.Account_no,
+                "account_type":row.account_type,
+                "cin":row.cin,
+                "sectors":row.sectors,
+                "outstanding_amount":row.outstanding_amount,
+                "undrawn_upto_1_yr":row.undrawn_upto_1_yr,
+                "undrawn_greater_than_1_yr":row.undrawn_greater_than_1_yr,
+                "account_no":row.account_no,
+                "product_name":row.product_name,
+                "product_code":row.product_code,
+                "collaterals":[]
+            }
+
+        for row in results:
+            items_list[row.id]["collaterals"].append({
+                "collateral_value":row.collateral_value,
+                "c_rating":row.c_rating,
+                "c_r_maturity":row.c_r_maturity,
+                "collateral_code":row.collateral_code,
+                "collateral_type":row.collateral_type,
+                "issuer_type":row.issuer_type,
+                "collateral_eligibity":row.collateral_eligibity,
+                "rating_available":row.rating_available,
+                "b_c_rating":row.b_c_rating,
+                "residual_maturity":row.residual_maturity,
+                "basel_collateral_type":row.basel_collateral_type,
+                "basel_collateral_subtype":row.basel_collateral_subtype,
+                "basel_collateral_code":row.basel_collateral_code,
+                "basel_collateral_rating":row.basel_collateral_rating,
+                "soverign_issuer":row.soverign_issuer,
+                "other_issuer":row.other_issuer,
+                "bg_color":helpers.bg_color_codes(),
+            })
+
 
 
     #
     # PAGINATIONS
     #==============================================================
 
-    results = results.order_by("id")
+    if tab_status != "ead":
+        results = results.order_by("id")
 
-    page = request.GET.get('page', 1)
+        page = request.GET.get('page', 1)
 
-    paginator = Paginator(results, 100)
-    try:
-        results = paginator.page(page)
-    except PageNotAnInteger:
-        results = paginator.page(1)
-    except EmptyPage:
-        results = paginator.page(paginator.num_pages)
+        paginator = Paginator(results, 100)
+        try:
+            results = paginator.page(page)
+        except PageNotAnInteger:
+            results = paginator.page(1)
+        except EmptyPage:
+            results = paginator.page(paginator.num_pages)
+
+    else:
+        results = items_list
 
     data["tab_status"] = tab_status
     data["tab_active"] = constants.TAB_ACTIVE[tab_status][0]
@@ -914,24 +974,9 @@ def pd_report(request, s_type=0):
 
 
     #
-    # Audit Trail
-    if s_type == 1:
-        helpers.audit_trail(request, {
-            "parent" : "pd",
-            "report_run" : True,
-            "params":{"handler_table": "initial", "start_date":start_date, "end_date":end_date, "account_no":account_no, "selected_ids":id_selected}
-        })
-    else:
-        #
-        # Audit Trail
-        helpers.audit_trail(request, {
-            "parent" : "pd",
-            "report_run" : True,
-            "params":{"handler_table": "final", "start_date":start_date, "end_date":end_date, "account_no":account_no, "selected_ids":id_selected}
-        })
+    #
 
-
-    ret = background_tasks.pd_report(start_date = start_date, end_date = end_date, account_no = account_no, s_type = s_type, id_selected = id_selected)
+    ret = background_tasks.pd_report(request, start_date = start_date, end_date = end_date, account_no = account_no, s_type = s_type, id_selected = id_selected)
     if ret:
 
         results = PD_Report.objects
@@ -1005,26 +1050,8 @@ def lgd_report(request, s_type=0):
         pass
 
     #
-    # Audit Trail
-    if s_type == 1:
-        helpers.audit_trail(request, {
-            "parent" : "lgd",
-            "report_run" : True,
-            "params":{"handler_table": "initial", "start_date":start_date, "end_date":end_date, "account_no":account_no, "selected_ids":id_selected}
-        })
-    else:
-        #
-        # Audit Trail
-        helpers.audit_trail(request, {
-            "parent" : "lgd",
-            "report_run" : True,
-            "params":{"handler_table": "final", "start_date":start_date, "end_date":end_date, "account_no":account_no, "selected_ids":id_selected}
-        })
-
     #
-    #
-
-    ret = background_tasks.lgd_report(start_date = start_date, end_date = end_date, account_no = account_no, s_type = s_type, id_selected = id_selected)
+    ret = background_tasks.lgd_report(request, start_date = start_date, end_date = end_date, account_no = account_no, s_type = s_type, id_selected = id_selected)
     if ret:
 
         results = LGD_Report.objects
@@ -1096,25 +1123,8 @@ def stage_report(request, s_type=0):
         pass
 
     #
-    # Audit Trail
-    if s_type == 1:
-        helpers.audit_trail(request, {
-            "parent" : "stage",
-            "report_run" : True,
-            "params":{"handler_table": "initial", "start_date":start_date, "end_date":end_date, "account_no":account_no, "selected_ids":id_selected}
-        })
-    else:
-        #
-        # Audit Trail
-        helpers.audit_trail(request, {
-            "parent" : "stage",
-            "report_run" : True,
-            "params":{"handler_table": "final", "start_date":start_date, "end_date":end_date, "account_no":account_no, "selected_ids":id_selected}
-        })
-
     #
-    #
-    ret = background_tasks.stage_report(start_date = start_date, end_date = end_date, account_no = account_no, s_type = s_type, id_selected = id_selected)
+    ret = background_tasks.stage_report(request, start_date = start_date, end_date = end_date, account_no = account_no, s_type = s_type, id_selected = id_selected)
     if ret:
 
         results = Stage_Report.objects
@@ -1188,52 +1198,66 @@ def ead_report(request):
     except AttributeError:
         pass
 
-    #
-    # Audit Trail
-    if s_type == 1:
-        helpers.audit_trail(request, {
-            "parent" : "ead",
-            "report_run" : True,
-            "params":{"handler_table": "initial", "start_date":start_date, "end_date":end_date, "account_no":account_no, "selected_ids":id_selected}
-        })
-    else:
-        #
-        # Audit Trail
-        helpers.audit_trail(request, {
-            "parent" : "ead",
-            "report_run" : True,
-            "params":{"handler_table": "final", "start_date":start_date, "end_date":end_date, "account_no":account_no, "selected_ids":id_selected}
-        })
 
     #
     #
-
-    ret = background_tasks.ead_report(start_date = start_date, end_date = end_date, account_no = account_no)
+    ret = background_tasks.ead_report(request, start_date = start_date, end_date = end_date, account_no = account_no)
     if ret:
 
-        results = EAD_Report.objects
+        qry = """
+            select ED.date, ED.id, ED.outstanding_amount, ED.undrawn_upto_1_yr, ED.undrawn_greater_than_1_yr, AC.account_no as Account_no, AC.account_type, AC.sectors, AC.cin, C.collateral_value, C.collateral_rating as c_rating, C.collateral_residual_maturity as c_r_maturity, BP.product_name, BP.product_code, BC.collateral_code, BC.collateral_type, BC.issuer_type, BC.collateral_eligibity, BC.rating_available, BC.collateral_rating as b_c_rating, BC.residual_maturity, BC.basel_collateral_type, BC.basel_collateral_subtype, BC.basel_collateral_code, BC.basel_collateral_rating, BC.soverign_issuer, BC.other_issuer, ED.ead_total
+            from app_ead_report ED
+            left join app_accountmaster AC on AC.id = ED.account_no_id
+            left join app_collateral C on C.account_no_id = AC.id
+            left join app_basel_product_master BP on BP.id = C.product_id
+            left join app_basel_collateral_master BC on BC.id = C.collateral_code_id order by ED.id
+        """
 
-        if len(id_selected) > 0:
-            results = results.filter(id__in = id_selected)
-        else:
+        items_list = {}
 
-            if start_date is None and end_date is None and account_no is None:
-                results = results.all()
+        results = constants.TAB_ACTIVE["ead"][4].raw(qry)
 
-            if start_date is not None:
-                if end_date is not None:
-                    results = results.filter(date__gte = start_date, date__lte = end_date)
-                else:
-                    results = results.filter(date__gte = start_date)
+        for row in results:
+            items_list[row.id] = {
+                "date":row.date,
+                "Account_no":row.Account_no,
+                "account_type":row.account_type,
+                "cin":row.cin,
+                "sectors":row.sectors,
+                "outstanding_amount":row.outstanding_amount,
+                "undrawn_upto_1_yr":row.undrawn_upto_1_yr,
+                "undrawn_greater_than_1_yr":row.undrawn_greater_than_1_yr,
+                "product_name":row.product_name,
+                "product_code":row.product_code,
+                "collaterals":[],
+                "ead_total":row.ead_total,
+            }
 
-            if account_no is not None:
-                results = results.filter(account_no__account_no__in = account_no)
+        for row in results:
+            items_list[row.id]["collaterals"].append({
+                "collateral_value":row.collateral_value,
+                "c_rating":row.c_rating,
+                "c_r_maturity":row.c_r_maturity,
+                "collateral_code":row.collateral_code,
+                "collateral_type":row.collateral_type,
+                "issuer_type":row.issuer_type,
+                "collateral_eligibity":row.collateral_eligibity,
+                "rating_available":row.rating_available,
+                "b_c_rating":row.b_c_rating,
+                "residual_maturity":row.residual_maturity,
+                "basel_collateral_type":row.basel_collateral_type,
+                "basel_collateral_subtype":row.basel_collateral_subtype,
+                "basel_collateral_code":row.basel_collateral_code,
+                "basel_collateral_rating":row.basel_collateral_rating,
+                "soverign_issuer":row.soverign_issuer,
+                "other_issuer":row.other_issuer,
+                "bg_color":helpers.bg_color_codes(),
+            })
 
-        results = results.select_related('account_no').values('id', 'date', 'account_no__account_no', 'account_type', 'cin', 'product_name', 'outstanding_amount', 'undrawn_upto_1_yr', 'undrawn_greater_than_1_yr', 'collateral_1_value', 'collateral_1_rating', 'collateral_1_residual_maturity', 'collateral_2_value', 'collateral_2_rating', 'collateral_2_residual_maturity')
 
     if request.is_ajax():
         if ret:
-            return JsonResponse({"ret":ret, "msg":"EAD Report Created Successfully", "results":list(results)})
+            return JsonResponse({"ret":ret, "msg":"EAD Report Created Successfully", "results":list(items_list)})
         else:
             return JsonResponse({"ret":ret, "msg":"EAD Report Creation Failed"})
     else:
@@ -1367,40 +1391,105 @@ def show_reports(request, tab_status=None):
     # TAB- EAD
     #==============================================================
     if tab_status == "ead":
-        results = EAD_Report.objects
 
-        product_qry = """select product_name from app_basel_product_master where id = (select distinct(product_id) from app_collateral where account_no_id = app_ead_report.account_no_id)"""
+        where_clause = False
+        dates_cond = ""
+        acc_cond = ""
 
-        results = results.extra(select={'product_name': product_qry}).select_related('account_no')
+        #
+        #
 
         if start_date is None and end_date is None and account_no is None:
-            results = results.all()
-
-        if start_date is not None:
-            if end_date is not None:
-                results = results.filter(date__gte = start_date, date__lte = end_date)
-            else:
-                results = results.filter(date__gte = start_date)
+            dates_cond = ""
+        else:
+            if start_date is not None:
+                if end_date is not None:
+                    dates_cond = " where ED.date >='{}' and ED.date <='{}'".format(start_date, end_date)
+                    where_clause = True
+                else:
+                    dates_cond = " where ED.date >='{}'".format(start_date)
+                    where_clause = True
 
         if account_no is not None:
-            for i in account_no:
-                acc = [x[0] for x in AccountMaster.objects.filter(account_no__icontains = i).values_list("id")]
-                results = results.filter(Q(account_no_id__in = acc))
+            if where_clause:
+                acc_cond = " and ED.account_no_id = {}".format(account_no)
+            else:
+                acc_cond = " where ED.account_no_id = {}".format(account_no)
 
-        results = results.values('id', 'date', 'account_no__account_no', 'product_name', 'outstanding_amount', 'undrawn_upto_1_yr', 'undrawn_greater_than_1_yr', 'collateral_1_value', 'collateral_1_rating', 'collateral_1_residual_maturity', 'collateral_2_value', 'collateral_2_rating', 'collateral_2_residual_maturity', Account_No = F('account_no__account_no'), cin = F('account_no__cin'), sectors = F('account_no__sectors'), account_type = F('account_no__account_type')).order_by("id")
+        #
+        #
+        data["counter"] = [1]
+        counters = constants.TAB_ACTIVE[tab_status][4].raw("""select max(ads.id) as id from (select count(*) as id from app_collateral group by account_no_id) ads""")
+
+        for x in counters:
+            data["counter"] = range(1, int(x.id)+1)
+
+        qry = """
+            select ED.date, ED.id, ED.outstanding_amount, ED.undrawn_upto_1_yr, ED.undrawn_greater_than_1_yr, AC.account_no as Account_no, AC.account_type, AC.sectors, AC.cin, C.collateral_value, C.collateral_rating as c_rating, C.collateral_residual_maturity as c_r_maturity, BP.product_name, BP.product_code, BC.collateral_code, BC.collateral_type, BC.issuer_type, BC.collateral_eligibity, BC.rating_available, BC.collateral_rating as b_c_rating, BC.residual_maturity, BC.basel_collateral_type, BC.basel_collateral_subtype, BC.basel_collateral_code, BC.basel_collateral_rating, BC.soverign_issuer, BC.other_issuer, ED.ead_total
+            from app_ead_report ED
+            left join app_accountmaster AC on AC.id = ED.account_no_id
+            left join app_collateral C on C.account_no_id = AC.id
+            left join app_basel_product_master BP on BP.id = C.product_id
+            left join app_basel_collateral_master BC on BC.id = C.collateral_code_id {} {} and ED.account_no_id is not null order by ED.id
+        """.format(dates_cond, acc_cond)
+
+        items_list = {}
+
+        results = constants.TAB_ACTIVE[tab_status][4].raw(qry)
+
+        for row in results:
+            items_list[row.id] = {
+                "date":row.date,
+                "Account_no":row.Account_no,
+                "account_type":row.account_type,
+                "cin":row.cin,
+                "sectors":row.sectors,
+                "outstanding_amount":row.outstanding_amount,
+                "undrawn_upto_1_yr":row.undrawn_upto_1_yr,
+                "undrawn_greater_than_1_yr":row.undrawn_greater_than_1_yr,
+                "product_name":row.product_name,
+                "product_code":row.product_code,
+                "collaterals":[],
+                "ead_total":row.ead_total,
+            }
+
+        for row in results:
+            items_list[row.id]["collaterals"].append({
+                "collateral_value":row.collateral_value,
+                "c_rating":row.c_rating,
+                "c_r_maturity":row.c_r_maturity,
+                "collateral_code":row.collateral_code,
+                "collateral_type":row.collateral_type,
+                "issuer_type":row.issuer_type,
+                "collateral_eligibity":row.collateral_eligibity,
+                "rating_available":row.rating_available,
+                "b_c_rating":row.b_c_rating,
+                "residual_maturity":row.residual_maturity,
+                "basel_collateral_type":row.basel_collateral_type,
+                "basel_collateral_subtype":row.basel_collateral_subtype,
+                "basel_collateral_code":row.basel_collateral_code,
+                "basel_collateral_rating":row.basel_collateral_rating,
+                "soverign_issuer":row.soverign_issuer,
+                "other_issuer":row.other_issuer,
+                "bg_color":helpers.bg_color_codes(),
+            })
 
     #
     # PAGINATIONS
     #==============================================================
-    page = request.GET.get('page', 1)
+    if tab_status != "ead":
+        page = request.GET.get('page', 1)
 
-    paginator = Paginator(results, 100)
-    try:
-        results = paginator.page(page)
-    except PageNotAnInteger:
-        results = paginator.page(1)
-    except EmptyPage:
-        results = paginator.page(paginator.num_pages)
+        paginator = Paginator(results, 100)
+        try:
+            results = paginator.page(page)
+        except PageNotAnInteger:
+            results = paginator.page(1)
+        except EmptyPage:
+            results = paginator.page(paginator.num_pages)
+    else:
+        results = items_list
+
 
     #
     # DATA
@@ -1561,19 +1650,59 @@ def get_collateral_data(request, ins=None):
 
 def delete_single_collateral_data(request):
     try:
-        Collateral.objects.get(pk = int(request.GET["id"])).delete()
+        collaterals = Collateral.objects.get(pk = int(request.GET["id"]))
+
+        #
+        # Audit Trail
+        helpers.audit_trail(request, {
+            "parent" : "collateral map",
+            "deleted_data" : True,
+            "params":{"handler_table": "initial", "selected_ids":[collaterals.account_no_id], "all":False}
+        })
+
+        collaterals.delete()
+
     except:
         return HttpResponse(0)
     return HttpResponse(1)
 
 
 #**********************************************************************
-# ENDPOINT: GET COLLATERAl DATA
+# ENDPOINT: DELETE COLLATERAl DATA - FOR AN ACCOUNT
 #**********************************************************************
 
 def delete_all_collaterals(request):
-    Collateral.objects.filter(account_no_id = int(request.GET["ids"])).delete()
+    collaterals = Collateral.objects.filter(account_no_id = int(request.GET["ids"]))
+    #
+    # Audit Trail
+    helpers.audit_trail(request, {
+        "parent" : "collateral map",
+        "deleted_data" : True,
+        "params":{"handler_table": "initial", "selected_ids":[int(request.GET["ids"])], "all":True}
+    })
+
+    collaterals.delete()
+
     return HttpResponse(1)
+
+
+#**********************************************************************
+# ENDPOINT: DELETE COLLATERALS
+#**********************************************************************
+def delete_collateral(request):
+    Collateral.objects.all().delete()
+
+    #
+    # Audit Trail
+    helpers.audit_trail(request, {
+        "parent" : "collateral map",
+        "deleted_data" : True,
+        "params":{"handler_table": "initial", "selected_ids":[], "all":True}
+    })
+
+    messages.success(request, "Records Deleted Successfully")
+    return HttpResponse(1)
+
 
 
 #**********************************************************************
@@ -1650,9 +1779,17 @@ def show_collateral_mapping(request):
 
     data = defaultdict()
 
-    results = Collateral.objects.all().select_related('account_no', 'collateral_code', 'product').values(Account_no = F('account_no__account_no'), product_name = F('product__product_name'), product_code = F('product__product_code'), basel_collateral_code = F('collateral_code__basel_collateral_code'))
+    results = Collateral.objects.all().select_related('account_no', 'collateral_code', 'product').values('collateral_value', 'collateral_rating', 'collateral_residual_maturity', Account_no = F('account_no__account_no'), product_name = F('product__product_name'), product_code = F('product__product_code'), basel_collateral_code = F('collateral_code__basel_collateral_code'))
 
-    results = Collateral.objects.raw("select main_query.account_no as id, main_query.product_code, main_query.product_name, group_concat(main_query.basel_collateral_code) as basel_collateral_code_grp from ({}) main_query group by main_query.account_no".format(results.query))
+    items_list = defaultdict()
+
+    for row in results:
+        items_list[row["Account_no"]] = {"data":[], "bgcolor" : helpers.bg_color_codes()}
+
+    for row in results:
+        items_list[row["Account_no"]]["data"].append(row)
+
+    print(items_list)
 
     #
     # DATA
@@ -1662,22 +1799,31 @@ def show_collateral_mapping(request):
     data["content_template"] = 'administrator/show_collaterals.html'
     data["js_files"] = ['']
     data["sidebar_active"] = 3
-    data["items_list"] = results
+    data["items_list"] = items_list
 
     return render(request, "administrator/index.html", data)
 
-#
-#
-#
+#**********************************************************************
+# EDIT COLLATERAL
+#**********************************************************************
 def edit_collateral(request):
     pass
 
 
 #**********************************************************************
-# ENDPOINT: DELETE COLLATERALS
+# DELETE AUDIT TRAILS ALL
 #**********************************************************************
-def delete_collateral(request):
-    Collateral.objects.all().delete()
+def delete_audit_trails(request):
+    Audit_Trail.objects.all().delete()
+    messages.success(request, "Records Deleted Successfully")
+    return HttpResponse(1)
+
+
+#**********************************************************************
+# DELETE AUDIT TRAILS SINGLE
+#**********************************************************************
+def delete_audit_trail_single(request):
+    Audit_Trail.objects.get(pk=int(request.GET["id"])).delete()
     messages.success(request, "Records Deleted Successfully")
     return HttpResponse(1)
 
@@ -1690,7 +1836,7 @@ def show_audit_trail(request):
 
     data = defaultdict()
 
-    audit_list = Audit_Trail.objects.all()
+    audit_list = Audit_Trail.objects.all().select_related("user")
 
     data["items_list"] = defaultdict()
     data["content_template"] = "administrator/show_audit_trails.html"
@@ -1699,13 +1845,19 @@ def show_audit_trail(request):
 
     data["items_list"] = defaultdict()
 
-    queryset = None
-    options = None
+    #
+    #
 
     for row in audit_list:
 
+        queryset = None
+        options = None
+        query_output = None
+        all_opts = False
+
         #
-        #
+        # EDITED
+        #=========================================================
         if row.edited_data:
             bgc_color = "#fdf7a0"
 
@@ -1723,9 +1875,10 @@ def show_audit_trail(request):
                     query_output = ', '.join([x[0] for x in queryset])
 
         #
-        #
+        # MOVED
+        #=========================================================
         if row.moved_data:
-            bgc_color = "#c1f18c"
+            bgc_color = "#d9f3bb"
 
             jdata = json.loads(row.moved_data_params)
             options = jdata["handler_table"]
@@ -1736,18 +1889,61 @@ def show_audit_trail(request):
             query_output = [{"date":x[1], "account_no":x[0]} for x in queryset]
 
         #
-        #
+        # DELETED
+        #=========================================================
         if row.deleted_data:
-            bgc_color = "#F66965"
+            bgc_color = "#f79c99"
+
+            jdata = json.loads(row.deleted_data_params)
+            options = jdata["handler_table"]
+
+            #
+            # COLLATERAL Mapping
+            #=========================================================
+            if row.parent == "collateral map":
+
+                if len(jdata["selected_ids"]) > 0:
+                    queryset = AccountMaster.objects.filter(id__in = jdata["selected_ids"]).values_list("account_no")
+                    query_output = ', '.join([x[0] for x in queryset])
+
+                    if "all" in jdata.keys():
+                        if jdata["all"]:
+                            query_output = "ALL FOR ACCOUNT : " + query_output
+                        else:
+                            query_output = "ONE RECORD FOR ACCOUNT : " + query_output
+                else:
+                    if "all" in jdata.keys():
+                        if jdata["all"]:
+                            all_opts = True
+
 
 
         #
-        #
+        # REPORT RUN
+        #=========================================================
         if row.report_run:
             bgc_color = "#f3c3ed"
+            jdata = json.loads(row.report_run_params)
+
+            #{"handler_table": "final", "start_date": null, "end_date": null, "account_no": null, "selected_ids": []}
+
+
+            options = jdata["handler_table"]
+
+            if len(jdata["selected_ids"]) > 0:
+                queryset = constants.TAB_ACTIVE[row.parent][4].select_related("account_no")
+                queryset = queryset.filter(id__in = jdata["selected_ids"]).values_list("account_no__account_no", "date")
+
+                query_output = [{"date":x[1], "account_no":x[0]} for x in queryset]
+
+            else:
+                if "all" in jdata.keys():
+                    if jdata["all"]:
+                        all_opts = True
 
         #
-        #
+        # REPORT DOWNLOAD
+        #=========================================================
         if row.report_download:
             bgc_color = "#8072F8"
 
@@ -1755,16 +1951,20 @@ def show_audit_trail(request):
         main_data = {
             "date": row.date,
             "parent": row.parent,
-            "user_id": row.user_id,
+            "edited_by": row.user.username,
             "edited_data": row.edited_data,
             "edit_params": query_output,
             "moved_data": row.moved_data,
             "moved_params": query_output,
             "deleted_data": row.deleted_data,
+            "deleted_params": query_output,
             "report_run": row.report_run,
+            "report_run_params": query_output,
             "report_download": row.report_download,
+            "report_download_params": query_output,
             "bgcolor":bgc_color,
-            "option":options
+            "option":options,
+            "all_opts": all_opts
         }
 
         data["items_list"][row.id]= main_data

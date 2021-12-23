@@ -98,10 +98,12 @@
                 <button type="button" onclick="reset_password({{row.id}})" class="btn btn-icon btn-sm">
                   <i class="la la-key" aria-hidden="true" style="font-size: 25px;line-height: 30px;"></i>
                 </button>
-                {% if not row.is_superuser  %}
-                <a href="{% url 'delete_user' row.id %}" class="btn btn-icon btn-sm">
-                  <i class="la la-trash" aria-hidden="true" style="font-size: 25px;line-height: 30px; color:#FF0000;"></i>
-                </a>
+                {% if row.is_superuser %}
+                {% elif row.is_staff %}
+                {% else %}
+                  <a href="{% url 'delete_user' row.id %}" class="btn btn-icon btn-sm">
+                    <i class="la la-trash" aria-hidden="true" style="font-size: 25px;line-height: 30px; color:#FF0000;"></i>
+                  </a>
                 {% endif %}
               </div>
             </td>

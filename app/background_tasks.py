@@ -752,21 +752,37 @@ def move_data_bg_process(request, tab_status=None):
 # **********************************************************************
 # PD REPORT CALCULATION & DATA LOAD
 # **********************************************************************
-def pd_report(account_no=None, start_date=None, end_date=None, s_type = 0, id_selected=None):
+def pd_report(request, account_no=None, start_date=None, end_date=None, s_type = 0, id_selected=None):
 
     #
     # Loading the data
+    #=============================================================
     if s_type == 1:
         results = constants.TAB_ACTIVE["pd"][3].filter(account_no__isnull = False)
+
+        params = {
+            "parent" : "pd",
+            "report_run" : True,
+            "params":{"handler_table": "initial", "start_date":start_date, "end_date":end_date, "account_no":account_no, "selected_ids":id_selected, "all":False}
+        }
+
     else:
         results = constants.TAB_ACTIVE["pd"][4]
 
+        params = {
+            "parent" : "pd",
+            "report_run" : True,
+            "params":{"handler_table": "final", "start_date":start_date, "end_date":end_date, "account_no":account_no, "selected_ids":id_selected, "all":False}
+        }
+
     #
     #
+    #=============================================================
     if id_selected is None or len(id_selected) == 0:
 
         if start_date is None and end_date is None and account_no is None:
             results = results.all()
+            params["params"]["all"] = True
 
         if start_date is not None:
             if end_date is not None:
@@ -781,7 +797,14 @@ def pd_report(account_no=None, start_date=None, end_date=None, s_type = 0, id_se
             results = results.filter(id__in = id_selected)
 
     #
+    # Audit Trail
+    #=============================================================
+    helpers.audit_trail(request, params)
+
+
     #
+    #
+    #=============================================================
     move_res = results
     results = results.select_related("account_no")
 
@@ -879,27 +902,60 @@ def pd_report(account_no=None, start_date=None, end_date=None, s_type = 0, id_se
 # **********************************************************************
 # LGD REPORT CALCULATION & DATA LOAD
 # **********************************************************************
-def lgd_report(account_no=None, start_date=None, end_date=None, s_type = 0, id_selected=None):
+def lgd_report(request, account_no=None, start_date=None, end_date=None, s_type = 0, id_selected=None):
 
     #
     # Loading the data
+    #=============================================================
     if s_type == 1:
         results = constants.TAB_ACTIVE["lgd"][3].filter(account_no__isnull = False)
+
+        params = {
+            "parent" : "lgd",
+            "report_run" : True,
+            "params":{"handler_table": "initial", "start_date":start_date, "end_date":end_date, "account_no":account_no, "selected_ids":id_selected, "all":False}
+        }
+
     else:
         results = constants.TAB_ACTIVE["lgd"][4]
 
-    if start_date is None and end_date is None and account_no is None:
-        results = results.all()
+        params = {
+            "parent" : "lgd",
+            "report_run" : True,
+            "params":{"handler_table": "final", "start_date":start_date, "end_date":end_date, "account_no":account_no, "selected_ids":id_selected, "all":False}
+        }
 
-    if start_date is not None:
-        if end_date is not None:
-            results = results.filter(date__gte = start_date, date__lte = end_date)
-        else:
-            results = results.filter(date__gte = start_date)
 
-    if account_no is not None:
-        results = results.filter(account_no__account_no__in = account_no)
+    #
+    #
+    #=============================================================
+    if id_selected is None or len(id_selected) == 0:
 
+        if start_date is None and end_date is None and account_no is None:
+            results = results.all()
+            params["params"]["all"] = True
+
+        if start_date is not None:
+            if end_date is not None:
+                results = results.filter(date__gte = start_date, date__lte = end_date)
+            else:
+                results = results.filter(date__gte = start_date)
+
+        if account_no is not None:
+            results = results.filter(account_no__account_no__in = account_no)
+    else:
+        if s_type == 0:
+            results = results.filter(id__in = id_selected)
+
+    #
+    # Audit Trail
+    #=============================================================
+    helpers.audit_trail(request, params)
+
+
+    #
+    #
+    #=============================================================
     move_res = results
     results = results.select_related("account_no")
 
@@ -1008,26 +1064,55 @@ def lgd_report(account_no=None, start_date=None, end_date=None, s_type = 0, id_s
 # STAGE REPORT CALCULATION & DATA LOAD
 # **********************************************************************
 
-def stage_report(account_no=None, start_date=None, end_date=None, s_type = 0, id_selected=None):
+def stage_report(request, account_no=None, start_date=None, end_date=None, s_type = 0, id_selected=None):
 
     #
     # Loading the data
+    #=============================================================
     if s_type == 1:
         results = constants.TAB_ACTIVE["stage"][3].filter(account_no__isnull = False)
+
+        params = {
+            "parent" : "stage",
+            "report_run" : True,
+            "params":{"handler_table": "initial", "start_date":start_date, "end_date":end_date, "account_no":account_no, "selected_ids":id_selected, "all":False}
+        }
+
     else:
         results = constants.TAB_ACTIVE["stage"][4]
 
-    if start_date is None and end_date is None and account_no is None:
-        results = results.all()
+        params = {
+            "parent" : "stage",
+            "report_run" : True,
+            "params":{"handler_table": "final", "start_date":start_date, "end_date":end_date, "account_no":account_no, "selected_ids":id_selected, "all":False}
+        }
 
-    if start_date is not None:
-        if end_date is not None:
-            results = results.filter(date__gte = start_date, date__lte = end_date)
-        else:
-            results = results.filter(date__gte = start_date)
 
-    if account_no is not None:
-        results = results.filter(account_no__account_no__in = account_no)
+    #
+    #
+    #=============================================================
+    if id_selected is None or len(id_selected) == 0:
+
+        if start_date is None and end_date is None and account_no is None:
+            results = results.all()
+            params["params"]["all"] = True
+
+        if start_date is not None:
+            if end_date is not None:
+                results = results.filter(date__gte = start_date, date__lte = end_date)
+            else:
+                results = results.filter(date__gte = start_date)
+
+        if account_no is not None:
+            results = results.filter(account_no__account_no__in = account_no)
+    else:
+        if s_type == 0:
+            results = results.filter(id__in = id_selected)
+
+    #
+    # Audit Trail
+    #=============================================================
+    helpers.audit_trail(request, params)
 
     move_res = results
     results = results.select_related("account_no")
@@ -1163,7 +1248,7 @@ def stage_report(account_no=None, start_date=None, end_date=None, s_type = 0, id
 # PD REPORT CALCULATION & DATA LOAD
 # **********************************************************************
 
-def ead_report(account_no=None, start_date=None, end_date=None, s_type = 0, id_selected=None):
+def ead_report(request, account_no=None, start_date=None, end_date=None, s_type = 0, id_selected=None):
 
     #
     # Loading the data
@@ -1172,39 +1257,56 @@ def ead_report(account_no=None, start_date=None, end_date=None, s_type = 0, id_s
     dates_cond = ""
     acc_cond = ""
 
-    if start_date is None and end_date is None and account_no is None:
-        dates_cond = ""
-    else:
-        if start_date is not None:
-            if end_date is not None:
-                dates_cond = " where ED.date >='{}' and ED.date <='{}'".format(start_date, end_date)
-                where_clause = True
-            else:
-                dates_cond = " where ED.date >='{}'".format(start_date)
-                where_clause = True
+    params = {
+        "parent" : "ead",
+        "report_run" : True,
+        "params":{"handler_table": "initial", "start_date":start_date, "end_date":end_date, "account_no":account_no, "selected_ids":id_selected, "all":False}
+    }
 
-    if account_no is not None:
-        if where_clause:
-            acc_cond = " and ED.account_no_id = {}".format(account_no)
+
+    #
+    #
+    #=============================================================
+    if id_selected is None or len(id_selected) == 0:
+
+        params["params"]["all"] = True
+
+        if start_date is None and end_date is None and account_no is None:
+            dates_cond = ""
         else:
-            acc_cond = " where ED.account_no_id = {}".format(account_no)
+            if start_date is not None:
+                if end_date is not None:
+                    dates_cond = " where ED.date >='{}' and ED.date <='{}'".format(start_date, end_date)
+                    where_clause = True
+                else:
+                    dates_cond = " where ED.date >='{}'".format(start_date)
+                    where_clause = True
+
+        if account_no is not None:
+            if where_clause:
+                acc_cond = " and ED.account_no_id = {}".format(account_no)
+            else:
+                acc_cond = " where ED.account_no_id = {}".format(account_no)
+    else:
+        acc_cond = " where ED.id in ({})".format(','.join(id_selected))
 
     #
     #
     #
     if s_type == 1:
-        qry = """select BP.product_name, AC.account_no as Account_no, AC.cin, AC.sectors, AC.account_type, ED.id as id, C1.collateral_value, C1.collateral_rating, C1.collateral_residual_maturity, ED.outstanding_amount, ED.undrawn_upto_1_yr, ED.date as ead_date, ED.undrawn_greater_than_1_yr,  ED.account_no_id, C1.id as collateral_id, BC.basel_collateral_code, BC.collateral_rating as b_col_rating, BP.drawn_cff, BP.cff_upto_1_yr, BP.cff_gt_1_yr, BC.issuer_type, BC.collateral_code as c_code, BC.collateral_type, BC.collateral_eligibity, BC.rating_available, BC.residual_maturity, BC.basel_collateral_type, BC.basel_collateral_subtype, BC.basel_collateral_rating, BC.soverign_issuer, BC.other_issuer
+        qry = """select BP.product_name, BP.product_code, AC.account_no as Account_no, AC.cin, AC.sectors, AC.account_type, ED.id as id, C1.collateral_value, C1.collateral_rating, C1.collateral_residual_maturity, ED.outstanding_amount, ED.undrawn_upto_1_yr, ED.date as ead_date, ED.undrawn_greater_than_1_yr,  ED.account_no_id, C1.id as collateral_id, BC.basel_collateral_code, BC.collateral_rating as b_col_rating, BP.drawn_cff, BP.cff_upto_1_yr, BP.cff_gt_1_yr, BC.issuer_type, BC.collateral_code as c_code, BC.collateral_type, BC.collateral_eligibity, BC.rating_available, BC.residual_maturity, BC.basel_collateral_type, BC.basel_collateral_subtype, BC.basel_collateral_rating, BC.soverign_issuer, BC.other_issuer
         from app_ead_initial ED
         left join app_collateral C1 on C1.account_no_id = ED.account_no_id
 		left join app_accountmaster AC on ED.account_no_id = AC.id
         left join app_basel_product_master BP on C1.product_id = BP.id
-        left join app_basel_collateral_master BC on C1.collateral_code_id = BC.id {} {} and ED.account_no_id is not null
-        order by id
+        left join app_basel_collateral_master BC on C1.collateral_code_id = BC.id {} {} and ED.account_no_id is not null order by ED.id
         """.format(dates_cond, acc_cond)
 
         qs = constants.TAB_ACTIVE["ead"][4].raw(qry)
+
+
     else:
-        qry = """select BP.product_name, AC.account_no as Account_no, AC.cin, AC.sectors, AC.account_type, ED.id as id, C1.collateral_value, C1.collateral_rating, C1.collateral_residual_maturity, ED.outstanding_amount, ED.undrawn_upto_1_yr, ED.date as ead_date, ED.undrawn_greater_than_1_yr,  ED.account_no_id, C1.id as collateral_id, BC.basel_collateral_code, BC.collateral_rating as b_col_rating, BP.drawn_cff, BP.cff_upto_1_yr, BP.cff_gt_1_yr, BC.issuer_type, BC.collateral_code as c_code, BC.collateral_type, BC.collateral_eligibity, BC.rating_available, BC.residual_maturity, BC.basel_collateral_type, BC.basel_collateral_subtype, BC.basel_collateral_rating, BC.soverign_issuer, BC.other_issuer
+        qry = """select BP.product_name, BP.product_code, AC.account_no as Account_no, AC.cin, AC.sectors, AC.account_type, ED.id as id, C1.collateral_value, C1.collateral_rating, C1.collateral_residual_maturity, ED.outstanding_amount, ED.undrawn_upto_1_yr, ED.date as ead_date, ED.undrawn_greater_than_1_yr,  ED.account_no_id, C1.id as collateral_id, BC.basel_collateral_code, BC.collateral_rating as b_col_rating, BP.drawn_cff, BP.cff_upto_1_yr, BP.cff_gt_1_yr, BC.issuer_type, BC.collateral_code as c_code, BC.collateral_type, BC.collateral_eligibity, BC.rating_available, BC.residual_maturity, BC.basel_collateral_type, BC.basel_collateral_subtype, BC.basel_collateral_rating, BC.soverign_issuer, BC.other_issuer
         from app_ead_final ED
         left join app_collateral C1 on C1.account_no_id = ED.account_no_id
 		left join app_accountmaster AC on ED.account_no_id = AC.id
@@ -1214,6 +1316,15 @@ def ead_report(account_no=None, start_date=None, end_date=None, s_type = 0, id_s
         """.format(dates_cond, acc_cond)
 
         qs = constants.TAB_ACTIVE["ead"][4].raw(qry)
+
+        params["params"]["handler_table"] =  "final"
+
+
+    #
+    # Audit Trail
+    #=============================================================
+    helpers.audit_trail(request, params)
+
 
     #
     #

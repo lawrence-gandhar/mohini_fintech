@@ -29,15 +29,34 @@
       <th class="text-center">Product Code</th>
       <th class="text-center">Product Name</th>
       <th class="text-center">Basel Collateral Code</th>
+      <th class="text-center">Collateral Value</th>
+      <th class="text-center">Collateral Rating</th>
+      <th class="text-center">Collateral Residual Maturity</th>
+      <th>Action</th>
     </thead>
     <tbody style="font-size:13px;">
-      {% for row in items_list %}
-      <tr>
-        <td>{{row.id|default_if_none:''}}</td>
-        <td>{{row.product_code|default_if_none:''}}</td>
-        <td>{{row.product_name|default_if_none:''}}</td>
-        <td>{{row.basel_collateral_code_grp|default_if_none:''|replace:",|, "}}</td>
-      </tr>
+      {% for rows in items_list.items %}
+        {% for row in rows.1.data %}
+          <tr style="background-color:{{rows.1.bgcolor}}">
+            <td>{{row.Account_no|default_if_none:''}}</td>
+            <td>{{row.product_code|default_if_none:''}}</td>
+            <td>{{row.product_name|default_if_none:''}}</td>
+            <td>{{row.basel_collateral_code|default_if_none:''}}</td>
+            <td>{{row.collateral_value|default_if_none:''}}</td>
+            <td>{{row.collateral_rating|default_if_none:''}}</td>
+            <td>{{row.collateral_residual_maturity|default_if_none:''}}</td>
+            <td class="text-center p-0">
+              <div class="btn-group" role="group" aria-label="Basic example">
+                <button onclick="return false" class="btn btn-icon btn-sm">
+                  <i class="la la-pencil" aria-hidden="true" style="font-size: 25px;line-height: 30px; color:#000000;"></i>
+                </button>
+                <button onclick="return false" class="btn btn-icon btn-sm">
+                  <i class="la la-trash" aria-hidden="true" style="font-size: 25px;line-height: 30px; color:#FF0000;"></i>
+                </button>
+              </div>
+            </td>
+          </tr>
+        {% endfor %}
       {% endfor %}
     </tbody>
   </table>

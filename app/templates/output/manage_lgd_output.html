@@ -69,7 +69,7 @@
       </form>
 
       <div class="table-responsive">
-        <form action="" method="post" id="move_all_to_final">
+        <form action="{% url 'lgd_report' %}" method="post" id="move_all_to_final">
           {% csrf_token %}
           <table class="table table-bordered">
             <thead class="text-center" style="background-color:#ddd; font-size:13px; white-space: nowrap;">

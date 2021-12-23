@@ -574,6 +574,7 @@ class EAD_Report(models.Model):
     undrawn_upto_1_yr = models.CharField(blank=True, null=True, max_length=255, db_index=True)
     undrawn_greater_than_1_yr = models.CharField(blank=True, null=True, max_length=255, db_index=True)
     created_on = models.DateTimeField(auto_now_add=True, db_index=True)
+    ead_total = models.CharField(blank=True, null=True, max_length=255, db_index=True)
 
     @classmethod
     def truncate(cls):

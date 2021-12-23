@@ -56,7 +56,6 @@ urlpatterns += [
     path('admin/delete_all_collaterals/', decorators.admin_required(admin.delete_all_collaterals), name="delete_all_collaterals"),
     path('admin/show_collateral_mapping/', decorators.admin_required(admin.show_collateral_mapping), name="show_collateral_mapping"),
     path('admin/delete_collateral/', decorators.admin_required(admin.delete_collateral), name="delete_collateral"),
-
 ]
 
 # Output & Reports
@@ -74,6 +73,8 @@ urlpatterns += [
 urlpatterns += [
     path('admin/database_management/', decorators.admin_required(dbase.database_management), name='database_management'),
     path('admin/show_audit_trail/', decorators.admin_required(admin.show_audit_trail), name='show_audit_trail'),
+    path('admin/delete_audit_trails/', decorators.admin_required(admin.delete_audit_trails), name="delete_audit_trails"),
+    path('admin/delete_audit_trail_single/', decorators.admin_required(admin.delete_audit_trail_single), name="delete_audit_trail_single"),
 ]
 
 #Background tasks

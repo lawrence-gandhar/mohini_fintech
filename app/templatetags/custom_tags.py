@@ -166,3 +166,19 @@ def replace(value, arg):
 
     what, to = arg.split('|')
     return value.replace(what, to)
+
+
+# *********************************************************************************
+# QUERYSET ROW TO JSON
+# *********************************************************************************
+@register.filter
+def range_diff(list_1, list_2):
+
+    if len(list_1) == len(list_2):
+        return range(0)
+
+    if len(list_1) > len(list_2):
+        return range((len(list_1) - len(list_2)))
+
+    if len(list_1) < len(list_2):
+        return range((len(list_2) - len(list_1)))

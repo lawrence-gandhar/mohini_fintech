@@ -8,7 +8,7 @@
       <a href="{% url 'manage_imports' %}" class="btn btn-default btn-sm" style="width:100px; color:#000000;">
         <i class="la la-angle-double-left"></i> <strong>Back</strong>
       </a>
-      <button href="" onclick="delete_collateral()" class="btn btn-default btn-sm" style="width:100px; color:#000000;">
+      <button href="" onclick="delete_audit_trails()" class="btn btn-default btn-sm" style="width:100px; color:#000000;">
         <i class="la la-trash"></i> <strong>Delete</strong>
       </button>
     </div>
@@ -26,17 +26,18 @@
   <table class="table table-bordered" id="manage_user_table" style="margin-top:10px;">
     <thead style="background-color:#eeeeee;">
       <th class="text-center">Date</th>
+      <th class="text-center">User</th>
       <th class="text-center">Parent</th>
       <th class="text-center">Section</th>
-      <th class="text-center">Method</th>
+      <th class="text-center">Activity</th>
       <th class="text-center">Data</th>
       <th class="text-center">Action</th>
     </thead>
     <tbody style="font-size:13px;">
       {% for id, row in items_list.items %}
         <tr style="background-color:{{row.bgcolor}};">
-          <>
           <td>{{ row.date }}</td>
+          <td>{{ row.edited_by }}</td>
           <td><strong>{{ row.parent|upper }}</strong></td>
           <td>{{ row.option.upper }}</td>
           <td>
@@ -57,11 +58,62 @@
                   <label style="font-weight:bold;">{{ i.account_no }}</label>
                 </span>
               {% endfor %}
+            {% elif row.deleted_data %}
+              {{ row.deleted_params }}
+            {% elif row.report_run %}
+              {% if row.all_opts %}
+                ALL
+              {% else %}
+                {% for i in row.report_run_params %}
+                  <span style="display:inline-block; margin:5px; border:1px solid #000000; padding:5px;">
+                    <label>{{ i.date }} : </label>
+                    <label style="font-weight:bold;">{{ i.account_no }}</label>
+                  </span>
+                {% endfor %}
+              {% endif %}
             {% endif %}
           </td>
-          <td style="text-align:center; background-color:#FFFFFF;"></td>
+          <td style="text-align:center; background-color:#FFFFFF;">
+            <button class="btn btn-icon btn-sm" type="button" onclick="delete_audit_trail_single({{id}})">
+              <i class="la la-trash" aria-hidden="true" style="font-size: 25px;line-height: 30px; color:#FF0000;"></i>
+            </button>
+          </td>
         </tr>
       {% endfor %}
     </tbody>
   </table>
 </div>
+
+
+<script>
+
+function delete_audit_trails(){
+
+  num_records = {{ items_list|length }};
+
+  if(num_records == 0){
+    alert("No records to delete.");
+  }else{
+    var r1 = confirm("Do you want to continue? This will delete all the records");
+    if (r1 == true) {
+      $.get("{% url 'delete_audit_trails' %}", function(data){
+        location.reload();
+      });
+    }
+  }
+}
+
+
+//
+//
+
+function delete_audit_trail_single(id){
+  var r1 = confirm("Do you want to continue? This will delete the records");
+  if (r1 == true) {
+    $.get("{% url 'delete_audit_trail_single' %}", {"id":id}, function(data){
+      location.reload();
+    });
+  }
+}
+
+</script>
