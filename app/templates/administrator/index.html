@@ -190,12 +190,25 @@
 <div class="row" style="margin-top:65px;">
   <div class="col-md-1" style="height:100%; background-color:#4169e1; text-align:center; position:fixed; overflow-y:scroll; width:95px; border-right: #ffa500 4px solid;">
     <nav class="nav flex-column" style=" margin-top:25px;">
+
+      {% if request.user.is_staff or request.user.is_superuser %}
       <a class="nav-link {% if sidebar_active == 1 %} sidebar_active {% endif %}" aria-current="page" href="{% url 'admin_dashboard' %}" data-toggle="tooltip" data-placement="right" title="Dashboard">
-        <i class="las la-tachometer-alt" style="font-size:48px; color:{% if sidebar_active == 1 %} #000000 {% else %} #FFFFFF {% endif %} !important;"></i>
+        <i class="las la-landmark" style="font-size:48px; color:{% if sidebar_active == 1 %} #000000 {% else %} #FFFFFF {% endif %} !important;"></i>
       </a>
       <a class="nav-link {% if sidebar_active == 2 %} sidebar_active {% endif %}" aria-current="page" href="{% url 'manage_users' %}" data-toggle="tooltip" data-placement="right" title="User Management">
         <i class="las la-user" style="font-size:48px; color:{% if sidebar_active == 2 %} #000000 {% else %} #FFFFFF {% endif %}  !important;"></i>
       </a>
+      <a class="nav-link {% if sidebar_active == 5 %} sidebar_active {% endif %}" aria-current="page" href="{% url 'database_management' %}" data-toggle="tooltip" data-placement="right" title="Database Management">
+        <i class="las la-database" style="font-size:48px; color:{% if sidebar_active == 5 %} #000000 {% else %} #FFFFFF {% endif %}  !important;"></i>
+      </a>
+      <a class="nav-link {% if sidebar_active == 6 %} sidebar_active {% endif %}" aria-current="page" href="{% url 'show_audit_trail' %}" data-toggle="tooltip" data-placement="right" title="Audit Trail">
+        <i class="las la-sitemap" style="font-size:48px; color:{% if sidebar_active == 6 %} #000000 {% else %} #FFFFFF {% endif %}  !important;"></i>
+      </a>
+      {% else %}
+      <a class="nav-link {% if sidebar_active == 1 %} sidebar_active {% endif %}" aria-current="page" href="{% url 'user_dashboard' %}" data-toggle="tooltip" data-placement="right" title="Dashboard">
+        <i class="las la-landmark" style="font-size:48px; color:{% if sidebar_active == 1 %} #000000 {% else %} #FFFFFF {% endif %} !important;"></i>
+      </a>
+      {% endif %}
       <a class="nav-link {% if sidebar_active == 3 %} sidebar_active {% endif %}" aria-current="page" href="{% url 'manage_imports' %}" data-toggle="tooltip" data-placement="right" title="Input - CSV Uploads & Management">
         <i class="las la-cloud-upload-alt" style="font-size:48px; color:{% if sidebar_active == 3 %} #000000 {% else %} #FFFFFF {% endif %}  !important;"></i>
       </a>
@@ -205,12 +218,7 @@
       <a class="nav-link {% if sidebar_active == 7 %} sidebar_active {% endif %}" aria-current="page" href="{% url 'show_reports' %}" data-toggle="tooltip" data-placement="right" title="Reports">
         <i class="las la-table" style="font-size:48px; color:{% if sidebar_active == 7 %} #000000 {% else %} #FFFFFF {% endif %}  !important;"></i>
       </a>
-      <a class="nav-link {% if sidebar_active == 5 %} sidebar_active {% endif %}" aria-current="page" href="{% url 'database_management' %}" data-toggle="tooltip" data-placement="right" title="Database Management">
-        <i class="las la-database" style="font-size:48px; color:{% if sidebar_active == 5 %} #000000 {% else %} #FFFFFF {% endif %}  !important;"></i>
-      </a>
-      <a class="nav-link {% if sidebar_active == 6 %} sidebar_active {% endif %}" aria-current="page" href="{% url 'show_audit_trail' %}" data-toggle="tooltip" data-placement="right" title="Audit Trail">
-        <i class="las la-sitemap" style="font-size:48px; color:{% if sidebar_active == 6 %} #000000 {% else %} #FFFFFF {% endif %}  !important;"></i>
-      </a>
+
     </nav>
   </div>
   <div class="col-md-11" style="height:100%; width:95%; margin-left:80px; padding:20px 20px 10px 21px; overflow:auto;">

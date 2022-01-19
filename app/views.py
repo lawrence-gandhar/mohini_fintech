@@ -40,15 +40,16 @@ class LoginView(View):
 
         user = authenticate(username=username, password=password)
 
-        print(user, username, password)
-
         self.data["modal_open"] = True
 
         if user is not None:
             if user.is_active:
                 login(request, user)
 
-                return redirect("admin_dashboard", permanent=True)
+                if user.is_staff or user.is_superuser:
+                    return redirect("admin_dashboard", permanent=True)
+                else:
+                    return redirect("user_dashboard", permanent=True)
             else:
                 messages.error(request, 'Username is de-activated. Contact Administrator')
         else:

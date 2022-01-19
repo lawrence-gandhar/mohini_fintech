@@ -7,9 +7,11 @@
         <button type="button" class="btn btn-default btn-sm" style="width:100px; color:#000000;" onclick="show_modal('#uploaderModal')">
           <i class="la la-plus"></i> <strong>Add</strong>
         </button>
+        {% if request.user.is_staff or request.user.is_superuser %}
         <button type="button" class="btn btn-default btn-sm" style="width:100px; color:#000000;" onclick="delete_selected_records()">
           <i class="la la-trash"></i> <strong>Delete</strong>
         </button>
+        {% endif %}
         <a href="{% url 'download_missing_accounts_csv' %}" class="btn btn-default btn-sm" style= color:#000000;" download>
           <i class="la la-download"></i> <strong>Missing Account No.</strong>
         </a>
@@ -52,13 +54,13 @@
         <a class="nav-link" href="{% url 'manage_imports' 'stage' %}" id="tab_stage">Stage</a>
       </li>
       <li class="nav-item">
+        <a class="nav-link" href="{% url 'manage_imports' 'ead' %}" id="tab_ead">EAD</a>
+      </li>
+      <li class="nav-item">
         <a class="nav-link" href="{% url 'manage_imports' 'eir' %}" id="tab_eir">EIR</a>
       </li>
       <li class="nav-item">
         <a class="nav-link" href="{% url 'manage_imports' 'ecl' %}" id="tab_ecl">ECL</a>
-      </li>
-      <li class="nav-item">
-        <a class="nav-link" href="{% url 'manage_imports' 'ead' %}" id="tab_ead">EAD</a>
       </li>
     </ul>
 
@@ -121,7 +123,7 @@
                 <td>{{row.customer_addr|default_if_none:''}}</td>
                 <td>{{row.pin|default_if_none:''}}</td>
                 <td>{{row.created_on|default_if_none:''}}</td>
-                <td class="text-center p-0">
+                <td class="p-0">
                   <div class="btn-group" role="group" aria-label="Basic example">
                     <button type="button" class="btn btn-icon btn-sm" params="0" id="button-{{row.id}}" onclick="get_collateral_data('{% url 'get_collateral_data' row.id %}', {{row.id}})">
                       <i class="la la-database" aria-hidden="true" style="font-size: 25px;line-height: 30px;"></i>
@@ -129,9 +131,11 @@
                     <button type="button" onclick="load_edit_data({{row.id}})" class="btn btn-icon btn-sm">
                       <i class="la la-pencil" aria-hidden="true" style="font-size: 25px;line-height: 30px;"></i>
                     </button>
+                    {% if request.user.is_staff or request.user.is_superuser %}
                     <button type="button" params="{% url 'delete_record' 'master' row.id %}" class="btn btn-icon btn-sm" onclick="delete_single_record(this)">
                       <i class="la la-trash" aria-hidden="true" style="font-size: 25px;line-height: 30px; color:#FF0000;"></i>
                     </button>
+                    {% endif %}
                   </div>
                 </td>
               </tr>

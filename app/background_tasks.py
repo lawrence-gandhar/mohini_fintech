@@ -24,6 +24,8 @@ from sklearn.linear_model import LogisticRegression, LinearRegression
 import os
 from collections import defaultdict
 
+import random
+
 
 #**********************************************************************
 # METHOD TO INSERT DATA INTO RELEVANT MODELS
@@ -99,7 +101,7 @@ def insert_data(data_set, import_type, file_identifier=None):
                 )
 
             #
-            # BASEL PRODUCT ENTRY
+            # BASEL COLLATERAL ENTRY
             if import_type == "collateral" and row["basel_collateral_code"].strip()!="":
                 ins = Basel_Collateral_Master.objects.create(
                     basel_collateral_code = row["basel_collateral_code"] if row["basel_collateral_code"].strip()!="" else None if "basel_collateral_code" in col_names else None,
@@ -202,6 +204,14 @@ def insert_data(data_set, import_type, file_identifier=None):
                     outstanding_amount = helpers.clean_data(row["outstanding_amount"]) if "outstanding_amount" in col_names else None,
                     undrawn_upto_1_yr = helpers.clean_data(row["undrawn_upto_1_yr"]) if "undrawn_upto_1_yr" in col_names else None,
                     undrawn_greater_than_1_yr = helpers.clean_data(row["undrawn_greater_than_1_yr"]) if "undrawn_greater_than_1_yr" in col_names else None
+                )
+
+            #
+            #
+            if import_type == "ecl":
+                ins = ECL_Initial.objects.create(
+                    date = helpers.clean_data(row["date"]) if "date" in col_names else None,
+                    tenure = helpers.clean_data(row["tenure"]) if "tenure" in col_names else None,
                 )
 
             #
@@ -353,13 +363,20 @@ def update_record(ins_const=None, import_type=None, row=None, file_identifier=No
          ins_const.mgmt_overlay_2 = helpers.clean_data(row["mgmt_overlay_2"]) if "mgmt_overlay_2" in col_names else None
 
     #
-    #
+    # EAD
     if import_type == "ead":
 
         ins_const.date = helpers.clean_data(row["date"]) if "date" in col_names else None
         ins_const.outstanding_amount = helpers.clean_data(row["outstanding_amount"]) if "outstanding_amount" in col_names else None
         ins_const.undrawn_upto_1_yr = helpers.clean_data(row["undrawn_upto_1_yr"]) if "undrawn_upto_1_yr" in col_names else None
         ins_const.undrawn_greater_than_1_yr = helpers.clean_data(row["undrawn_greater_than_1_yr"]) if "undrawn_greater_than_1_yr" in col_names else None
+
+    #
+    # ECL
+    if import_type == "ecl":
+
+        ins_const.date = helpers.clean_data(row["date"]) if "date" in col_names else None
+        ins_const.tenure = helpers.clean_data(row["tenure"]) if "tenure" in col_names else None
 
     #
     # Fetch Account Number Instance
@@ -385,6 +402,7 @@ def update_record(ins_const=None, import_type=None, row=None, file_identifier=No
 # @obj is the instance of the queryset
 #**********************************************************************
 def move_record(request, tab_status=None, obj=None):
+
     created = None
     try:
         ins = constants.TAB_ACTIVE[tab_status][4].get(date = obj.date, account_no = obj.account_no)
@@ -537,20 +555,35 @@ def move_record(request, tab_status=None, obj=None):
             ins.save()
 
     elif tab_status == "ead" and obj is not None:
+
         if ins is None:
             created = constants.TAB_ACTIVE[tab_status][4].create(
-                date = obj.date,
+                date = obj.ead_date,
                 account_no = obj.account_no,
                 outstanding_amount = obj.outstanding_amount,
                 undrawn_upto_1_yr = obj.undrawn_upto_1_yr,
                 undrawn_greater_than_1_yr = obj.undrawn_greater_than_1_yr
             )
         else:
-            ins.date = obj.date
+            ins.date = obj.ead_date
             ins.account_no = obj.account_no
             ins.outstanding_amount = obj.outstanding_amount
             ins.undrawn_upto_1_yr = obj.undrawn_upto_1_yr
             ins.undrawn_greater_than_1_yr = obj.undrawn_greater_than_1_yr
+            ins.save()
+
+
+    elif tab_status == "ecl" and obj is not None:
+        if ins is None:
+            created = constants.TAB_ACTIVE[tab_status][4].create(
+                date = obj.date,
+                account_no = obj.account_no,
+                tenure = obj.tenure,
+            )
+        else:
+            ins.date = obj.date
+            ins.account_no = obj.account_no
+            ins.tenure = obj.tenure
             ins.save()
 
     #
@@ -608,6 +641,9 @@ def move_data_bg_process(request, tab_status=None):
         if tab_status == "ead":
             result_set = qry.values_list('id', 'date', 'account_no', 'outstanding_amount', 'undrawn_upto_1_yr', 'undrawn_greater_than_1_yr')
 
+        if tab_status == "ecl":
+            result_set = qry.values_list('id', 'date', 'account_no', 'tenure')
+
         #
         # If valid records found : then capture & iterate to insert
         if records_valid > 0:
@@ -650,6 +686,14 @@ def move_data_bg_process(request, tab_status=None):
                         update {0} set outstanding_amount='{3}', undrawn_upto_1_yr='{4}', undrawn_greater_than_1_yr='{5}', created_on='{6}' where date='{1}' and account_no_id='{2}'
                     """
 
+                if tab_status == "ecl":
+                    insert_qry = """
+                        insert into {0} (date, account_no_id, tenure, created_on)""".format(constants.TAB_ACTIVE[tab_status][6])
+
+                    update_qry = """
+                        update {0} set tenure='{3}', created_on='{6}' where date='{1}' and account_no_id='{2}'
+                    """
+
 
                 row = list(row)
                 row_id = row[0]
@@ -688,7 +732,7 @@ def move_data_bg_process(request, tab_status=None):
 
                             constants.TAB_ACTIVE[tab_status][3].get(pk = row_id).delete()
 
-                except MultipleObjectsReturned or ObjectDoesNotExist:
+                except:
                     constants.TAB_ACTIVE[tab_status][4].filter(date = row[0], account_no_id = row[1]).delete()
 
                     #
@@ -703,6 +747,8 @@ def move_data_bg_process(request, tab_status=None):
 
                         main_query = insert_qry+"values({})".format(value_params)
                         main_query = main_query.format(*formatted_data)
+
+                        print(main_query)
 
                         ret_val = False
                         try:
@@ -894,7 +940,7 @@ def pd_report(request, account_no=None, start_date=None, end_date=None, s_type =
 
         if s_type == 1:
             for row_mov in move_res:
-                move_record("pd", row_mov)
+                move_record(request, "pd", row_mov)
 
         return True
 
@@ -1056,7 +1102,7 @@ def lgd_report(request, account_no=None, start_date=None, end_date=None, s_type 
 
         if s_type == 1:
             for row_mov in move_res:
-                move_record("lgd", row_mov)
+                move_record(request, "lgd", row_mov)
         return True
 
 
@@ -1239,7 +1285,7 @@ def stage_report(request, account_no=None, start_date=None, end_date=None, s_typ
 
         if s_type == 1:
             for row_mov in move_res:
-                move_record("stage", row_mov)
+                move_record(request, "stage", row_mov)
         return True
 
 
@@ -1260,11 +1306,9 @@ def ead_report(request, account_no=None, start_date=None, end_date=None, s_type 
     params = {
         "parent" : "ead",
         "report_run" : True,
-        "params":{"handler_table": "initial", "start_date":start_date, "end_date":end_date, "account_no":account_no, "selected_ids":id_selected, "all":False}
+        "params":{"handler_table": "initial", "start_date":start_date, "end_date":end_date, "account_no":account_no, "selected_ids":[], "all":False}
     }
 
-
-    #
     #
     #=============================================================
     if id_selected is None or len(id_selected) == 0:
@@ -1297,26 +1341,26 @@ def ead_report(request, account_no=None, start_date=None, end_date=None, s_type 
         qry = """select BP.product_name, BP.product_code, AC.account_no as Account_no, AC.cin, AC.sectors, AC.account_type, ED.id as id, C1.collateral_value, C1.collateral_rating, C1.collateral_residual_maturity, ED.outstanding_amount, ED.undrawn_upto_1_yr, ED.date as ead_date, ED.undrawn_greater_than_1_yr,  ED.account_no_id, C1.id as collateral_id, BC.basel_collateral_code, BC.collateral_rating as b_col_rating, BP.drawn_cff, BP.cff_upto_1_yr, BP.cff_gt_1_yr, BC.issuer_type, BC.collateral_code as c_code, BC.collateral_type, BC.collateral_eligibity, BC.rating_available, BC.residual_maturity, BC.basel_collateral_type, BC.basel_collateral_subtype, BC.basel_collateral_rating, BC.soverign_issuer, BC.other_issuer
         from app_ead_initial ED
         left join app_collateral C1 on C1.account_no_id = ED.account_no_id
-		left join app_accountmaster AC on ED.account_no_id = AC.id
+		inner join app_accountmaster AC on ED.account_no_id = AC.id
         left join app_basel_product_master BP on C1.product_id = BP.id
         left join app_basel_collateral_master BC on C1.collateral_code_id = BC.id {} {} and ED.account_no_id is not null order by ED.id
         """.format(dates_cond, acc_cond)
 
-        qs = constants.TAB_ACTIVE["ead"][4].raw(qry)
+        qs = constants.TAB_ACTIVE["ead"][3].raw(qry)
+        params["params"]["handler_table"] =  "initial"
 
 
     else:
         qry = """select BP.product_name, BP.product_code, AC.account_no as Account_no, AC.cin, AC.sectors, AC.account_type, ED.id as id, C1.collateral_value, C1.collateral_rating, C1.collateral_residual_maturity, ED.outstanding_amount, ED.undrawn_upto_1_yr, ED.date as ead_date, ED.undrawn_greater_than_1_yr,  ED.account_no_id, C1.id as collateral_id, BC.basel_collateral_code, BC.collateral_rating as b_col_rating, BP.drawn_cff, BP.cff_upto_1_yr, BP.cff_gt_1_yr, BC.issuer_type, BC.collateral_code as c_code, BC.collateral_type, BC.collateral_eligibity, BC.rating_available, BC.residual_maturity, BC.basel_collateral_type, BC.basel_collateral_subtype, BC.basel_collateral_rating, BC.soverign_issuer, BC.other_issuer
         from app_ead_final ED
         left join app_collateral C1 on C1.account_no_id = ED.account_no_id
-		left join app_accountmaster AC on ED.account_no_id = AC.id
+		inner join app_accountmaster AC on ED.account_no_id = AC.id
         left join app_basel_product_master BP on C1.product_id = BP.id
         left join app_basel_collateral_master BC on C1.collateral_code_id = BC.id {} {}
         order by id
         """.format(dates_cond, acc_cond)
 
         qs = constants.TAB_ACTIVE["ead"][4].raw(qry)
-
         params["params"]["handler_table"] =  "final"
 
 
@@ -1358,6 +1402,7 @@ def ead_report(request, account_no=None, start_date=None, end_date=None, s_type 
             "other_issuer":row.other_issuer,
         })
 
+
     #
     #
     for key, row in cus_dict.items():
@@ -1370,19 +1415,19 @@ def ead_report(request, account_no=None, start_date=None, end_date=None, s_type 
             drawn_cff = (float(row["drawn_cff"].replace("%", ""))/100)
             ead_total += float(row["outstanding_amount"]) * drawn_cff
         except:
-            ead_total += drawn_cff * (float(row["outstanding_amount"]) if row["outstanding_amount"] !="" else 0)
+            ead_total += drawn_cff * (float(row["outstanding_amount"]) if row["outstanding_amount"] !="" and row["outstanding_amount"] is not None else 0)
 
         try:
             cff_upto_1_yr = (float(row["cff_upto_1_yr"].replace("%", ""))/100)
             ead_total += float(row["undrawn_upto_1_yr"]) * cff_upto_1_yr
         except:
-            ead_total += cff_upto_1_yr * (float(row["undrawn_upto_1_yr"]) if row["undrawn_upto_1_yr"] !="" else 0)
+            ead_total += cff_upto_1_yr * (float(row["undrawn_upto_1_yr"]) if row["undrawn_upto_1_yr"] !="" and row["undrawn_upto_1_yr"] is not None else 0)
 
         try:
             cff_gt_1_yr = (float(row["cff_gt_1_yr"].replace("%", ""))/100)
             ead_total += float(row["undrawn_greater_than_1_yr"]) * cff_gt_1_yr
         except:
-            ead_total += cff_gt_1_yr * (float(row["undrawn_greater_than_1_yr"]) if row["undrawn_greater_than_1_yr"] !="" else 0)
+            ead_total += cff_gt_1_yr * (float(row["undrawn_greater_than_1_yr"]) if row["undrawn_greater_than_1_yr"] !="" and row["undrawn_greater_than_1_yr"] is not None else 0)
 
 
         # if collteral found
@@ -1410,30 +1455,167 @@ def ead_report(request, account_no=None, start_date=None, end_date=None, s_type 
         # Load data into Report Table
         try:
             acc = AccountMaster.objects.get(pk = int(row["account_no_id"]))
-        except ObjectDoesNotExist:
+        except:
+            acc = None
+
+        if acc is not None:
+            try:
+                # Edit
+                ead_report = EAD_Report.objects.get(date = row["ead_date"], account_no = acc)
+                ead_report.outstanding_amount = row["outstanding_amount"]
+                ead_report.undrawn_upto_1_yr = row["undrawn_upto_1_yr"]
+                ead_report.undrawn_greater_than_1_yr = row["undrawn_greater_than_1_yr"]
+                ead_report.ead_total = round(row["ead_total"],2)
+                ead_report.save()
+            except:
+                EAD_Report.objects.create(
+                    date = row["ead_date"],
+                    account_no = acc,
+                    outstanding_amount = row["outstanding_amount"],
+                    undrawn_upto_1_yr = row["undrawn_upto_1_yr"],
+                    undrawn_greater_than_1_yr = row["undrawn_greater_than_1_yr"],
+                    ead_total = round(row["ead_total"],2)
+                )
+
+    if s_type == 1:
+        for row_mov in qs:
+            move_record(request, "ead", row_mov)
+    return True
+
+
+# **********************************************************************
+# STAGE REPORT CALCULATION & DATA LOAD
+# **********************************************************************
+
+def ecl_report(request, account_no=None, start_date=None, end_date=None, s_type = 0, id_selected=None):
+
+    #
+    # Loading the data
+
+    where_clause = False
+    dates_cond = ""
+    acc_cond = ""
+
+    params = {
+        "parent" : "ecl",
+        "report_run" : True,
+        "params":{"handler_table": "initial", "start_date":start_date, "end_date":end_date, "account_no":account_no, "selected_ids":[], "all":False}
+    }
+
+    #
+    #=============================================================
+    if id_selected is None or len(id_selected) == 0:
+
+        params["params"]["all"] = True
+
+        if start_date is None and end_date is None and account_no is None:
+            dates_cond = ""
+        else:
+            if start_date is not None:
+                if end_date is not None:
+                    dates_cond = " where ECL.date >='{}' and ECL.date <='{}'".format(start_date, end_date)
+                    where_clause = True
+                else:
+                    dates_cond = " where ECL.date >='{}'".format(start_date)
+                    where_clause = True
+
+        if account_no is not None:
+            if where_clause:
+                acc_cond = " and ECL.account_no_id = {}".format(account_no)
+            else:
+                acc_cond = " where ECL.account_no_id = {}".format(account_no)
+    else:
+        acc_cond = " where ECL.id in ({})".format(','.join(id_selected))
+
+    #
+    #
+    #
+    if s_type == 1:
+        qry = """select BP.product_name, BP.product_code, AC.account_no as Account_no, AC.cin, AC.sectors, AC.account_type, ECL.id as id, ECL.tenure, PD.pd, LGD.final_lgd, ST.stage, EAD.ead_total, ECL.account_no_id
+        from app_ecl_initial ECL
+        left join (select * from app_collateral group by account_no_id) C1 on ECL.account_no_id = C1.account_no_id
+		left join app_accountmaster AC on ECL.account_no_id = AC.id
+        left join app_basel_product_master BP on C1.product_id = BP.id
+        left join app_pd_report PD on PD.account_no_id = ECL.account_no_id and PD.date = ECL.date
+        left join app_lgd_report LGD on LGD.account_no_id = ECL.account_no_id and LGD.date = ECL.date
+        left join app_stage_report ST on ST.account_no_id = ECL.account_no_id and ST.date = ECL.date
+        left join app_ead_report EAD on EAD.account_no_id = ECL.account_no_id and EAD.date = ECL.date
+        {} {} and ECL.account_no_id is not null order by ECL.id
+        """.format(dates_cond, acc_cond)
+
+        qs = constants.TAB_ACTIVE["ecl"][4].raw(qry)
+
+
+    else:
+        qry = """select BP.product_name, BP.product_code, AC.account_no as Account_no, AC.cin, AC.sectors, AC.account_type, ECL.id as id, ECL.tenure, PD.pd, LGD.final_lgd, ST.stage, EAD.ead_total, ECL.account_no_id
+        from app_ecl_final ECL
+        left join (select * from app_collateral group by account_no_id) C1 on ECL.account_no_id = C1.account_no_id
+		left join app_accountmaster AC on ECL.account_no_id = AC.id
+        left join app_basel_product_master BP on C1.product_id = BP.id
+        left join app_pd_report PD on PD.account_no_id = ECL.account_no_id and PD.date = ECL.date
+        left join app_lgd_report LGD on LGD.account_no_id = ECL.account_no_id and LGD.date = ECL.date
+        left join app_stage_report ST on ST.account_no_id = ECL.account_no_id and ST.date = ECL.date
+        left join app_ead_report EAD on EAD.account_no_id = ECL.account_no_id and EAD.date = ECL.date {} {}
+        order by ECL.id
+        """.format(dates_cond, acc_cond)
+
+        qs = constants.TAB_ACTIVE["ecl"][4].raw(qry)
+
+        params["params"]["handler_table"] =  "final"
+
+    #
+    # Audit Trail
+    #=============================================================
+    helpers.audit_trail(request, params)
+
+    #
+    #=============================================================
+    for row in qs:
+
+        #
+        # Load data into Report Table
+        try:
+            acc = AccountMaster.objects.get(pk = int(row.account_no_id))
+        except:
             return False
+
+        PD = float(row.pd) if row.pd is not None and row.pd !="" else 1
+        LGD = float(row.final_lgd) if row.final_lgd is not None and row.final_lgd !="" else 1
+        EAD = float(row.ead_total) if row.ead_total is not None and row.ead_total !="" else 1
+        EIR = random.random() * 10
+        Tenure = float(row.tenure) if row.tenure is not None and row.tenure !="" else 1
+
+        #
+        #
+
+        final_ecl = 0
+        if row.stage == "1":
+            final_ecl = round(PD * LGD * EAD, 5)
+        elif row.stage == "2":
+            final_ecl = round((PD * LGD * EAD)/(1+EIR) ** Tenure, 5)
+        elif row.stage == "3":
+            final_ecl = round((1 * LGD * EAD)/(1+EIR) ** Tenure, 5)
 
         try:
             # Edit
-            ead_report = EAD_Report.objects.get(date = row["ead_date"], account_no = acc)
-            ead_report.outstanding_amount = row["outstanding_amount"]
-            ead_report.undrawn_upto_1_yr = row["undrawn_upto_1_yr"]
-            ead_report.undrawn_greater_than_1_yr = row["undrawn_greater_than_1_yr"]
-            ead_report.ead_total = round(row["ead_total"],2)
-            ead_report.save()
+            ecl_report = ECL_Reports.objects.get(date = row.date, account_no = acc)
+            ecl_report.tenure = row.tenure
+            ecl_report.final_ecl = final_ecl
+            ecl_report.eir = "{}%".format(round(EIR,2))
+            ecl_report.save()
         except:
-            EAD_Report.objects.create(
-                date = row["ead_date"],
+            ECL_Reports.objects.create(
+                date = row.date,
                 account_no = acc,
-                outstanding_amount = row["outstanding_amount"],
-                undrawn_upto_1_yr = row["undrawn_upto_1_yr"],
-                undrawn_greater_than_1_yr = row["undrawn_greater_than_1_yr"],
-                ead_total = round(row["ead_total"],2)
+                tenure = row.tenure,
+                eir = "{}%".format(round(EIR,2)),
+                final_ecl = final_ecl
             )
 
-
+    if s_type == 1:
+        for row_mov in qs:
+            move_record(request, "ecl", row_mov)
     return True
-
 
 
 

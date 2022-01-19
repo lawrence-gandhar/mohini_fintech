@@ -47,37 +47,7 @@ function delete_selected_users(){
   }
 }
 
-//
-// EDIT USER FORM DATA LOAD
-//
-function load_edit_data(id){
-  $("#edit_id").val(id);
 
-  $.each(users_json, function(i,v){
-    if(v["id"] == id){
-      $("#edit_username").val(v["username"]);
-      $("#edit_email").val(v["email"]);
-      $("#edit_first_name").val(v["first_name"]);
-      $("#edit_last_name").val(v["last_name"]);
-
-      if(v["is_superuser"]){
-        $("#edit_is_superuser").prop("checked",true);
-      }else{
-        $("#edit_is_superuser").prop("checked",false);
-      }
-
-      if(v["is_staff"]){
-        $("#edit_is_staff").prop("checked",true);
-      }else{
-        $("#edit_is_staff").prop("checked",false);
-      }
-
-      $("#EditUserModalForm").modal("show");
-      return true;
-    }
-  });
-  return false;
-}
 
 //***********************************************************************
 // Reset Password

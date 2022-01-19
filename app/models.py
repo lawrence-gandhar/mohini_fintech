@@ -17,6 +17,66 @@ class New_User(models.Model):
     email_sent_on = models.DateTimeField(auto_now_add=False, db_index=True, blank=True, null=True)
     status = models.IntegerField(default=0, db_index=True, null=True, blank=True)
 
+#==================================================================================
+# NEW USER SIGNUP DETAILS
+#==================================================================================
+
+class AccessManage(models.Model):
+    user = models.ForeignKey(User, db_index=True, null=True, blank=True, on_delete=models.CASCADE, related_name="accessmanage_user")
+    upload_master_table = models.IntegerField(default=0, db_index=True, null=True, blank=True)
+    edit_master_table = models.IntegerField(default=0, db_index=True, null=True, blank=True)
+    delete_master_table = models.IntegerField(default=0, db_index=True, null=True, blank=True)
+    upload_basel_product = models.IntegerField(default=0, db_index=True, null=True, blank=True)
+    edit_basel_product = models.IntegerField(default=0, db_index=True, null=True, blank=True)
+    delete_basel_product = models.IntegerField(default=0, db_index=True, null=True, blank=True)
+    upload_basel_collateral = models.IntegerField(default=0, db_index=True, null=True, blank=True)
+    edit_basel_collateral = models.IntegerField(default=0, db_index=True, null=True, blank=True)
+    delete_basel_collateral = models.IntegerField(default=0, db_index=True, null=True, blank=True)
+    upload_collateral_mapper = models.IntegerField(default=0, db_index=True, null=True, blank=True)
+    edit_collateral_mapper = models.IntegerField(default=0, db_index=True, null=True, blank=True)
+    delete_collateral_mapper = models.IntegerField(default=0, db_index=True, null=True, blank=True)
+    upload_pd = models.IntegerField(default=0, db_index=True, null=True, blank=True)
+    upload_lgd = models.IntegerField(default=0, db_index=True, null=True, blank=True)
+    upload_ead = models.IntegerField(default=0, db_index=True, null=True, blank=True)
+    upload_ecl = models.IntegerField(default=0, db_index=True, null=True, blank=True)
+    upload_eir = models.IntegerField(default=0, db_index=True, null=True, blank=True)
+    upload_stage = models.IntegerField(default=0, db_index=True, null=True, blank=True)
+    edit_import_pd = models.IntegerField(default=0, db_index=True, null=True, blank=True)
+    edit_import_lgd = models.IntegerField(default=0, db_index=True, null=True, blank=True)
+    edit_import_ead = models.IntegerField(default=0, db_index=True, null=True, blank=True)
+    edit_import_ecl = models.IntegerField(default=0, db_index=True, null=True, blank=True)
+    edit_import_eir = models.IntegerField(default=0, db_index=True, null=True, blank=True)
+    edit_import_stage = models.IntegerField(default=0, db_index=True, null=True, blank=True)
+    delete_import_pd = models.IntegerField(default=0, db_index=True, null=True, blank=True)
+    delete_import_lgd = models.IntegerField(default=0, db_index=True, null=True, blank=True)
+    delete_import_ead = models.IntegerField(default=0, db_index=True, null=True, blank=True)
+    delete_import_ecl = models.IntegerField(default=0, db_index=True, null=True, blank=True)
+    delete_import_eir = models.IntegerField(default=0, db_index=True, null=True, blank=True)
+    delete_import_stage = models.IntegerField(default=0, db_index=True, null=True, blank=True)
+    edit_final_pd = models.IntegerField(default=0, db_index=True, null=True, blank=True)
+    edit_final_lgd = models.IntegerField(default=0, db_index=True, null=True, blank=True)
+    edit_final_ead = models.IntegerField(default=0, db_index=True, null=True, blank=True)
+    edit_final_ecl = models.IntegerField(default=0, db_index=True, null=True, blank=True)
+    edit_final_eir = models.IntegerField(default=0, db_index=True, null=True, blank=True)
+    edit_final_stage = models.IntegerField(default=0, db_index=True, null=True, blank=True)
+    delete_final_pd = models.IntegerField(default=0, db_index=True, null=True, blank=True)
+    delete_final_lgd = models.IntegerField(default=0, db_index=True, null=True, blank=True)
+    delete_final_ead = models.IntegerField(default=0, db_index=True, null=True, blank=True)
+    delete_final_ecl = models.IntegerField(default=0, db_index=True, null=True, blank=True)
+    delete_final_eir = models.IntegerField(default=0, db_index=True, null=True, blank=True)
+    delete_final_stage = models.IntegerField(default=0, db_index=True, null=True, blank=True)
+    run_final_pd = models.IntegerField(default=0, db_index=True, null=True, blank=True)
+    run_final_lgd = models.IntegerField(default=0, db_index=True, null=True, blank=True)
+    run_final_ead = models.IntegerField(default=0, db_index=True, null=True, blank=True)
+    run_final_ecl = models.IntegerField(default=0, db_index=True, null=True, blank=True)
+    run_final_eir = models.IntegerField(default=0, db_index=True, null=True, blank=True)
+    run_final_stage = models.IntegerField(default=0, db_index=True, null=True, blank=True)
+    download_reports_pd = models.IntegerField(default=0, db_index=True, null=True, blank=True)
+    download_reports_lgd = models.IntegerField(default=0, db_index=True, null=True, blank=True)
+    download_reports_ead = models.IntegerField(default=0, db_index=True, null=True, blank=True)
+    download_reports_ecl = models.IntegerField(default=0, db_index=True, null=True, blank=True)
+    download_reports_eir = models.IntegerField(default=0, db_index=True, null=True, blank=True)
+    download_reports_stage = models.IntegerField(default=0, db_index=True, null=True, blank=True)
 
 
 #==================================================================================
@@ -136,7 +196,7 @@ class PD_Report(models.Model):
 #==================================================================================
 class LGD_Initial(models.Model):
     date = models.DateField(auto_now_add=False, null=True, blank=True,)
-    account_no = models.ForeignKey(AccountMaster, on_delete=models.SET_NULL, null=True, blank=True, db_index=True)
+    account_no = models.ForeignKey(AccountMaster, on_delete=models.CASCADE, null=True, blank=True, db_index=True)
     account_no_temp = models.CharField(blank=True, null=True, max_length=255, db_index=True)
     ead_os = models.CharField(blank=True, null=True, max_length=255, db_index=True)
     pv_cashflows = models.CharField(blank=True, null=True, max_length=255, db_index=True)
@@ -167,7 +227,7 @@ class LGD_Initial(models.Model):
 #==================================================================================
 class LGD_Final(models.Model):
     date = models.DateField(auto_now_add=False, null=True, blank=True,)
-    account_no = models.ForeignKey(AccountMaster, on_delete=models.SET_NULL, null=True, blank=True, db_index=True)
+    account_no = models.ForeignKey(AccountMaster, on_delete=models.CASCADE, null=True, blank=True, db_index=True)
     ead_os = models.CharField(blank=True, null=True, max_length=255, db_index=True)
     pv_cashflows = models.CharField(blank=True, null=True, max_length=255, db_index=True)
     pv_cost = models.CharField(blank=True, null=True, max_length=255, db_index=True)
@@ -195,7 +255,7 @@ class LGD_Final(models.Model):
 #==================================================================================
 class LGD_Report(models.Model):
     date = models.DateField(auto_now_add=False, null=True, blank=True,)
-    account_no = models.ForeignKey(AccountMaster, on_delete=models.SET_NULL, null=True, blank=True, db_index=True)
+    account_no = models.ForeignKey(AccountMaster, on_delete=models.CASCADE, null=True, blank=True, db_index=True)
     ead_os = models.CharField(blank=True, null=True, max_length=255, db_index=True)
     pv_cashflows = models.CharField(blank=True, null=True, max_length=255, db_index=True)
     pv_cost = models.CharField(blank=True, null=True, max_length=255, db_index=True)
@@ -225,7 +285,7 @@ class LGD_Report(models.Model):
 #==================================================================================
 class Stage_Initial(models.Model):
     date = models.DateField(auto_now_add=False, null=True, blank=True,)
-    account_no = models.ForeignKey(AccountMaster, on_delete=models.SET_NULL, null=True, blank=True, db_index=True)
+    account_no = models.ForeignKey(AccountMaster, on_delete=models.CASCADE, null=True, blank=True, db_index=True)
     account_no_temp = models.CharField(blank=True, null=True, max_length=255, db_index=True)
     old_rating = models.CharField(blank=True, null=True, max_length=255, db_index=True)
     new_rating = models.CharField(blank=True, null=True, max_length=255, db_index=True)
@@ -273,7 +333,7 @@ class Stage_Initial(models.Model):
 #==================================================================================
 class Stage_Final(models.Model):
     date = models.DateField(auto_now_add=False, null=True, blank=True,)
-    account_no = models.ForeignKey(AccountMaster, on_delete=models.SET_NULL, null=True, blank=True, db_index=True)
+    account_no = models.ForeignKey(AccountMaster, on_delete=models.CASCADE, null=True, blank=True, db_index=True)
     old_rating = models.CharField(blank=True, null=True, max_length=255, db_index=True)
     new_rating = models.CharField(blank=True, null=True, max_length=255, db_index=True)
     rating_3 = models.CharField(blank=True, null=True, max_length=255, db_index=True)
@@ -319,7 +379,7 @@ class Stage_Final(models.Model):
 #==================================================================================
 class Stage_Report(models.Model):
     date = models.DateField(auto_now_add=False, null=True, blank=True,)
-    account_no = models.ForeignKey(AccountMaster, on_delete=models.SET_NULL, null=True, blank=True, db_index=True)
+    account_no = models.ForeignKey(AccountMaster, on_delete=models.CASCADE, null=True, blank=True, db_index=True)
     state = models.CharField(blank=True, null=True, max_length=255, db_index=True)
     stage = models.CharField(blank=True, null=True, max_length=255, db_index=True)
     old_rating = models.CharField(blank=True, null=True, max_length=255, db_index=True)
@@ -364,7 +424,7 @@ class Stage_Report(models.Model):
 #==================================================================================
 class EIR_Initial(models.Model):
     date = models.DateField(auto_now_add=False, null=True, blank=True,)
-    account_no = models.ForeignKey(AccountMaster, on_delete=models.SET_NULL, null=True, blank=True, db_index=True)
+    account_no = models.ForeignKey(AccountMaster, on_delete=models.CASCADE, null=True, blank=True, db_index=True)
     account_no_temp = models.CharField(blank=True, null=True, max_length=255, db_index=True)
     period = models.CharField(blank=True, null=True, max_length=255, db_index=True)
     loan_availed = models.CharField(blank=True, null=True, max_length=255, db_index=True)
@@ -394,7 +454,7 @@ class EIR_Initial(models.Model):
 #==================================================================================
 class EIR_Final(models.Model):
     date = models.DateField(auto_now_add=False, null=True, blank=True,)
-    account_no = models.ForeignKey(AccountMaster, on_delete=models.SET_NULL, null=True, blank=True, db_index=True)
+    account_no = models.ForeignKey(AccountMaster, on_delete=models.CASCADE, null=True, blank=True, db_index=True)
     period = models.CharField(blank=True, null=True, max_length=255, db_index=True)
     loan_availed = models.CharField(blank=True, null=True, max_length=255, db_index=True)
     cost_avail = models.CharField(blank=True, null=True, max_length=255, db_index=True)
@@ -420,7 +480,7 @@ class EIR_Final(models.Model):
 #==================================================================================
 class EIR_Reports(models.Model):
     date = models.DateField(auto_now_add=False, null=True, blank=True,)
-    account_no = models.ForeignKey(AccountMaster, on_delete=models.SET_NULL, null=True, blank=True, db_index=True)
+    account_no = models.ForeignKey(AccountMaster, on_delete=models.CASCADE, null=True, blank=True, db_index=True)
     period = models.CharField(blank=True, null=True, max_length=255, db_index=True)
     loan_availed = models.CharField(blank=True, null=True, max_length=255, db_index=True)
     cost_avail = models.CharField(blank=True, null=True, max_length=255, db_index=True)
@@ -532,7 +592,7 @@ class Collateral(models.Model):
 #==================================================================================
 class EAD_Initial(models.Model):
     date = models.DateField(auto_now_add=False, null=True, blank=True,)
-    account_no = models.ForeignKey(AccountMaster, on_delete=models.SET_NULL, null=True, blank=True, db_index=True)
+    account_no = models.ForeignKey(AccountMaster, on_delete=models.CASCADE, null=True, blank=True, db_index=True)
     account_no_temp = models.CharField(blank=True, null=True, max_length=255, db_index=True)
     outstanding_amount = models.CharField(blank=True, null=True, max_length=255, db_index=True)
     undrawn_upto_1_yr = models.CharField(blank=True, null=True, max_length=255, db_index=True)
@@ -552,7 +612,7 @@ class EAD_Initial(models.Model):
 #==================================================================================
 class EAD_Final(models.Model):
     date = models.DateField(auto_now_add=False, null=True, blank=True,)
-    account_no = models.ForeignKey(AccountMaster, on_delete=models.SET_NULL, null=True, blank=True, db_index=True)
+    account_no = models.ForeignKey(AccountMaster, on_delete=models.CASCADE, null=True, blank=True, db_index=True)
     outstanding_amount = models.CharField(blank=True, null=True, max_length=255, db_index=True)
     undrawn_upto_1_yr = models.CharField(blank=True, null=True, max_length=255, db_index=True)
     undrawn_greater_than_1_yr = models.CharField(blank=True, null=True, max_length=255, db_index=True)
@@ -569,7 +629,7 @@ class EAD_Final(models.Model):
 #==================================================================================
 class EAD_Report(models.Model):
     date = models.DateField(auto_now_add=False, null=True, blank=True,)
-    account_no = models.ForeignKey(AccountMaster, on_delete=models.SET_NULL, null=True, blank=True, db_index=True)
+    account_no = models.ForeignKey(AccountMaster, on_delete=models.CASCADE, null=True, blank=True, db_index=True)
     outstanding_amount = models.CharField(blank=True, null=True, max_length=255, db_index=True)
     undrawn_upto_1_yr = models.CharField(blank=True, null=True, max_length=255, db_index=True)
     undrawn_greater_than_1_yr = models.CharField(blank=True, null=True, max_length=255, db_index=True)
@@ -581,6 +641,186 @@ class EAD_Report(models.Model):
         with connection.cursor() as cursor:
             cursor.execute('TRUNCATE TABLE "{0}" SET_NULL'.format(cls._meta.db_table))
 
+
+#=================================================================================
+#
+#=================================================================================
+
+@receiver(post_save, sender=User)
+def add_permission(sender, instance, **kwargs):
+
+    try:
+        obj = AccessManage.objects.get(user = instance)
+    except:
+        obj = AccessManage.objects.create(user = instance)
+
+    if instance.is_superuser:
+        obj.upload_master_table = True
+        obj.edit_master_table = True
+        obj.delete_master_table = True
+        obj.upload_basel_product = True
+        obj.edit_basel_product = True
+        obj.delete_basel_product = True
+        obj.upload_basel_collateral = True
+        obj.edit_basel_collateral = True
+        obj.delete_basel_collateral = True
+        obj.upload_collateral_mapper = True
+        obj.edit_collateral_mapper = True
+        obj.delete_collateral_mapper = True
+        obj.upload_pd = True
+        obj.upload_lgd = True
+        obj.upload_ead = True
+        obj.upload_ecl = True
+        obj.upload_eir = True
+        obj.upload_stage = True
+        obj.edit_import_pd = True
+        obj.edit_import_lgd = True
+        obj.edit_import_ead = True
+        obj.edit_import_ecl = True
+        obj.edit_import_eir = True
+        obj.edit_import_stage = True
+        obj.delete_import_pd = True
+        obj.delete_import_lgd = True
+        obj.delete_import_ead = True
+        obj.delete_import_ecl = True
+        obj.delete_import_eir = True
+        obj.delete_import_stage = True
+        obj.edit_final_pd = True
+        obj.edit_final_lgd = True
+        obj.edit_final_ead = True
+        obj.edit_final_ecl = True
+        obj.edit_final_eir = True
+        obj.edit_final_stage = True
+        obj.delete_final_pd = True
+        obj.delete_final_lgd = True
+        obj.delete_final_ead = True
+        obj.delete_final_ecl = True
+        obj.delete_final_eir = True
+        obj.delete_final_stage = True
+        obj.run_final_pd = True
+        obj.run_final_lgd = True
+        obj.run_final_ead = True
+        obj.run_final_ecl = True
+        obj.run_final_eir = True
+        obj.run_final_stage = True
+        obj.download_reports_pd = True
+        obj.download_reports_lgd = True
+        obj.download_reports_ead = True
+        obj.download_reports_ecl = True
+        obj.download_reports_eir = True
+        obj.download_reports_stage = True
+
+    elif instance.is_staff:
+        obj.upload_master_table = True
+        obj.edit_master_table = True
+        obj.delete_master_table = False
+        obj.upload_basel_product = True
+        obj.edit_basel_product = True
+        obj.delete_basel_product = False
+        obj.upload_basel_collateral = True
+        obj.edit_basel_collateral = True
+        obj.delete_basel_collateral = False
+        obj.upload_collateral_mapper = True
+        obj.edit_collateral_mapper = True
+        obj.delete_collateral_mapper = False
+        obj.upload_pd = True
+        obj.upload_lgd = True
+        obj.upload_ead = True
+        obj.upload_ecl = True
+        obj.upload_eir = True
+        obj.upload_stage = True
+        obj.edit_import_pd = True
+        obj.edit_import_lgd = True
+        obj.edit_import_ead = True
+        obj.edit_import_ecl = True
+        obj.edit_import_eir = True
+        obj.edit_import_stage = True
+        obj.delete_import_pd = True
+        obj.delete_import_lgd = True
+        obj.delete_import_ead = True
+        obj.delete_import_ecl = True
+        obj.delete_import_eir = True
+        obj.delete_import_stage = True
+        obj.edit_final_pd = True
+        obj.edit_final_lgd = True
+        obj.edit_final_ead = True
+        obj.edit_final_ecl = True
+        obj.edit_final_eir = True
+        obj.edit_final_stage = True
+        obj.delete_final_pd = True
+        obj.delete_final_lgd = True
+        obj.delete_final_ead = True
+        obj.delete_final_ecl = True
+        obj.delete_final_eir = True
+        obj.delete_final_stage = True
+        obj.run_final_pd = True
+        obj.run_final_lgd = True
+        obj.run_final_ead = True
+        obj.run_final_ecl = True
+        obj.run_final_eir = True
+        obj.run_final_stage = True
+        obj.download_reports_pd = True
+        obj.download_reports_lgd = True
+        obj.download_reports_ead = True
+        obj.download_reports_ecl = True
+        obj.download_reports_eir = True
+        obj.download_reports_stage = True
+    else:
+        obj.upload_master_table = False
+        obj.edit_master_table = False
+        obj.delete_master_table = False
+        obj.upload_basel_product = False
+        obj.edit_basel_product = False
+        obj.delete_basel_product = False
+        obj.upload_basel_collateral = False
+        obj.edit_basel_collateral = False
+        obj.delete_basel_collateral = False
+        obj.upload_collateral_mapper = False
+        obj.edit_collateral_mapper = False
+        obj.delete_collateral_mapper = False
+        obj.upload_pd = True
+        obj.upload_lgd = True
+        obj.upload_ead = True
+        obj.upload_ecl = True
+        obj.upload_eir = True
+        obj.upload_stage = True
+        obj.edit_import_pd = True
+        obj.edit_import_lgd = True
+        obj.edit_import_ead = True
+        obj.edit_import_ecl = True
+        obj.edit_import_eir = True
+        obj.edit_import_stage = True
+        obj.delete_import_pd = False
+        obj.delete_import_lgd = False
+        obj.delete_import_ead = False
+        obj.delete_import_ecl = False
+        obj.delete_import_eir = False
+        obj.delete_import_stage = False
+        obj.edit_final_pd = True
+        obj.edit_final_lgd = True
+        obj.edit_final_ead = True
+        obj.edit_final_ecl = True
+        obj.edit_final_eir = True
+        obj.edit_final_stage = True
+        obj.delete_final_pd = False
+        obj.delete_final_lgd = False
+        obj.delete_final_ead = False
+        obj.delete_final_ecl = False
+        obj.delete_final_eir = False
+        obj.delete_final_stage = False
+        obj.run_final_pd = True
+        obj.run_final_lgd = True
+        obj.run_final_ead = True
+        obj.run_final_ecl = True
+        obj.run_final_eir = True
+        obj.run_final_stage = True
+        obj.download_reports_pd = True
+        obj.download_reports_lgd = True
+        obj.download_reports_ead = True
+        obj.download_reports_ecl = True
+        obj.download_reports_eir = True
+        obj.download_reports_stage = True
+    obj.save()
 
 #==================================================================================
 # PRED DELETE FOR ACCOUNT NUMBERS FROM INITIAL TABLES
@@ -658,6 +898,7 @@ def replace_account_nos(sender, instance, **kwargs):
     # Update EAD INITIAL
     EAD_Initial.objects.filter(account_no_temp = instance.account_no).update(account_no_temp = None, account_no = instance)
 
+
 #==================================================================================
 # Audit Trail TABLE
 #==================================================================================
@@ -675,3 +916,55 @@ class Audit_Trail(models.Model):
     deleted_data_params = models.TextField(blank=True, null=True) # JSON {from_initial:false, from_final:false, from_report:false, selected_ids: [], all:false}
     report_run = models.BooleanField(blank=True, default=False, db_index=True, null=True)
     report_run_params = models.TextField(blank=True, null=True)
+
+
+#==================================================================================
+# ECL INITIAL TABLE
+#==================================================================================
+class ECL_Initial(models.Model):
+    date = models.DateField(auto_now_add=False, null=True, blank=True,)
+    account_no = models.ForeignKey(AccountMaster, on_delete=models.CASCADE, null=True, blank=True, db_index=True)
+    account_no_temp = models.CharField(blank=True, null=True, max_length=255, db_index=True)
+    tenure = models.CharField(blank=True, null=True, max_length=255, db_index=True)
+    file_identifier = models.CharField(blank=True, null=True, max_length=255, db_index=True)
+    created_on = models.DateTimeField(auto_now=True, db_index=True)
+    edited_by = models.ForeignKey(User, on_delete=models.SET_NULL, null=True, blank=True, db_index=True)
+    edited_on = models.DateTimeField(db_index=True, null=True, blank=True)
+
+    @classmethod
+    def truncate(cls):
+        with connection.cursor() as cursor:
+            cursor.execute('TRUNCATE TABLE "{0}" SET_NULL'.format(cls._meta.db_table))
+
+
+#==================================================================================
+# ECL FINAL TABLE
+#==================================================================================
+class ECL_Final(models.Model):
+    date = models.DateField(auto_now_add=False, null=True, blank=True,)
+    account_no = models.ForeignKey(AccountMaster, on_delete=models.CASCADE, null=True, blank=True, db_index=True)
+    tenure = models.CharField(blank=True, null=True, max_length=255, db_index=True)
+    file_identifier = models.CharField(blank=True, null=True, max_length=255, db_index=True)
+    created_on = models.DateTimeField(auto_now=True, db_index=True)
+
+    @classmethod
+    def truncate(cls):
+        with connection.cursor() as cursor:
+            cursor.execute('TRUNCATE TABLE "{0}" SET_NULL'.format(cls._meta.db_table))
+
+
+#==================================================================================
+# ECL REPORT TABLE
+#==================================================================================
+class ECL_Reports(models.Model):
+    date = models.DateField(auto_now_add=False, null=True, blank=True,)
+    account_no = models.ForeignKey(AccountMaster, on_delete=models.CASCADE, null=True, blank=True, db_index=True)
+    tenure = models.CharField(blank=True, null=True, max_length=255, db_index=True)
+    final_ecl = models.CharField(blank=True, null=True, max_length=255, db_index=True)
+    eir = models.CharField(blank=True, null=True, max_length=255, db_index=True)
+    created_on = models.DateTimeField(auto_now=True, db_index=True)
+
+    @classmethod
+    def truncate(cls):
+        with connection.cursor() as cursor:
+            cursor.execute('TRUNCATE TABLE "{0}" SET_NULL'.format(cls._meta.db_table))

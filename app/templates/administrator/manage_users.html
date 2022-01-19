@@ -30,20 +30,111 @@
 <div class="row table-responsive" style="overflow:scroll; margin:1px;">
   <table class="table table-bordered" id="manage_user_table" style="margin-top:10px;">
     <thead style="background-color:#eeeeee;">
-      <th class="text-center no-sort"> <input type="checkbox" name="checkbox_all" class="checkbox_all"/></th>
-      <th style="width:80px; !important;" class="text-center sorting_asc">Sl. No</th>
-      <th class="text-center">Username</th>
-      <th class="text-center">Firstname</th>
-      <th class="text-center">Lastname</th>
-      <th class="text-center">Email</th>
-      <th class="text-center">Usertype</th>
-      <th class="text-center">Dashboard</th>
-      <th class="text-center">Process</th>
-      <th class="text-center">Reports</th>
-      <th class="text-center">User Management</th>
-      <th class="text-center">Data Management</th>
-      <th class="text-center">Audit Trail</th>
-      <th style="width:100px !important;" class="text-center no-sort">Action</th>
+      <tr>
+      <th rowspan="3" class="text-center no-sort"> <input type="checkbox" name="checkbox_all" class="checkbox_all"/></th>
+      <th rowspan="3" style="width:80px; !important;" class="text-center sorting_asc">Sl. No</th>
+      <th rowspan="3" class="text-center">Username</th>
+      <th rowspan="3" class="text-center">Firstname</th>
+      <th rowspan="3" class="text-center">Lastname</th>
+      <th rowspan="3" class="text-center">Email</th>
+      <th rowspan="3" class="text-center">Usertype</th>
+      <th rowspan="3" class="text-center no-sort">Dashboard</th>
+      <th rowspan="3" class="text-center no-sort">User Management</th>
+      <th rowspan="3" class="text-center no-sort">Data Management</th>
+      <th rowspan="3" class="text-center no-sort">Audit Trail</th>
+      <th colspan="12" class="text-center no-sort" style="background-color:#8992f9;">Master</th>
+      <th colspan="18" class="text-center no-sort" style="background-color:#AABBCC;">Imports</th>
+      <th colspan="18" class="text-center no-sort" style="background-color:#FFCCCC;">Process</th>
+      <th colspan="6" class="text-center no-sort" style="background-color:#EEFFCC;">Reports</th>
+      <th rowspan="3" style="width:100px !important;" class="text-center no-sort">Action</th>
+      </tr>
+      <tr>
+        <th colspan="3" class="text-center no-sort" style="background-color:#8992f9;">Account</th>
+        <th colspan="3" class="text-center no-sort" style="background-color:#8992f9;">Collateral</th>
+        <th colspan="3" class="text-center no-sort" style="background-color:#8992f9;">Product</th>
+        <th colspan="3" class="text-center no-sort" style="background-color:#8992f9;">Mapper</th>
+
+        <th colspan="3" class="text-center no-sort" style="background-color:#AABBCC;">PD</th>
+        <th colspan="3" class="text-center no-sort" style="background-color:#AABBCC;">LGD</th>
+        <th colspan="3" class="text-center no-sort" style="background-color:#AABBCC;">Stage</th>
+        <th colspan="3" class="text-center no-sort" style="background-color:#AABBCC;">EIR</th>
+        <th colspan="3" class="text-center no-sort" style="background-color:#AABBCC;">ECL</th>
+        <th colspan="3" class="text-center no-sort" style="background-color:#AABBCC;">EAD</th>
+
+        <th colspan="3" class="text-center no-sort" style="background-color:#FFCCCC;">PD</th>
+        <th colspan="3" class="text-center no-sort" style="background-color:#FFCCCC;">LGD</th>
+        <th colspan="3" class="text-center no-sort" style="background-color:#FFCCCC;">Stage</th>
+        <th colspan="3" class="text-center no-sort" style="background-color:#FFCCCC;">EIR</th>
+        <th colspan="3" class="text-center no-sort" style="background-color:#FFCCCC;">ECL</th>
+        <th colspan="3" class="text-center no-sort" style="background-color:#FFCCCC;">EAD</th>
+
+        <th class="text-center no-sort" style="background-color:#EEFFCC;">PD</th>
+        <th class="text-center no-sort" style="background-color:#EEFFCC;">LGD</th>
+        <th class="text-center no-sort" style="background-color:#EEFFCC;">Stage</th>
+        <th class="text-center no-sort" style="background-color:#EEFFCC;">EIR</th>
+        <th class="text-center no-sort" style="background-color:#EEFFCC;">ECL</th>
+        <th class="text-center no-sort" style="background-color:#EEFFCC;">EAD</th>
+
+      </tr>
+      <tr>
+        <th class="text-center no-sort" style="background-color:#8992f9;">Upload</th>
+        <th class="text-center no-sort" style="background-color:#8992f9;">Edit</th>
+        <th class="text-center no-sort" style="background-color:#8992f9;">Delete</th>
+        <th class="text-center no-sort" style="background-color:#8992f9;">Upload</th>
+        <th class="text-center no-sort" style="background-color:#8992f9;">Edit</th>
+        <th class="text-center no-sort" style="background-color:#8992f9;">Delete</th>
+        <th class="text-center no-sort" style="background-color:#8992f9;">Upload</th>
+        <th class="text-center no-sort" style="background-color:#8992f9;">Edit</th>
+        <th class="text-center no-sort" style="background-color:#8992f9;">Delete</th>
+        <th class="text-center no-sort" style="background-color:#8992f9;">Upload</th>
+        <th class="text-center no-sort" style="background-color:#8992f9;">Edit</th>
+        <th class="text-center no-sort" style="background-color:#8992f9;">Delete</th>
+
+        <th class="text-center no-sort" style="background-color:#AABBCC;">Upload</th>
+        <th class="text-center no-sort" style="background-color:#AABBCC;">Edit</th>
+        <th class="text-center no-sort" style="background-color:#AABBCC;">Delete</th>
+        <th class="text-center no-sort" style="background-color:#AABBCC;">Upload</th>
+        <th class="text-center no-sort" style="background-color:#AABBCC;">Edit</th>
+        <th class="text-center no-sort" style="background-color:#AABBCC;">Delete</th>
+        <th class="text-center no-sort" style="background-color:#AABBCC;">Upload</th>
+        <th class="text-center no-sort" style="background-color:#AABBCC;">Edit</th>
+        <th class="text-center no-sort" style="background-color:#AABBCC;">Delete</th>
+        <th class="text-center no-sort" style="background-color:#AABBCC;">Upload</th>
+        <th class="text-center no-sort" style="background-color:#AABBCC;">Edit</th>
+        <th class="text-center no-sort" style="background-color:#AABBCC;">Delete</th>
+        <th class="text-center no-sort" style="background-color:#AABBCC;">Upload</th>
+        <th class="text-center no-sort" style="background-color:#AABBCC;">Edit</th>
+        <th class="text-center no-sort" style="background-color:#AABBCC;">Delete</th>
+        <th class="text-center no-sort" style="background-color:#AABBCC;">Upload</th>
+        <th class="text-center no-sort" style="background-color:#AABBCC;">Edit</th>
+        <th class="text-center no-sort" style="background-color:#AABBCC;">Delete</th>
+
+        <th class="text-center no-sort" style="background-color:#FFCCCC;">Run</th>
+        <th class="text-center no-sort" style="background-color:#FFCCCC;">Edit</th>
+        <th class="text-center no-sort" style="background-color:#FFCCCC;">Delete</th>
+        <th class="text-center no-sort" style="background-color:#FFCCCC;">Run</th>
+        <th class="text-center no-sort" style="background-color:#FFCCCC;">Edit</th>
+        <th class="text-center no-sort" style="background-color:#FFCCCC;">Delete</th>
+        <th class="text-center no-sort" style="background-color:#FFCCCC;">Run</th>
+        <th class="text-center no-sort" style="background-color:#FFCCCC;">Edit</th>
+        <th class="text-center no-sort" style="background-color:#FFCCCC;">Delete</th>
+        <th class="text-center no-sort" style="background-color:#FFCCCC;">Run</th>
+        <th class="text-center no-sort" style="background-color:#FFCCCC;">Edit</th>
+        <th class="text-center no-sort" style="background-color:#FFCCCC;">Delete</th>
+        <th class="text-center no-sort" style="background-color:#FFCCCC;">Run</th>
+        <th class="text-center no-sort" style="background-color:#FFCCCC;">Edit</th>
+        <th class="text-center no-sort" style="background-color:#FFCCCC;">Delete</th>
+        <th class="text-center no-sort" style="background-color:#FFCCCC;">Run</th>
+        <th class="text-center no-sort" style="background-color:#FFCCCC;">Edit</th>
+        <th class="text-center no-sort" style="background-color:#FFCCCC;">Delete</th>
+
+        <th class="text-center no-sort" style="background-color:#EEFFCC;">Download</th>
+        <th class="text-center no-sort" style="background-color:#EEFFCC;">Download</th>
+        <th class="text-center no-sort" style="background-color:#EEFFCC;">Download</th>
+        <th class="text-center no-sort" style="background-color:#EEFFCC;">Download</th>
+        <th class="text-center no-sort" style="background-color:#EEFFCC;">Download</th>
+        <th class="text-center no-sort" style="background-color:#EEFFCC;">Download</th>
+      </tr>
     </thead>
     <tbody style="font-size:13px;">
         {% for row in users %}
@@ -69,10 +160,11 @@
               <span class="la la-check fa-2x" style="color:#2db715; font-size: 25px;"></span>
             </td>
             <td class="text-center">
-              <span class="la la-check fa-2x" style="color:#2db715; font-size: 25px;"></span>
+              {% tick_mark row.is_superuser %}
+
             </td>
             <td class="text-center">
-              <span class="la la-check fa-2x" style="color:#2db715; font-size: 25px;"></span>
+              {% tick_mark row.is_superuser %}
             </td>
             <td class="text-center">
               {% if row.is_superuser  %}
@@ -84,20 +176,396 @@
               {% endif %}
             </td>
             <td class="text-center">
-              {% tick_mark row.is_superuser %}
+              {% if row.is_superuser  %}
+                {% tick_mark row.is_superuser %}
+              {% else %}
+                {% tick_mark row.upload_master_table %}
+              {% endif %}
             </td>
             <td class="text-center">
-              {% tick_mark row.is_superuser %}
+              {% if row.is_superuser  %}
+                {% tick_mark row.is_superuser %}
+              {% else %}
+                {% tick_mark row.edit_master_table %}
+              {% endif %}
             </td>
-
-            <td class="text-center p-0">
+            <td class="text-center">
+              {% if row.is_superuser  %}
+                {% tick_mark row.is_superuser %}
+              {% else %}
+                {% tick_mark row.delete_master_table %}
+              {% endif %}
+            </td>
+            <td class="text-center">
+              {% if row.is_superuser  %}
+                {% tick_mark row.is_superuser %}
+              {% else %}
+                {% tick_mark row.upload_basel_collateral %}
+              {% endif %}
+            </td>
+            <td class="text-center">
+              {% if row.is_superuser  %}
+                {% tick_mark row.is_superuser %}
+              {% else %}
+                {% tick_mark row.edit_basel_collateral %}
+              {% endif %}
+            </td>
+            <td class="text-center">
+              {% if row.is_superuser  %}
+                {% tick_mark row.is_superuser %}
+              {% else %}
+                {% tick_mark row.delete_basel_collateral %}
+              {% endif %}
+            </td>
+            <td class="text-center">
+              {% if row.is_superuser  %}
+                {% tick_mark row.is_superuser %}
+              {% else %}
+                {% tick_mark row.upload_basel_product %}
+              {% endif %}
+            </td>
+            <td class="text-center">
+              {% if row.is_superuser  %}
+                {% tick_mark row.is_superuser %}
+              {% else %}
+                {% tick_mark row.edit_basel_product %}
+              {% endif %}
+            </td>
+            <td class="text-center">
+              {% if row.is_superuser  %}
+                {% tick_mark row.is_superuser %}
+              {% else %}
+                {% tick_mark row.delete_basel_product %}
+              {% endif %}
+            </td>
+            <td class="text-center">
+              {% if row.is_superuser  %}
+                {% tick_mark row.is_superuser %}
+              {% else %}
+                {% tick_mark row.upload_collateral_mapper %}
+              {% endif %}
+            </td>
+            <td class="text-center">
+              {% if row.is_superuser  %}
+                {% tick_mark row.is_superuser %}
+              {% else %}
+                {% tick_mark row.edit_collateral_mapper %}
+              {% endif %}
+            </td>
+            <td class="text-center">
+              {% if row.is_superuser  %}
+                {% tick_mark row.is_superuser %}
+              {% else %}
+                {% tick_mark row.delete_collateral_mapper %}
+              {% endif %}
+            </td>
+            <td class="text-center">
+              {% if row.is_superuser  %}
+                {% tick_mark row.is_superuser %}
+              {% else %}
+                {% tick_mark row.upload_pd %}
+              {% endif %}
+            </td>
+            <td class="text-center">
+              {% if row.is_superuser  %}
+                {% tick_mark row.is_superuser %}
+              {% else %}
+                {% tick_mark row.edit_import_pd %}
+              {% endif %}
+            </td>
+            <td class="text-center">
+              {% if row.is_superuser  %}
+                {% tick_mark row.is_superuser %}
+              {% else %}
+                {% tick_mark row.delete_import_pd %}
+              {% endif %}
+            </td>
+            <td class="text-center">
+              {% if row.is_superuser  %}
+                {% tick_mark row.is_superuser %}
+              {% else %}
+                {% tick_mark row.upload_lgd %}
+              {% endif %}
+            </td>
+            <td class="text-center">
+              {% if row.is_superuser  %}
+                {% tick_mark row.is_superuser %}
+              {% else %}
+                {% tick_mark row.edit_import_lgd %}
+              {% endif %}
+            </td>
+            <td class="text-center">
+              {% if row.is_superuser  %}
+                {% tick_mark row.is_superuser %}
+              {% else %}
+                {% tick_mark row.delete_import_lgd %}
+              {% endif %}
+            </td>
+            <td class="text-center">
+              {% if row.is_superuser  %}
+                {% tick_mark row.is_superuser %}
+              {% else %}
+                {% tick_mark row.upload_stage %}
+              {% endif %}
+            </td>
+            <td class="text-center">
+              {% if row.is_superuser  %}
+                {% tick_mark row.is_superuser %}
+              {% else %}
+                {% tick_mark row.edit_import_stage %}
+              {% endif %}
+            </td>
+            <td class="text-center">
+              {% if row.is_superuser  %}
+                {% tick_mark row.is_superuser %}
+              {% else %}
+                {% tick_mark row.delete_import_stage %}
+              {% endif %}
+            </td>
+            <td class="text-center">
+              {% if row.is_superuser  %}
+                {% tick_mark row.is_superuser %}
+              {% else %}
+                {% tick_mark row.upload_eir %}
+              {% endif %}
+            </td>
+            <td class="text-center">
+              {% if row.is_superuser  %}
+                {% tick_mark row.is_superuser %}
+              {% else %}
+                {% tick_mark row.edit_import_eir %}
+              {% endif %}
+            </td>
+            <td class="text-center">
+              {% if row.is_superuser  %}
+                {% tick_mark row.is_superuser %}
+              {% else %}
+                {% tick_mark row.delete_import_eir %}
+              {% endif %}
+            </td>
+            <td class="text-center">
+              {% if row.is_superuser  %}
+                {% tick_mark row.is_superuser %}
+              {% else %}
+                {% tick_mark row.upload_ecl %}
+              {% endif %}
+            </td>
+            <td class="text-center">
+              {% if row.is_superuser  %}
+                {% tick_mark row.is_superuser %}
+              {% else %}
+                {% tick_mark row.edit_import_ecl %}
+              {% endif %}
+            </td>
+            <td class="text-center">
+              {% if row.is_superuser  %}
+                {% tick_mark row.is_superuser %}
+              {% else %}
+                {% tick_mark row.delete_import_ecl %}
+              {% endif %}
+            </td>
+            <td class="text-center">
+              {% if row.is_superuser  %}
+                {% tick_mark row.is_superuser %}
+              {% else %}
+                {% tick_mark row.upload_ead %}
+              {% endif %}
+            </td>
+            <td class="text-center">
+              {% if row.is_superuser  %}
+                {% tick_mark row.is_superuser %}
+              {% else %}
+                {% tick_mark row.edit_import_ead %}
+              {% endif %}
+            </td>
+            <td class="text-center">
+              {% if row.is_superuser  %}
+                {% tick_mark row.is_superuser %}
+              {% else %}
+                {% tick_mark row.delete_import_ead %}
+              {% endif %}
+            </td>
+            <td class="text-center">
+              {% if row.is_superuser  %}
+                {% tick_mark row.is_superuser %}
+              {% else %}
+                {% tick_mark row.run_final_pd %}
+              {% endif %}
+            </td>
+            <td class="text-center">
+              {% if row.is_superuser  %}
+                {% tick_mark row.is_superuser %}
+              {% else %}
+                {% tick_mark row.edit_final_pd %}
+              {% endif %}
+            </td>
+            <td class="text-center">
+              {% if row.is_superuser  %}
+                {% tick_mark row.is_superuser %}
+              {% else %}
+                {% tick_mark row.delete_final_pd %}
+              {% endif %}
+            </td>
+            <td class="text-center">
+              {% if row.is_superuser  %}
+                {% tick_mark row.is_superuser %}
+              {% else %}
+                {% tick_mark row.run_final_lgd %}
+              {% endif %}
+            </td>
+            <td class="text-center">
+              {% if row.is_superuser  %}
+                {% tick_mark row.is_superuser %}
+              {% else %}
+                {% tick_mark row.edit_final_lgd %}
+              {% endif %}
+            </td>
+            <td class="text-center">
+              {% if row.is_superuser  %}
+                {% tick_mark row.is_superuser %}
+              {% else %}
+                {% tick_mark row.delete_final_lgd %}
+              {% endif %}
+            </td>
+            <td class="text-center">
+              {% if row.is_superuser  %}
+                {% tick_mark row.is_superuser %}
+              {% else %}
+                {% tick_mark row.run_final_stage %}
+              {% endif %}
+            </td>
+            <td class="text-center">
+              {% if row.is_superuser  %}
+                {% tick_mark row.is_superuser %}
+              {% else %}
+                {% tick_mark row.edit_final_stage %}
+              {% endif %}
+            </td>
+            <td class="text-center">
+              {% if row.is_superuser  %}
+                {% tick_mark row.is_superuser %}
+              {% else %}
+                {% tick_mark row.delete_final_stage %}
+              {% endif %}
+            </td>
+            <td class="text-center">
+              {% if row.is_superuser  %}
+                {% tick_mark row.is_superuser %}
+              {% else %}
+                {% tick_mark row.run_final_eir %}
+              {% endif %}
+            </td>
+            <td class="text-center">
+              {% if row.is_superuser  %}
+                {% tick_mark row.is_superuser %}
+              {% else %}
+                {% tick_mark row.edit_final_eir %}
+              {% endif %}
+            </td>
+            <td class="text-center">
+              {% if row.is_superuser  %}
+                {% tick_mark row.is_superuser %}
+              {% else %}
+                {% tick_mark row.delete_final_eir %}
+              {% endif %}
+            </td>
+            <td class="text-center">
+              {% if row.is_superuser  %}
+                {% tick_mark row.is_superuser %}
+              {% else %}
+                {% tick_mark row.run_final_ecl %}
+              {% endif %}
+            </td>
+            <td class="text-center">
+              {% if row.is_superuser  %}
+                {% tick_mark row.is_superuser %}
+              {% else %}
+                {% tick_mark row.edit_final_ecl %}
+              {% endif %}
+            </td>
+            <td class="text-center">
+              {% if row.is_superuser  %}
+                {% tick_mark row.is_superuser %}
+              {% else %}
+                {% tick_mark row.delete_final_ecl %}
+              {% endif %}
+            </td>
+            <td class="text-center">
+              {% if row.is_superuser  %}
+                {% tick_mark row.is_superuser %}
+              {% else %}
+                {% tick_mark row.run_final_ead %}
+              {% endif %}
+            </td>
+            <td class="text-center">
+              {% if row.is_superuser  %}
+                {% tick_mark row.is_superuser %}
+              {% else %}
+                {% tick_mark row.edit_final_ead %}
+              {% endif %}
+            </td>
+            <td class="text-center">
+              {% if row.is_superuser  %}
+                {% tick_mark row.is_superuser %}
+              {% else %}
+                {% tick_mark row.delete_final_ead %}
+              {% endif %}
+            </td>
+            <td class="text-center">
+              {% if row.is_superuser  %}
+                {% tick_mark row.is_superuser %}
+              {% else %}
+                {% tick_mark row.download_reports_pd %}
+              {% endif %}
+            </td>
+            <td class="text-center">
+              {% if row.is_superuser  %}
+                {% tick_mark row.is_superuser %}
+              {% else %}
+                {% tick_mark row.download_reports_lgd %}
+              {% endif %}
+            </td>
+            <td class="text-center">
+              {% if row.is_superuser  %}
+                {% tick_mark row.is_superuser %}
+              {% else %}
+                {% tick_mark row.download_reports_stage %}
+              {% endif %}
+            </td>
+            <td class="text-center">
+              {% if row.is_superuser  %}
+                {% tick_mark row.is_superuser %}
+              {% else %}
+                {% tick_mark row.download_reports_eir %}
+              {% endif %}
+            </td>
+            <td class="text-center">
+              {% if row.is_superuser  %}
+                {% tick_mark row.is_superuser %}
+              {% else %}
+                {% tick_mark row.download_reports_ecl %}
+              {% endif %}
+            </td>
+            <td class="text-center">
+              {% if row.is_superuser  %}
+                {% tick_mark row.is_superuser %}
+              {% else %}
+                {% tick_mark row.download_reports_ead %}
+              {% endif %}
+            </td>
+            <td class="p-0">
               <div class="btn-group" role="group" aria-label="Basic example">
-                <button type="button" onclick="load_edit_data({{row.id}})" class="btn btn-icon btn-sm" data-toggle="modal" data-target="#EditUserModalForm">
+                <button type="button" onclick="load_edit_data({{row.id}})" class="btn btn-icon btn-sm">
                   <i class="la la-pencil" aria-hidden="true" style="font-size: 25px;line-height: 30px;"></i>
                 </button>
                 <button type="button" onclick="reset_password({{row.id}})" class="btn btn-icon btn-sm">
                   <i class="la la-key" aria-hidden="true" style="font-size: 25px;line-height: 30px;"></i>
                 </button>
+                {% if not row.is_superuser %}
+                  <button type="button" onclick="grant_permissions({{row.id}})" class="btn btn-icon btn-sm" title="Grant Permissions">
+                    <i class="la la-cogs" aria-hidden="true" style="font-size: 25px;line-height: 30px;"></i>
+                  </button>
+                {% endif %}
                 {% if row.is_superuser %}
                 {% elif row.is_staff %}
                 {% else %}
@@ -304,9 +772,476 @@
     </div>
 </div>
 
+<!-- -->
+
+
+<div id="grant_permissions" class="modal" tabindex="-1" role="dialog">
+    <div class="modal-dialog modal-lg" role="document">
+        <div class="modal-content">
+          <div class="modal-header text-white">
+            <h5 class="modal-title">Grant Permissions</h5>
+          </div>
+    			<div class="modal-body">
+            <table class="table table-bordered">
+              <tr style="background-color:#000000; color:#ffffff;">
+                <td class="text-center">Sections</td>
+                <td class="text-center" width="80px">Upload</td>
+                <td class="text-center" width="80px">Edit</td>
+                <td class="text-center" width="80px">Delete</td>
+                <td class="text-center" width="80px">Run</td>
+                <td class="text-center" width="80px">Download</td>
+              </tr>
+              <tr><td colspan="6" class="text-center" style="background-color:#cccccc;">Master</td></tr>
+              <tr>
+                <td>Account</td>
+                <td class="text-center">
+                  <input class="form-check-input" type="checkbox" value="">
+                </td>
+                <td class="text-center">
+                  <input class="form-check-input" type="checkbox" value="">
+                </td>
+                <td class="text-center">
+                  <input class="form-check-input" type="checkbox" value="">
+                </td>
+                <td class="text-center">
+                  <input class="form-check-input" type="checkbox" value="" disabled>
+                </td>
+                <td class="text-center">
+                  <input class="form-check-input" type="checkbox" value="">
+                </td>
+              </tr>
+              <tr>
+                <td>Collateral</td>
+                <td class="text-center">
+                  <input class="form-check-input" type="checkbox" value="">
+                </td>
+                <td class="text-center">
+                  <input class="form-check-input" type="checkbox" value="">
+                </td>
+                <td class="text-center">
+                  <input class="form-check-input" type="checkbox" value="">
+                </td>
+                <td class="text-center">
+                  <input class="form-check-input" type="checkbox" value="" disabled>
+                </td>
+                <td class="text-center">
+                  <input class="form-check-input" type="checkbox" value="" disabled>
+                </td>
+              </tr>
+              <tr>
+                <td>Product</td>
+                <td class="text-center">
+                  <input class="form-check-input" type="checkbox" value="">
+                </td>
+                <td class="text-center">
+                  <input class="form-check-input" type="checkbox" value="">
+                </td>
+                <td class="text-center">
+                  <input class="form-check-input" type="checkbox" value="">
+                </td>
+                <td class="text-center">
+                  <input class="form-check-input" type="checkbox" value="" disabled>
+                </td>
+                <td class="text-center">
+                  <input class="form-check-input" type="checkbox" value="" disabled>
+                </td>
+              </tr>
+              <tr>
+                <td>Collateral Mapper</td>
+                <td class="text-center">
+                  <input class="form-check-input" type="checkbox" value="">
+                </td>
+                <td class="text-center">
+                  <input class="form-check-input" type="checkbox" value="">
+                </td>
+                <td class="text-center">
+                  <input class="form-check-input" type="checkbox" value="">
+                </td>
+                <td class="text-center">
+                  <input class="form-check-input" type="checkbox" value="" disabled>
+                </td>
+                <td class="text-center">
+                  <input class="form-check-input" type="checkbox" value="" disabled>
+                </td>
+              </tr>
+              <tr><td colspan="6" class="text-center" style="background-color:#cccccc;">Imports</td></tr>
+              <tr>
+                <td>PD</td>
+                <td class="text-center">
+                  <input class="form-check-input" type="checkbox" value="">
+                </td>
+                <td class="text-center">
+                  <input class="form-check-input" type="checkbox" value="">
+                </td>
+                <td class="text-center">
+                  <input class="form-check-input" type="checkbox" value="">
+                </td>
+                <td class="text-center">
+                  <input class="form-check-input" type="checkbox" value="" disabled>
+                </td>
+                <td class="text-center">
+                  <input class="form-check-input" type="checkbox" value="" disabled>
+                </td>
+              </tr>
+              <tr>
+                <td>LGD</td>
+                <td class="text-center">
+                  <input class="form-check-input" type="checkbox" value="">
+                </td>
+                <td class="text-center">
+                  <input class="form-check-input" type="checkbox" value="">
+                </td>
+                <td class="text-center">
+                  <input class="form-check-input" type="checkbox" value="">
+                </td>
+                <td class="text-center">
+                  <input class="form-check-input" type="checkbox" value="" disabled>
+                </td>
+                <td class="text-center">
+                  <input class="form-check-input" type="checkbox" value="" disabled>
+                </td>
+              </tr>
+              <tr>
+                <td>Stage</td>
+                <td class="text-center">
+                  <input class="form-check-input" type="checkbox" value="">
+                </td>
+                <td class="text-center">
+                  <input class="form-check-input" type="checkbox" value="">
+                </td>
+                <td class="text-center">
+                  <input class="form-check-input" type="checkbox" value="">
+                </td>
+                <td class="text-center">
+                  <input class="form-check-input" type="checkbox" value="" disabled>
+                </td>
+                <td class="text-center">
+                  <input class="form-check-input" type="checkbox" value="" disabled>
+                </td>
+              </tr>
+              <tr>
+                <td>EAD</td>
+                <td class="text-center">
+                  <input class="form-check-input" type="checkbox" value="">
+                </td>
+                <td class="text-center">
+                  <input class="form-check-input" type="checkbox" value="">
+                </td>
+                <td class="text-center">
+                  <input class="form-check-input" type="checkbox" value="">
+                </td>
+                <td class="text-center">
+                  <input class="form-check-input" type="checkbox" value="" disabled>
+                </td>
+                <td class="text-center">
+                  <input class="form-check-input" type="checkbox" value="" disabled>
+                </td>
+              </tr>
+              <tr>
+                <td>ECL</td>
+                <td class="text-center">
+                  <input class="form-check-input" type="checkbox" value="">
+                </td>
+                <td class="text-center">
+                  <input class="form-check-input" type="checkbox" value="">
+                </td>
+                <td class="text-center">
+                  <input class="form-check-input" type="checkbox" value="">
+                </td>
+                <td class="text-center">
+                  <input class="form-check-input" type="checkbox" value="" disabled>
+                </td>
+                <td class="text-center">
+                  <input class="form-check-input" type="checkbox" value="" disabled>
+                </td>
+              </tr>
+              <tr>
+                <td>EIR</td>
+                <td class="text-center">
+                  <input class="form-check-input" type="checkbox" value="">
+                </td>
+                <td class="text-center">
+                  <input class="form-check-input" type="checkbox" value="">
+                </td>
+                <td class="text-center">
+                  <input class="form-check-input" type="checkbox" value="">
+                </td>
+                <td class="text-center">
+                  <input class="form-check-input" type="checkbox" value="" disabled>
+                </td>
+                <td class="text-center">
+                  <input class="form-check-input" type="checkbox" value="" disabled>
+                </td>
+              </tr>
+              <tr><td colspan="6" class="text-center" style="background-color:#cccccc;">Process</td></tr>
+              <tr>
+                <td>PD</td>
+                <td class="text-center">
+                  <input class="form-check-input" type="checkbox" value="" disabled>
+                </td>
+                <td class="text-center">
+                  <input class="form-check-input" type="checkbox" value="">
+                </td>
+                <td class="text-center">
+                  <input class="form-check-input" type="checkbox" value="">
+                </td>
+                <td class="text-center">
+                  <input class="form-check-input" type="checkbox" value="">
+                </td>
+                <td class="text-center">
+                  <input class="form-check-input" type="checkbox" value="" disabled>
+                </td>
+              </tr>
+              <tr>
+                <td>LGD</td>
+                <td class="text-center">
+                  <input class="form-check-input" type="checkbox" value="" disabled>
+                </td>
+                <td class="text-center">
+                  <input class="form-check-input" type="checkbox" value="">
+                </td>
+                <td class="text-center">
+                  <input class="form-check-input" type="checkbox" value="">
+                </td>
+                <td class="text-center">
+                  <input class="form-check-input" type="checkbox" value="">
+                </td>
+                <td class="text-center">
+                  <input class="form-check-input" type="checkbox" value="" disabled>
+                </td>
+              </tr>
+              <tr>
+                <td>Stage</td>
+                <td class="text-center">
+                  <input class="form-check-input" type="checkbox" value="" disabled>
+                </td>
+                <td class="text-center">
+                  <input class="form-check-input" type="checkbox" value="">
+                </td>
+                <td class="text-center">
+                  <input class="form-check-input" type="checkbox" value="">
+                </td>
+                <td class="text-center">
+                  <input class="form-check-input" type="checkbox" value="">
+                </td>
+                <td class="text-center">
+                  <input class="form-check-input" type="checkbox" value="" disabled>
+                </td>
+              </tr>
+              <tr>
+                <td>EAD</td>
+                <td class="text-center">
+                  <input class="form-check-input" type="checkbox" value="" disabled>
+                </td>
+                <td class="text-center">
+                  <input class="form-check-input" type="checkbox" value="">
+                </td>
+                <td class="text-center">
+                  <input class="form-check-input" type="checkbox" value="">
+                </td>
+                <td class="text-center">
+                  <input class="form-check-input" type="checkbox" value="">
+                </td>
+                <td class="text-center">
+                  <input class="form-check-input" type="checkbox" value="" disabled>
+                </td>
+              </tr>
+              <tr>
+                <td>ECL</td>
+                <td class="text-center">
+                  <input class="form-check-input" type="checkbox" value="" disabled>
+                </td>
+                <td class="text-center">
+                  <input class="form-check-input" type="checkbox" value="">
+                </td>
+                <td class="text-center">
+                  <input class="form-check-input" type="checkbox" value="">
+                </td>
+                <td class="text-center">
+                  <input class="form-check-input" type="checkbox" value="">
+                </td>
+                <td class="text-center">
+                  <input class="form-check-input" type="checkbox" value="" disabled>
+                </td>
+              </tr>
+              <tr>
+                <td>EIR</td>
+                <td class="text-center">
+                  <input class="form-check-input" type="checkbox" value="" disabled>
+                </td>
+                <td class="text-center">
+                  <input class="form-check-input" type="checkbox" value="">
+                </td>
+                <td class="text-center">
+                  <input class="form-check-input" type="checkbox" value="">
+                </td>
+                <td class="text-center">
+                  <input class="form-check-input" type="checkbox" value="">
+                </td>
+                <td class="text-center">
+                  <input class="form-check-input" type="checkbox" value="" disabled>
+                </td>
+              </tr>
+              <tr><td colspan="6" class="text-center" style="background-color:#cccccc;">Reports</td></tr>
+              <tr>
+                <td>PD</td>
+                <td class="text-center">
+                  <input class="form-check-input" type="checkbox" value="" disabled>
+                </td>
+                <td class="text-center">
+                  <input class="form-check-input" type="checkbox" value="" disabled>
+                </td>
+                <td class="text-center">
+                  <input class="form-check-input" type="checkbox" value="" disabled>
+                </td>
+                <td class="text-center">
+                  <input class="form-check-input" type="checkbox" value="" disabled>
+                </td>
+                <td class="text-center">
+                  <input class="form-check-input" type="checkbox" value="">
+                </td>
+              </tr>
+              <tr>
+                <td>LGD</td>
+                <td class="text-center">
+                  <input class="form-check-input" type="checkbox" value="" disabled>
+                </td>
+                <td class="text-center">
+                  <input class="form-check-input" type="checkbox" value="" disabled>
+                </td>
+                <td class="text-center">
+                  <input class="form-check-input" type="checkbox" value="" disabled>
+                </td>
+                <td class="text-center">
+                  <input class="form-check-input" type="checkbox" value="" disabled>
+                </td>
+                <td class="text-center">
+                  <input class="form-check-input" type="checkbox" value="">
+                </td>
+              </tr>
+              <tr>
+                <td>Stage</td>
+                <td class="text-center">
+                  <input class="form-check-input" type="checkbox" value="" disabled>
+                </td>
+                <td class="text-center">
+                  <input class="form-check-input" type="checkbox" value="" disabled>
+                </td>
+                <td class="text-center">
+                  <input class="form-check-input" type="checkbox" value="" disabled>
+                </td>
+                <td class="text-center">
+                  <input class="form-check-input" type="checkbox" value="" disabled>
+                </td>
+                <td class="text-center">
+                  <input class="form-check-input" type="checkbox" value="">
+                </td>
+              </tr>
+              <tr>
+                <td>EAD</td>
+                <td class="text-center">
+                  <input class="form-check-input" type="checkbox" value="" disabled>
+                </td>
+                <td class="text-center">
+                  <input class="form-check-input" type="checkbox" value="" disabled>
+                </td>
+                <td class="text-center">
+                  <input class="form-check-input" type="checkbox" value="" disabled>
+                </td>
+                <td class="text-center">
+                  <input class="form-check-input" type="checkbox" value="" disabled>
+                </td>
+                <td class="text-center">
+                  <input class="form-check-input" type="checkbox" value="">
+                </td>
+              </tr>
+              <tr>
+                <td>ECL</td>
+                <td class="text-center">
+                  <input class="form-check-input" type="checkbox" value="" disabled>
+                </td>
+                <td class="text-center">
+                  <input class="form-check-input" type="checkbox" value="" disabled>
+                </td>
+                <td class="text-center">
+                  <input class="form-check-input" type="checkbox" value="" disabled>
+                </td>
+                <td class="text-center">
+                  <input class="form-check-input" type="checkbox" value="" disabled>
+                </td>
+                <td class="text-center">
+                  <input class="form-check-input" type="checkbox" value="">
+                </td>
+              </tr>
+              <tr>
+                <td>EIR</td>
+                <td class="text-center">
+                  <input class="form-check-input" type="checkbox" value="" disabled>
+                </td>
+                <td class="text-center">
+                  <input class="form-check-input" type="checkbox" value="" disabled>
+                </td>
+                <td class="text-center">
+                  <input class="form-check-input" type="checkbox" value="" disabled>
+                </td>
+                <td class="text-center">
+                  <input class="form-check-input" type="checkbox" value="" disabled>
+                </td>
+                <td class="text-center">
+                  <input class="form-check-input" type="checkbox" value="">
+                </td>
+              </tr>
+            </table>
+    			</div>
+          <div class="modal-footer">
+            <button type="button" class="btn btn-secondary" data-dismiss="modal" onclick="modal_close('#grant_permissions')">Close</button>
+          </div>
+        </div>
+    </div>
+</div>
+
+
 
 <script>
   var users_json = {{users_json|safe}};
 
-  console.log(users_json);
+  console.log(users_json)
+
+  function grant_permissions(id){
+    $("#grant_permissions").modal('show');
+  }
+
+  //
+  // EDIT USER FORM DATA LOAD
+  //
+  function load_edit_data(id){
+
+    console.log(1)
+    $("#edit_id").val(id);
+
+
+    $("#edit_username").val(users_json[id]["username"]);
+    $("#edit_email").val(users_json[id]["email"]);
+    $("#edit_first_name").val(users_json[id]["first_name"]);
+    $("#edit_last_name").val(users_json[id]["last_name"]);
+
+    if(users_json[id]["is_superuser"]){
+      $("#edit_is_superuser").prop("checked",true);
+    }else{
+      $("#edit_is_superuser").prop("checked",false);
+    }
+
+    if(users_json[id]["is_staff"]){
+      $("#edit_is_staff").prop("checked",true);
+    }else{
+      $("#edit_is_staff").prop("checked",false);
+    }
+
+    $("#EditUserModalForm").modal("show");
+  }
+
+  //
+  //
+  //
+
 </script>

@@ -1,0 +1,154 @@
+{% load custom_tags %}
+<div class="row" style="margin:20px 0px 0px; ">
+  <div class="col-md-6 col-sm-12">
+    <h3 style="line-height: 40px;" class="main_heading">Process Management</h3>
+  </div>
+  <div class="col-md-6 col-sm-12 heading_buttons_container">
+    {% if request.user.is_staff or request.user.is_superuser %}
+      <div class="btn-group" role="group" aria-label="Basic example">
+        <button type="button" class="btn btn-default btn-sm" style="width:100px; color:#000000;" onclick="delete_final_selected_records()">
+          <i class="la la-trash"></i> <strong>Delete</strong>
+        </button>
+      </div>
+    {% endif %}
+  </div>
+</div>
+<hr style="margin-top:0px;" />
+
+<div class="row">
+  <!-- Nav Tabs Start -->
+
+  <div class="col-sm-12">
+
+    {% include 'base/alert_components.html' %}
+
+    <ul class="nav nav-tabs" role="tablist">
+      <li class="nav-item">
+        <a class="nav-link active" href="{% url 'show_final_records' 'pd' %}" id="tab_pd">PD</a>
+      </li>
+      <li class="nav-item">
+        <a class="nav-link" href="{% url 'show_final_records' 'lgd' %}" id="tab_lgd">LGD</a>
+      </li>
+      <li class="nav-item">
+        <a class="nav-link" href="{% url 'show_final_records' 'stage' %}" id="tab_stage">Stage</a>
+      </li>
+      <li class="nav-item">
+        <a class="nav-link" href="{% url 'show_final_records' 'ead' %}" id="tab_ead">EAD</a>
+      </li>
+      <li class="nav-item">
+        <a class="nav-link" href="{% url 'show_final_records' 'eir' %}" id="tab_eir">EIR</a>
+      </li>
+      <li class="nav-item">
+        <a class="nav-link" href="{% url 'show_final_records' 'ecl' %}" id="tab_ecl">ECL</a>
+      </li>
+    </ul>
+
+    <!-- Tab panes start -->
+    <div class="tab-content" style="padding:10px 0px;">
+      <form method="post" action="{% url 'ecl_report' %}" id="run_report_form">
+      <div class="table-responsive" style="overflow:auto;">
+          {% csrf_token %}
+          <table class="table table-bordered" style="background-color: #dee2e6;">
+            <tr>
+              <td style="font-size:13px;line-height: 38px; text-align:right; font-weight:bold;">Account No</td>
+              <td style="line-height: 38px;">
+                <input type="text" name="account_no" class="form-control" id="report_account_no">
+              </td>
+              <td style="font-size:13px;line-height: 38px; text-align:right; font-weight:bold;">Start Date</td>
+              <td>
+                <input type="date" name="start_date" class="form-control" id="report_start_date">
+              </td>
+              <td style="font-size:13px;line-height: 38px; text-align:right; font-weight:bold;">End Date</td>
+              <td>
+                <input type="date" name="end_date" class="form-control" id="report_end_date">
+              </td>
+              <td>
+                <button type="button" class="btn btn-primary" onclick="run_search()">Search</button>
+                <button type="button" class="btn btn-success" onclick="run_report()">Run Report</button>
+              </td>
+            </tr>
+          </table>
+      </div>
+      </form>
+
+      <div class="table-responsive">
+        <form action="{% url 'ecl_report' %}" method="post" id="move_all_to_final">
+          {% csrf_token %}
+          <table class="table table-bordered">
+            <thead class="text-center" style="background-color:#ddd; font-size:13px; white-space: nowrap;">
+              <th><input type="checkbox" class="checkbox_all"></th>
+              <th>Date</th>
+              <th>Account No.</th>
+              <th>Account Type</th>
+              <th>CIN</th>
+              <th>Product Name</th>
+              <th>Sectors</th>
+              <th>Tenure</th>
+              <th>Action</th>
+            </thead>
+            <tbody style="font-size:12px; white-space: nowrap;">
+              {% for row in items_list %}
+                <tr {% if row.edited_by %} style="background-color:#d89e1b5c;" {% endif %}>
+                  <td class="text-center">
+                    <input type="checkbox" value="{{row.id}}" class="checkbox_one" name="checkbox_one">
+                  </td>
+                  <td>{{row.date|default_if_none:''}}</td>
+                  <td>{{row.Account_No|default_if_none:''}}</td>
+                  <td>{{row.account_type|default_if_none:''}}</td>
+                  <td>{{row.cin|default_if_none:''}}</td>
+                  <td>{{row.product_name|default_if_none:''}}</td>
+                  <td>{{row.sectors|default_if_none:''}}</td>
+                  <td>{{row.tenure|default_if_none:''}}</td>
+                  <td class="text-center p-0">
+                    {% if request.user.is_staff or request.user.is_superuser %}
+                    <div class="btn-group" role="group" aria-label="Basic example">
+                      <button type="button"  params="{% url 'delete_final_single_record' 'ecl' row.id %}" class="btn btn-icon btn-sm" onclick="delete_single_record(this)">
+                        <i class="la la-trash" aria-hidden="true" style="font-size: 25px;line-height: 30px; color:#FF0000;"></i>
+                      </button>
+                    </div>
+                    {% endif %}
+                  </td>
+                </tr>
+              {% endfor %}
+            </tbody>
+          </table>
+        </form>
+      </div>
+
+
+      {% if items_list.has_other_pages %}
+        <ul class="pagination">
+          {% if items_list.has_previous %}
+            <li><a href="?page={{ users.previous_page_number }}">&laquo;</a></li>
+          {% else %}
+            <li class="disabled"><span>&laquo;</span></li>
+          {% endif %}
+          {% for i in items_list.paginator.page_range %}
+            {% if items_list.number == i %}
+              <li class="active"><span>{{ i }} <span class="sr-only">(current)</span></span></li>
+            {% else %}
+              <li><a href="?page={{ i }}">{{ i }}</a></li>
+            {% endif %}
+          {% endfor %}
+          {% if items_list.has_next %}
+            <li><a href="?page={{ users.next_page_number }}">&raquo;</a></li>
+          {% else %}
+            <li class="disabled"><span>&raquo;</span></li>
+          {% endif %}
+        </ul>
+      {% endif %}
+
+    </div>
+
+    <!-- Tab panes end -->
+  </div>
+  <!-- Nav Tabs End -->
+
+</div>
+
+
+<script>
+  var status = {{tab_active}};
+  var delete_selected_url = '{% url "delete_final_records" "ecl" %}';
+
+</script>

@@ -45,9 +45,9 @@
             <td>{{row.collateral_value|default_if_none:''}}</td>
             <td>{{row.collateral_rating|default_if_none:''}}</td>
             <td>{{row.collateral_residual_maturity|default_if_none:''}}</td>
-            <td class="text-center p-0">
+            <td class="p-0">
               <div class="btn-group" role="group" aria-label="Basic example">
-                <button onclick="return false" class="btn btn-icon btn-sm">
+                <button class="btn btn-icon btn-sm" onclick="edit_collateral({{row.id}})">
                   <i class="la la-pencil" aria-hidden="true" style="font-size: 25px;line-height: 30px; color:#000000;"></i>
                 </button>
                 <button onclick="return false" class="btn btn-icon btn-sm">
@@ -62,7 +62,90 @@
   </table>
 </div>
 
+<!-- -->
+
+<div class="modal" id="EditModalForm" tabindex="-1" role="dialog">
+  <div class="modal-dialog">
+    <form method="post" action="{% url 'edit_collateral' %}">
+      {% csrf_token %}
+      <input type="hidden" name="id" value="" id="edit_id">
+      <div class="modal-content">
+        <div class="modal-header text-white">
+          <h5 class="modal-title">Edit Collateral</h5>
+        </div>
+        <div class="modal-body">
+          <div class="row mb-3">
+            <div class="col-6">
+              <div class="form-group">
+                <label style="font-weight:700;">Account No</label>
+                <input type="text" name="account_no" id="edit_account_no" class="form-control" readonly>
+              </div>
+            </div>
+            <div class="col-6">
+              <div class="form-group">
+                <label style="font-weight:700;">Product Code</label>
+                <input type="text" name="product_code" id="edit_product_code" class="form-control" readonly>
+              </div>
+            </div>
+          </div>
+
+          <div class="row mb-3">
+            <div class="col-6">
+              <div class="form-group">
+                <label style="font-weight:700;">Collateral Code</label>
+                <input type="text" name="collateral_code" id="edit_collateral_code" class="form-control">
+              </div>
+            </div>
+            <div class="col-6">
+              <div class="form-group">
+                <label style="font-weight:700;">Collateral Value</label>
+                <input type="text" name="collateral_value" id="edit_collateral_value" class="form-control">
+              </div>
+            </div>
+          </div>
+
+          <div class="row mb-3">
+            <div class="col-6">
+              <div class="form-group">
+                <label style="font-weight:700;">Collateral Rating</label>
+                <select type="text" name="collateral_rating" id="edit_collateral_rating" class="form-control">
+                  <option value="">--select--</option>
+                  {% for i in collateral_rating_list %}
+                    <option value="{{i}}">{{i}}</option>
+                  {% endfor %}
+                </select>
+              </div>
+            </div>
+            <div class="col-6">
+              <div class="form-group">
+                <label style="font-weight:700;">Collateral Residual Maturity</label>
+                <select name="collateral_residual_maturity" id="edit_collateral_residual_maturity" class="form-control">
+                  <option value="">--select--</option>
+                  {% for i in collateral_maturity_list %}
+                    <option value="{{i}}">{{i}}</option>
+                  {% endfor %}
+                </select>
+              </div>
+            </div>
+          </div>
+        </div>
+        <div class="modal-footer">
+          <button type="button" class="btn btn-secondary" data-dismiss="modal" onclick="modal_close('#EditModalForm')">Close</button>
+          <button type="submit" class="btn btn-primary">Save changes</button>
+        </div>
+      </div>
+    </form>
+  </div>
+</div>
+
+
+<!-- -->
+
 <script>
+
+var jsdata = $.parseJSON('{{jsdata|safe}}');
+
+console.log(jsdata);
 
 function delete_collateral(){
 
@@ -78,7 +161,23 @@ function delete_collateral(){
       });
     }
   }
+}
 
+//
+//
+function edit_collateral(id){
+  $("#EditModalForm").modal('show');
+
+  $("#edit_id").val(id);
+
+  $("#edit_account_no").val(jsdata[id][0]["Account_no"]);
+  $("#edit_product_code").val(jsdata[id][0]["product_code"]);
+  $("#edit_collateral_code").val(jsdata[id][0]["basel_collateral_code"]);
+  $("#edit_collateral_value").val(jsdata[id][0]["collateral_value"]);
+  $("#edit_collateral_rating").val(jsdata[id][0]["collateral_rating"]);
+  $("#edit_collateral_residual_maturity").val(jsdata[id][0]["collateral_residual_maturity"]);
+
+  console.log();
 
 }
 

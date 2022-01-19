@@ -50,7 +50,7 @@
             <td>{{ row.email|default_if_none:'' }}</td>
             <td>{{ row.created_on|default_if_none:'' }}</td>
             <td>{{ row.email_sent_on|default_if_none:'' }}</td>
-            <td class="text-center p-0">
+            <td class="p-0">
               <div class="btn-group" role="group" aria-label="Basic example">
                 <a href="{% url 'accept_new_users' row.id %}" class="btn btn-icon btn-sm">
                   <i class="la la-check" aria-hidden="true" style="font-size: 25px;line-height: 30px;"></i>

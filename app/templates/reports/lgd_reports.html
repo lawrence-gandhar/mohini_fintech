@@ -5,9 +5,11 @@
   </div>
   <div class="col-md-6 col-sm-12 heading_buttons_container">
       <div class="btn-group" role="group" aria-label="Basic example">
+        {% if request.user.is_staff or request.user.is_superuser %}
         <button type="button" class="btn btn-default btn-sm" style="width:100px; color:#000000;" onclick="delete_report_selected_records()">
           <i class="la la-trash"></i> <strong>Delete</strong>
         </button>
+        {% endif %}
         <button type="button" onclick="download_reports(0)" class="btn btn-default btn-sm">
           <i class="la la-file-excel"></i> <strong>XLS Report</strong>
         </button>
@@ -37,13 +39,13 @@
         <a class="nav-link" href="{% url 'show_reports' 'stage' %}" id="tab_stage">Stage</a>
       </li>
       <li class="nav-item">
+        <a class="nav-link" href="{% url 'show_reports' 'ead' %}" id="tab_ead">EAD</a>
+      </li>
+      <li class="nav-item">
         <a class="nav-link" href="{% url 'show_reports' 'eir' %}" id="tab_eir">EIR</a>
       </li>
       <li class="nav-item">
         <a class="nav-link" href="{% url 'show_reports' 'ecl' %}" id="tab_ecl">ECL</a>
-      </li>
-      <li class="nav-item">
-        <a class="nav-link" href="{% url 'show_reports' 'ead' %}" id="tab_ead">EAD</a>
       </li>
     </ul>
 
@@ -80,6 +82,7 @@
           {% csrf_token %}
           <table class="table table-bordered">
             <thead class="text-center" style="background-color:#ddd; font-size:13px; white-space: nowrap;">
+              <th><input type="checkbox" class="checkbox_all"></th>
               <th>Date</th>
               <th>Account No.</th>
               <th>Account Type</th>
@@ -109,6 +112,9 @@
             <tbody style="font-size:12px; white-space: nowrap;">
               {% for row in items_list %}
                 <tr {% if row.edited_by %} style="background-color:#d89e1b5c;" {% endif %}>
+                  <td class="text-center">
+                    <input type="checkbox" value="{{row.id}}" class="checkbox_one" name="checkbox_one">
+                  </td>
                   <td>{{row.date|default_if_none:''}}</td>
                   <td>{{row.account_no__account_no|default_if_none:''}}</td>
                   <td>{{row.account_type|default_if_none:''}}</td>
@@ -135,7 +141,7 @@
                   <td>{{row.final_lgd|default_if_none:''}}</td>
                   <td class="text-center p-0">
                     <div class="btn-group" role="group" aria-label="Basic example">
-                      <button type="button" params="" class="btn btn-icon btn-sm" onclick="delete_single_record(this)">
+                      <button type="button"  params="{% url 'delete_report_single_record' 'lgd' row.id %}" class="btn btn-icon btn-sm" onclick="delete_single_record(this)">
                         <i class="la la-trash" aria-hidden="true" style="font-size: 25px;line-height: 30px; color:#FF0000;"></i>
                       </button>
                     </div>

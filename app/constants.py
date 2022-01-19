@@ -23,6 +23,10 @@ from .models import Stage_Report
 from .models import EAD_Report
 from .models import EIR_Reports
 
+from .models import ECL_Initial
+from .models import ECL_Final
+from .models import ECL_Reports
+
 #
 # CSV & FIELD HEADERS
 
@@ -36,9 +40,9 @@ STAGE_COLS = ['date', 'account_no', 'old_rating', 'new_rating', 'rating_3', 'rat
 
 EIR_COLS = ['date', 'account_no', 'period', 'loan_availed', 'cost_avail', 'rate', 'emi', 'os_principal', 'os_interest', 'fair_value', 'coupon', 'discount_factor', 'col_1', 'col_2', 'col_3']
 
-ECL_COLS = []
+ECL_COLS = ['date', 'account_no', 'tenure']
 
-EAD_COLS = ['date', 'account_no', 'outstanding_amount', 'undrawn_upto_1_yr', 'undrawn_greater_than_1_yr', 'collateral_1_value', 'collateral_1_rating', 'collateral_1_residual_maturity', 'collateral_2_value', 'collateral_2_rating', 'collateral_2_residual_maturity']
+EAD_COLS = ['date', 'account_no', 'outstanding_amount', 'undrawn_upto_1_yr', 'undrawn_greater_than_1_yr']
 
 BASEL_PRODUCT_COLS = ['product_name', 'product_code', 'product_catgory', 'basel_product', 'basel_product_code', 'drawn_cff', 'cff_upto_1_yr', 'cff_gt_1_yr']
 
@@ -102,23 +106,23 @@ TAB_ACTIVE = {
         EIR_COLS,
         EIR_Initial.objects,
         EIR_Final.objects,
-        "app_lgd_initial",
-        "app_lgd_initial",
-        None,
-        None,
+        "app_eir_initial",
+        "app_eir_final",
+        "output/manage_eir_output.html",
+        "reports/eir_reports.html",
         EIR_Reports.objects,
     ],
     "ecl": [
         6,
         "imports/manage_imports_ecl.html",
         ECL_COLS,
-        EIR_Initial.objects,
-        EIR_Initial.objects,
-        "app_pd_initial",
-        "app_pd_final",
-        None,
-        None,
-        None,
+        ECL_Initial.objects,
+        ECL_Final.objects,
+        "app_ecl_initial",
+        "app_ecl_final",
+        "output/manage_ecl_output.html",
+        "reports/ecl_reports.html",
+        ECL_Reports.objects,
     ],
     "ead": [
         7,

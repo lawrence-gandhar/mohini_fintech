@@ -4,11 +4,13 @@
     <h3 style="line-height: 40px;" class="main_heading">Process Management</h3>
   </div>
   <div class="col-md-6 col-sm-12 heading_buttons_container">
+    {% if request.user.is_staff or request.user.is_superuser %}
       <div class="btn-group" role="group" aria-label="Basic example">
         <button type="button" class="btn btn-default btn-sm" style="width:100px; color:#000000;" onclick="delete_final_selected_records()">
           <i class="la la-trash"></i> <strong>Delete</strong>
         </button>
       </div>
+    {% endif %}
   </div>
 </div>
 <hr style="margin-top:0px;" />
@@ -31,13 +33,13 @@
         <a class="nav-link" href="{% url 'show_final_records' 'stage' %}" id="tab_stage">Stage</a>
       </li>
       <li class="nav-item">
+        <a class="nav-link" href="{% url 'show_final_records' 'ead' %}" id="tab_ead">EAD</a>
+      </li>
+      <li class="nav-item">
         <a class="nav-link" href="{% url 'show_final_records' 'eir' %}" id="tab_eir">EIR</a>
       </li>
       <li class="nav-item">
         <a class="nav-link" href="{% url 'show_final_records' 'ecl' %}" id="tab_ecl">ECL</a>
-      </li>
-      <li class="nav-item">
-        <a class="nav-link" href="{% url 'show_final_records' 'ead' %}" id="tab_ead">EAD</a>
       </li>
     </ul>
 
@@ -61,6 +63,7 @@
                 <input type="date" name="end_date" class="form-control" id="report_end_date">
               </td>
               <td>
+                <button type="button" class="btn btn-primary" onclick="run_search()">Search</button>
                 <button type="button" class="btn btn-success" onclick="run_report()">Run Report</button>
               </td>
             </tr>
@@ -123,11 +126,13 @@
                   <td>{{row.mgmt_overlay_1|default_if_none:''}}</td>
                   <td>{{row.mgmt_overlay_2|default_if_none:''}}</td>
                   <td class="text-center p-0">
+                    {% if request.user.is_staff or request.user.is_superuser %}
                     <div class="btn-group" role="group" aria-label="Basic example">
-                      <button type="button" params="" class="btn btn-icon btn-sm" onclick="delete_single_record(this)">
+                      <button type="button"  params="{% url 'delete_final_single_record' 'lgd' row.id %}" class="btn btn-icon btn-sm" onclick="delete_single_record(this)">
                         <i class="la la-trash" aria-hidden="true" style="font-size: 25px;line-height: 30px; color:#FF0000;"></i>
                       </button>
                     </div>
+                    {% endif %}
                   </td>
                 </tr>
               {% endfor %}

@@ -7,9 +7,11 @@
         <button type="button" class="btn btn-default btn-sm" style="width:100px; color:#000000;" onclick="show_modal('#uploaderModal')">
           <i class="la la-plus"></i> <strong>Add</strong>
         </button>
+        {% if request.user.is_staff or request.user.is_superuser %}
         <button type="button" class="btn btn-default btn-sm" style="width:100px; color:#000000;" onclick="delete_selected_records()">
           <i class="la la-trash"></i> <strong>Delete</strong>
         </button>
+        {% endif %}
       </div>
   </div>
 </div>
@@ -42,13 +44,13 @@
         <a class="nav-link" href="{% url 'manage_imports' 'stage' %}" id="tab_stage">Stage</a>
       </li>
       <li class="nav-item">
+        <a class="nav-link" href="{% url 'manage_imports' 'ead' %}" id="tab_ead">EAD</a>
+      </li>
+      <li class="nav-item">
         <a class="nav-link" href="{% url 'manage_imports' 'eir' %}" id="tab_eir">EIR</a>
       </li>
       <li class="nav-item">
         <a class="nav-link" href="{% url 'manage_imports' 'ecl' %}" id="tab_ecl">ECL</a>
-      </li>
-      <li class="nav-item">
-        <a class="nav-link" href="{% url 'manage_imports' 'ead' %}" id="tab_ead">EAD</a>
       </li>
     </ul>
 
@@ -116,9 +118,11 @@
                     <button type="button" onclick="load_edit_data({{row.id}})" class="btn btn-icon btn-sm">
                       <i class="la la-pencil" aria-hidden="true" style="font-size: 25px;line-height: 30px;"></i>
                     </button>
+                    {% if request.user.is_staff or request.user.is_superuser %}
                     <button type="button" params="{% url 'delete_record' 'collateral' row.id %}" class="btn btn-icon btn-sm" onclick="delete_single_record(this)">
                       <i class="la la-trash" aria-hidden="true" style="font-size: 25px;line-height: 30px; color:#FF0000;"></i>
                     </button>
+                    {% endif %}
                   </div>
                 </td>
               </tr>

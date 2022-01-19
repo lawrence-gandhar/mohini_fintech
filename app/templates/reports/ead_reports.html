@@ -5,9 +5,11 @@
   </div>
   <div class="col-md-6 col-sm-12 heading_buttons_container">
       <div class="btn-group" role="group" aria-label="Basic example">
+        {% if request.user.is_staff or request.user.is_superuser %}
         <button type="button" class="btn btn-default btn-sm" style="width:100px; color:#000000;" onclick="delete_report_selected_records()">
           <i class="la la-trash"></i> <strong>Delete</strong>
         </button>
+        {% endif %}
         <button type="button" onclick="download_reports(0)" class="btn btn-default btn-sm">
           <i class="la la-file-excel"></i> <strong>XLS Report</strong>
         </button>
@@ -37,13 +39,13 @@
         <a class="nav-link" href="{% url 'show_reports' 'stage' %}" id="tab_stage">Stage</a>
       </li>
       <li class="nav-item">
+        <a class="nav-link active" href="{% url 'show_reports' 'ead' %}" id="tab_ead">EAD</a>
+      </li>
+      <li class="nav-item">
         <a class="nav-link" href="{% url 'show_reports' 'eir' %}" id="tab_eir">EIR</a>
       </li>
       <li class="nav-item">
         <a class="nav-link" href="{% url 'show_reports' 'ecl' %}" id="tab_ecl">ECL</a>
-      </li>
-      <li class="nav-item">
-        <a class="nav-link active" href="{% url 'show_reports' 'ead' %}" id="tab_ead">EAD</a>
       </li>
     </ul>
 
@@ -86,23 +88,23 @@
               <th>Account Type</th>
               <th>CIN</th>
               <th>Sectors</th>
+              <th>Product Name</th>
+              <th>Product Code</th>
               <th>Outstanding Amount</th>
               <th>Undrawn Upto 1 Yr</th>
               <th>Undrawn > 1 Yr</th>
-              <th>Product Name</th>
-              <th>Product Code</th>
               {% for i in counter %}
                 <th>Collateral Value {{i}}</th>
                 <th>Collateral Rating {{i}}</th>
                 <th>Collateral Residual Maturity {{i}}</th>
                 <th>Collateral Code {{i}}</th>
                 <th>Collateral Type {{i}}</th>
-                <th>Issuer Type {{i}}</th>
                 <th>Collateral Eligibilty {{i}}</th>
                 <th>Rating Available {{i}}</th>
                 <th>Basel Collateral Type {{i}}</th>
                 <th>Basel Collateral Subtype {{i}}</th>
                 <th>Basel Collateral Code {{i}}</th>
+                <th>Issuer Type {{i}}</th>
                 <th>soverign Issuer {{i}}</th>
                 <th>Other Issuer {{i}}</th>
               {% endfor %}
@@ -113,32 +115,43 @@
               {% for id, row in items_list.items %}
                 <tr {% if row.edited_by %} style="background-color:#d89e1b5c;" {% endif %}>
                   <td class="text-center">
-                    <input type="checkbox" value="{{row.id}}" class="checkbox_one" name="checkbox_one">
+                    <input type="checkbox" value="{{id}}" class="checkbox_one" name="checkbox_one">
                   </td>
                   <td>{{row.date|default_if_none:''}}</td>
                   <td>{{row.Account_no|default_if_none:''}}</td>
                   <td>{{row.account_type|default_if_none:''}}</td>
                   <td>{{row.cin|default_if_none:''}}</td>
                   <td>{{row.sectors|default_if_none:''}}</td>
+                  <td>{{row.product_name|default_if_none:''}}</td>
+                  <td>{{row.product_code|default_if_none:''}}</td>
                   <td>{{row.outstanding_amount|default_if_none:''}}</td>
                   <td>{{row.undrawn_upto_1_yr|default_if_none:''}}</td>
                   <td>{{row.undrawn_greater_than_1_yr|default_if_none:''}}</td>
-                  <td>{{row.product_name|default_if_none:''}}</td>
-                  <td>{{row.product_code|default_if_none:''}}</td>
+
                   {% for i in row.collaterals %}
                     <td style="background-color:{{i.bg_color}}">{{i.collateral_value|default_if_none:''}}</td>
                     <td style="background-color:{{i.bg_color}}">{{i.basel_collateral_rating|default_if_none:''}} | {{row.b_c_rating|default_if_none:''}} | {{row.c_rating|default_if_none:''}}</td>
-                    <td style="background-color:{{i.bg_color}}">{{i.c_r_maturity|default_if_none:''}}</td>
-                    <td style="background-color:{{i.bg_color}}">{{i.collateral_code|default_if_none:''}}</td>
+                    <td style="background-color:{{i.bg_color}}">
+                      {{i.b_c_maturity|default_if_none:''}} | {{i.c_r_maturity|default_if_none:''}}</td>
+                    <td style="background-color:{{i.bg_color}}">
+                      {{i.collateral_code|default_if_none:''}}
+                    </td>
                     <td style="background-color:{{i.bg_color}}">{{i.collateral_type|default_if_none:''}}</td>
-                    <td style="background-color:{{i.bg_color}}">{{i.issuer_type|default_if_none:''}}</td>
                     <td style="background-color:{{i.bg_color}}">{{i.collateral_eligibity|default_if_none:''}}</td>
                     <td style="background-color:{{i.bg_color}}">{{i.rating_available|default_if_none:''}}</td>
                     <td style="background-color:{{i.bg_color}}">{{i.basel_collateral_type|default_if_none:''}}</td>
                     <td style="background-color:{{i.bg_color}}">{{i.basel_collateral_subtype|default_if_none:''}}</td>
                     <td style="background-color:{{i.bg_color}}">{{i.basel_collateral_code|default_if_none:''}}</td>
-                    <td style="background-color:{{i.bg_color}}">{{i.soverign_issuer|default_if_none:''}}</td>
-                    <td style="background-color:{{i.bg_color}}">{{i.other_issuer|default_if_none:''}}</td>
+                    <td style="background-color:{{i.bg_color}}">{{i.issuer_type|default_if_none:''}}</td>
+                    <td style="background-color:{{i.bg_color}}">
+                      {% if i.issuer_type == '1' %}
+                        {{i.soverign_issuer|default_if_none:''}}
+                      {% endif %}</td>
+                    <td style="background-color:{{i.bg_color}}">
+                      {% if i.issuer_type == '0' %}
+                        {{i.other_issuer|default_if_none:''}}
+                      {% endif %}
+                    </td>
 
                   {% endfor %}
 
@@ -160,7 +173,7 @@
                   <td style="background-color:{{i.bg_color}}">{{row.ead_total|default_if_none:''}}</td>
                   <td class="text-center p-0">
                     <div class="btn-group" role="group" aria-label="Basic example">
-                      <button type="button" params="" class="btn btn-icon btn-sm" onclick="delete_single_record(this)">
+                      <button type="button"  params="{% url 'delete_report_single_record' 'ead' id %}" class="btn btn-icon btn-sm" onclick="delete_single_record(this)">
                         <i class="la la-trash" aria-hidden="true" style="font-size: 25px;line-height: 30px; color:#FF0000;"></i>
                       </button>
                     </div>

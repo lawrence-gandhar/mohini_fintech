@@ -76,21 +76,60 @@ function delete_final_selected_records(){
 
   var r = confirm("Do you really want to delete the selected records?");
   if (r == true) {
+
     if($(".checkbox_one:checked").length > 0){
       formdata = $("#move_all_to_final").serialize();
       $.post(delete_selected_url, formdata, function(data){
         location.reload();
       });
     }else{
-      var r1 = confirm("No records are selected. Do you want to continue? This will delete all the records");
-      if (r1 == true) {
-        $.get(delete_selected_url, function(data){
-          location.reload();
-        });
+      if($("#report_start_date").val().trim() !=""){
+        if($("#report_end_date").val().trim()!=""){
+
+          //
+          //
+
+          var start_date = Date.parse($("#report_start_date").val().trim());
+          var end_date = Date.parse($("#report_end_date").val().trim());
+
+          if(start_date<=end_date){
+            var r1 = confirm("Start & End Dates are selected. Do you want to continue? This will delete all the records");
+            if (r1 == true) {
+              formdata = $("#run_report_form").serialize();
+              $.post(delete_selected_url, formdata, function(data){
+                location.reload();
+              });
+            }
+          }else{
+            alert("Invalid Dates selected");
+            return false;
+          }
+
+          //
+          //
+        }else{
+          alert("Start & End Dates are required for delete operation");
+        }
+      }else{
+        if($("#report_end_date").val().trim()!="" && $("#report_start_date").val().trim() ==""){
+            alert("Start & End Dates are required for delete operation");
+        }else{
+          var r1 = confirm("No records are selected. Do you want to continue? This will delete all the records");
+          if (r1 == true) {
+            $.get(delete_selected_url, function(data){
+              location.reload();
+            });
+          }
+        }
       }
     }
   }
 }
+
+//
+//
+//
+
 
 function delete_report_selected_records(){
 
@@ -337,6 +376,12 @@ function run_report(){
   console.log("start");
 
   var account_no = $("#report_account_no").val();
+
+  if(typeof account_no == 'undefined'){
+    account_no = "";
+  }
+
+
   var start_date = $("#report_start_date").val();
   var end_date = $("#report_end_date").val();
 
@@ -347,6 +392,37 @@ function run_report(){
       $("form#move_all_to_final").submit();
     }else{
       $("form#run_report_form").submit();
+    }
+  }
+
+}
+
+//
+//
+//
+
+function run_search(){
+
+  console.log("start");
+
+  var account_no = $("#report_account_no").val();
+
+  if(typeof account_no == 'undefined'){
+    account_no = "";
+  }
+
+  console.log(location.href)
+  var start_date = $("#report_start_date").val();
+  var end_date = $("#report_end_date").val();
+
+  if(account_no.trim() !="" || start_date.trim() !="" || end_date.trim() !=""){
+    $("form#run_report_form").prop("action", location.href).prop("method", "get").submit();
+
+  }else{
+    if($('.checkbox_one:checked').length >= 1){
+      $("form#run_report_form").prop("action", location.href).submit();
+    }else{
+      $("form#run_report_form").prop("action", location.href).submit();
     }
   }
 

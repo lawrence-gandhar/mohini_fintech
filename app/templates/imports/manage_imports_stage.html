@@ -8,9 +8,11 @@
         <button type="button" class="btn btn-default btn-sm" style="width:100px; color:#000000;" onclick="show_modal('#uploaderModal')">
           <i class="la la-plus"></i> <strong>Add</strong>
         </button>
+        {% if request.user.is_staff or request.user.is_superuser %}
         <button type="button" class="btn btn-default btn-sm" style="width:100px; color:#000000;" onclick="delete_selected_records()">
           <i class="la la-trash"></i> <strong>Delete</strong>
         </button>
+        {% endif %}
         <a href="" class="btn btn-default btn-sm" style="width:100px; color:#000000;">
           <i class="la la-sync"></i> <strong>Reset</strong>
         </a>
@@ -66,13 +68,13 @@
         <a class="nav-link active" href="{% url 'manage_imports' 'stage' %}" id="tab_stage">Stage</a>
       </li>
       <li class="nav-item">
+        <a class="nav-link" href="{% url 'manage_imports' 'ead' %}" id="tab_ead">EAD</a>
+      </li>
+      <li class="nav-item">
         <a class="nav-link" href="{% url 'manage_imports' 'eir' %}" id="tab_eir">EIR</a>
       </li>
       <li class="nav-item">
         <a class="nav-link" href="{% url 'manage_imports' 'ecl' %}" id="tab_ecl">ECL</a>
-      </li>
-      <li class="nav-item">
-        <a class="nav-link" href="{% url 'manage_imports' 'ead' %}" id="tab_ead">EAD</a>
       </li>
     </ul>
 
@@ -213,9 +215,11 @@
                       <button type="button" onclick="load_edit_data({{row.id}})" class="btn btn-icon btn-sm">
                         <i class="la la-pencil" aria-hidden="true" style="font-size: 25px;line-height: 30px;"></i>
                       </button>
+                      {% if request.user.is_staff or request.user.is_superuser %}
                       <button type="button" params="{% url 'delete_record' 'stage' row.id %}" class="btn btn-icon btn-sm" onclick="delete_single_record(this)">
                         <i class="la la-trash" aria-hidden="true" style="font-size: 25px;line-height: 30px; color:#FF0000;"></i>
                       </button>
+                      {% endif %}
                       {% if row.edited_by %}
                         <button type="button" params="{% url 'move_to_final' 'stage' row.id %}" onclick="confirm_row_move(this)" class="btn btn-icon btn-sm" title="confirm">
                           <i class="la la-list-alt" aria-hidden="true" style="font-size: 25px;line-height: 30px;"></i>
