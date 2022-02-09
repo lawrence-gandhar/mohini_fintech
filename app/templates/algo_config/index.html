@@ -1,0 +1,49 @@
+{% load custom_tags %}
+<div class="row" style="margin:20px 0px 0px; ">
+  <div class="col-md-6 col-sm-12">
+    <h3 style="line-height: 40px;" class="main_heading">Configure Algorithms</h3>
+  </div>
+</div>
+<hr style="margin-top:0px;" />
+
+<div class="row">
+  <!-- Nav Tabs Start -->
+
+    <div class="col-sm-12">
+
+        {% include 'base/alert_components.html' %}
+
+        <!-- -->
+        <ul class="nav nav-tabs" role="tablist">
+          <li class="nav-item">
+            <a class="nav-link active" href="" id="tab_pd">PD</a>
+          </li>
+          <li class="nav-item">
+            <a class="nav-link" href="" id="tab_lgd">LGD</a>
+          </li>
+          <li class="nav-item">
+            <a class="nav-link" href="" id="tab_stage">Stage</a>
+          </li>
+          <li class="nav-item">
+            <a class="nav-link" href="" id="tab_ead">EAD</a>
+          </li>
+          <li class="nav-item">
+            <a class="nav-link" href="" id="tab_eir">EIR</a>
+          </li>
+          <li class="nav-item">
+            <a class="nav-link" href="" id="tab_ecl">ECL</a>
+          </li>
+        </ul>
+
+        <!-- -->
+
+        <!-- Tab panes start -->
+        <div class="tab-content" style="padding:10px 0px;">
+
+          <div class="table-responsive" style="overflow:auto;">
+            {% include 'algo_config/algo_form.html' %}
+          </div>
+        </div>
+
+    </div>
+</div>

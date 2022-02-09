@@ -83,20 +83,20 @@
               <th>CIN</th>
               <th>Product Name</th>
               <th>Sectors</th>
-              <th>EAD OS</th>
-              <th>PV Cashflows</th>
-              <th>PV Cost</th>
-              <th>Beta Value</th>
-              <th>Sec Flag</th>
-              <th>Factor 4</th>
-              <th>Factor 5</th>
-              <th>Avg 1</th>
-              <th>Avg 2</th>
-              <th>Avg 3</th>
-              <th>Avg 4</th>
-              <th>Avg 5</th>
-              <th>Management Overlay 1</th>
-              <th>Management Overlay 2</th>
+              <th>Period</th>
+              <th>Loan_Availed</th>
+              <th>Cost_Avail</th>
+              <th>Rate</th>
+              <th>EMI</th>
+              <th>O/S Principal</th>
+              <th>O/S Interest</th>
+              <th>Fair Value</th>
+              <th>Coupon</th>
+              <th>Discount Factor</th>
+              <th>Col 1</th>
+              <th>Col 2</th>
+              <th>Col 3</th>
+              <th>Default EIR</th>
               <th>Action</th>
             </thead>
             <tbody style="font-size:12px; white-space: nowrap;">
@@ -111,20 +111,20 @@
                   <td>{{row.cin|default_if_none:''}}</td>
                   <td>{{row.product_name|default_if_none:''}}</td>
                   <td>{{row.sectors|default_if_none:''}}</td>
-                  <td>{{row.ead_os|default_if_none:''}}</td>
-                  <td>{{row.pv_cashflows|default_if_none:''}}</td>
-                  <td>{{row.pv_cost|default_if_none:''}}</td>
-                  <td>{{row.beta_value|default_if_none:''}}</td>
-                  <td>{{row.sec_flag|default_if_none:''}}</td>
-                  <td>{{row.factor_4|default_if_none:''}}</td>
-                  <td>{{row.factor_5|default_if_none:''}}</td>
-                  <td>{{row.avg_1|default_if_none:''}}</td>
-                  <td>{{row.avg_2|default_if_none:''}}</td>
-                  <td>{{row.avg_3|default_if_none:''}}</td>
-                  <td>{{row.avg_4|default_if_none:''}}</td>
-                  <td>{{row.avg_5|default_if_none:''}}</td>
-                  <td>{{row.mgmt_overlay_1|default_if_none:''}}</td>
-                  <td>{{row.mgmt_overlay_2|default_if_none:''}}</td>
+                  <td>{{row.period|default_if_none:''}}</td>
+                  <td>{{row.loan_availed|default_if_none:''}}</td>
+                  <td>{{row.cost_avail|default_if_none:''}}</td>
+                  <td>{{row.rate|default_if_none:''}}</td>
+                  <td>{{row.emi|default_if_none:''}}</td>
+                  <td>{{row.os_principal|default_if_none:''}}</td>
+                  <td>{{row.os_interest|default_if_none:''}}</td>
+                  <td>{{row.fair_value|default_if_none:''}}</td>
+                  <td>{{row.coupon|default_if_none:''}}</td>
+                  <td>{{row.discount_factor|default_if_none:''}}</td>
+                  <td>{{row.col_1|default_if_none:''}}</td>
+                  <td>{{row.col_2|default_if_none:''}}</td>
+                  <td>{{row.col_3|default_if_none:''}}</td>
+                  <td>{{row.default_eir|default_if_none:''}}</td>
                   <td class="text-center p-0">
                     {% if request.user.is_staff or request.user.is_superuser %}
                     <div class="btn-group" role="group" aria-label="Basic example">

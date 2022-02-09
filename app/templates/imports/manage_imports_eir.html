@@ -139,6 +139,8 @@
               <th>Col 1</th>
               <th>Col 2</th>
               <th>Col 3</th>
+              <th>Default EIR</th>
+              <th>Scenario</th>
               <th>Created On</th>
               <th>Edited By</th>
               <th>Edited On</th>
@@ -169,6 +171,8 @@
                   <td>{{row.col_1|default_if_none:''}}</td>
                   <td>{{row.col_2|default_if_none:''}}</td>
                   <td>{{row.col_3|default_if_none:''}}</td>
+                  <td>{{row.default_eir|default_if_none:''}}</td>
+                  <td>{{row.cop_tagged|default_if_none:''}}</td>
                   <td>{{row.created_on|default_if_none:''}}</td>
                   <td>{{row.edited_by|default_if_none:''}}</td>
                   <td>{{row.edited_on|default_if_none:''}}</td>
@@ -220,7 +224,7 @@
         </div>
         <div class="modal-body">
             <div class="mb-3">
-              <label for="formFile" class="form-label">LGD Input</label>
+              <label for="formFile" class="form-label">EIR Input</label>
               <input class="form-control" type="file" name="formFile" required>
             </div>
         </div>
@@ -242,14 +246,14 @@
         {% csrf_token %}
         <input type="hidden" value="" name="id" id="edit_id">
         <div class="modal-header text-white">
-          <h5 class="modal-title">Edit LGD Record</h5>
+          <h5 class="modal-title">Edit EIR Record</h5>
         </div>
         <div class="modal-body">
           <div class="row mb-3">
             <div class="col">
               <div class="form-group">
                 <label for="formFile" class="form-label">Account no.</label>
-                <input class="form-control" type="text" name="account_no" id="edit_account_no">
+                <input class="form-control" type="text" name="account_no" id="edit_account_no" readonly>
               </div>
             </div>
           </div>
@@ -262,94 +266,105 @@
             </div>
             <div class="col">
               <div class="form-group">
-                <label for="formFile" class="form-label">EAD_OS</label>
-                <input class="form-control" type="text" name="ead_os" id="edit_ead_os">
+                <label for="formFile" class="form-label">Period</label>
+                <input class="form-control" type="text" name="period" id="edit_period">
               </div>
             </div>
             <div class="col">
               <div class="form-group">
-                <label for="formFile" class="form-label">PV_Cashflows</label>
-                <input class="form-control" type="text" name="pv_cashflows" id="edit_pv_cashflows">
-              </div>
-            </div>
-          </div>
-          <div class="row mb-3">
-            <div class="col">
-              <div class="form-group">
-                <label for="formFile" class="form-label">PV_Cost</label>
-                <input class="form-control" type="text" name="pv_cost" id="edit_pv_cost">
-              </div>
-            </div>
-            <div class="col">
-              <div class="form-group">
-                <label for="formFile" class="form-label">Beta_Value</label>
-                <input class="form-control" type="text" name="beta_value" id="edit_beta_value">
-              </div>
-            </div>
-            <div class="col">
-              <div class="form-group">
-                <label for="formFile" class="form-label">Sec_Flag</label>
-                <input class="form-control" type="text" name="sec_flag" id="edit_sec_flag">
+                <label for="formFile" class="form-label">Loan_Availed</label>
+                <input class="form-control" type="text" name="loan_availed" id="edit_loan_availed">
               </div>
             </div>
           </div>
           <div class="row mb-3">
             <div class="col">
               <div class="form-group">
-                <label for="formFile" class="form-label">Factor 4</label>
-                <input class="form-control" type="text" name="factor_4" id="edit_factor_4">
+                <label for="formFile" class="form-label">Cost_Avail</label>
+                <input class="form-control" type="text" name="cost_avail" id="edit_cost_avail">
               </div>
             </div>
             <div class="col">
               <div class="form-group">
-                <label for="formFile" class="form-label">Factor 5</label>
-                <input class="form-control" type="text" name="factor_5" id="edit_factor_5">
+                <label for="formFile" class="form-label">Rate</label>
+                <input class="form-control" type="text" name="rate" id="edit_rate">
               </div>
             </div>
             <div class="col">
               <div class="form-group">
-                <label for="formFile" class="form-label">Avg 1</label>
-                <input class="form-control" type="text" name="avg_1" id="edit_avg_1">
-              </div>
-            </div>
-          </div>
-          <div class="row mb-3">
-            <div class="col">
-              <div class="form-group">
-                <label for="formFile" class="form-label">Avg 2</label>
-                <input class="form-control" type="text" name="avg_2" id="edit_avg_2">
-              </div>
-            </div>
-            <div class="col">
-              <div class="form-group">
-                <label for="formFile" class="form-label">Avg 3</label>
-                <input class="form-control" type="text" name="avg_6" id="edit_avg_3">
-              </div>
-            </div>
-            <div class="col">
-              <div class="form-group">
-                <label for="formFile" class="form-label">Avg 4</label>
-                <input class="form-control" type="text" name="avg_4" id="edit_avg_4">
+                <label for="formFile" class="form-label">EMI</label>
+                <input class="form-control" type="text" name="emi" id="edit_emi">
               </div>
             </div>
           </div>
           <div class="row mb-3">
             <div class="col">
               <div class="form-group">
-                <label for="formFile" class="form-label">Avg 5</label>
-                <input class="form-control" type="text" name="avg_5" id="edit_avg_5">
+                <label for="formFile" class="form-label">O/S Principal</label>
+                <input class="form-control" type="text" name="os_principal" id="edit_os_principal">
               </div>
             </div>
             <div class="col">
               <div class="form-group">
-                <label for="formFile" class="form-label">Management Overlay 1</label>
-                <input class="form-control" type="text" name="mgmt_overlay_1" id="edit_mgmt_overlay_1">
+                <label for="formFile" class="form-label">O/S Interest</label>
+                <input class="form-control" type="text" name="os_interest" id="edit_os_interest">
               </div>
             </div>
             <div class="col">
               <div class="form-group">
-                <label for="formFile" class="form-label">Management Overlay 2</label>
-                <input class="form-control" type="text" name="mgmt_overlay_2" id="edit_mgmt_overlay_2">
+                <label for="formFile" class="form-label">Fair Value</label>
+                <input class="form-control" type="text" name="fair_value" id="edit_fair_value">
+              </div>
+            </div>
+          </div>
+          <div class="row mb-3">
+            <div class="col">
+              <div class="form-group">
+                <label for="formFile" class="form-label">Coupon</label>
+                <input class="form-control" type="text" name="coupon" id="edit_coupon">
+              </div>
+            </div>
+            <div class="col">
+              <div class="form-group">
+                <label for="formFile" class="form-label">Discount Factor</label>
+                <input class="form-control" type="text" name="discount_factor" id="edit_discount_factor">
+              </div>
+            </div>
+            <div class="col">
+              <div class="form-group">
+                <label for="formFile" class="form-label">Col 1</label>
+                <input class="form-control" type="text" name="col_1" id="edit_col_1">
+              </div>
+            </div>
+          </div>
+          <div class="row mb-3">
+            <div class="col">
+              <div class="form-group">
+                <label for="formFile" class="form-label">Col 2</label>
+                <input class="form-control" type="text" name="col_2" id="edit_col_2">
+              </div>
+            </div>
+            <div class="col">
+              <div class="form-group">
+                <label for="formFile" class="form-label">Col 3</label>
+                <input class="form-control" type="text" name="col_3" id="edit_col_3">
+              </div>
+            </div>
+            <div class="col">
+              <div class="form-group">
+                <label for="formFile" class="form-label">Default EIR</label>
+                <input class="form-control" type="text" name="default_eir" id="edit_default_eir">
+              </div>
+            </div>
+          </div>
+          <div class="row mb-3">
+            <div class="col">
+              <div class="form-group">
+                <label for="formFile" class="form-label">Scenario</label>
+                <select class="form-control" name="cop_tagged" id="edit_cop_tagged">
+                  <option value="0">No</option>
+                  <option value="1">Yes</option>
+                </select>
               </div>
             </div>
           </div>
@@ -367,6 +382,8 @@
   var status = {{tab_active}};
 
   var jsdata = {{items_list_json|safe}};
+
+  console.log(2)
 
   var bg_data_url = '{% url "move_data_bg_process" "eir" %}';
 

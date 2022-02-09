@@ -135,17 +135,51 @@ function delete_report_selected_records(){
 
   var r = confirm("Do you really want to delete the selected records?");
   if (r == true) {
+
     if($(".checkbox_one:checked").length > 0){
-      formdata = $("#move_all_to_final").serialize();
+      formdata = $("#search_download_form").serialize();
       $.post(delete_selected_url, formdata, function(data){
         location.reload();
       });
     }else{
-      var r1 = confirm("No records are selected. Do you want to continue? This will delete all the records");
-      if (r1 == true) {
-        $.get(delete_selected_url, function(data){
-          location.reload();
-        });
+      if($("#report_start_date").val().trim() !=""){
+        if($("#report_end_date").val().trim()!=""){
+
+          //
+          //
+
+          var start_date = Date.parse($("#report_start_date").val().trim());
+          var end_date = Date.parse($("#report_end_date").val().trim());
+
+          if(start_date<=end_date){
+            var r1 = confirm("Start & End Dates are selected. Do you want to continue? This will delete all the records");
+            if (r1 == true) {
+              formdata = $("#search_download_form").serialize();
+              $.post(delete_selected_url, formdata, function(data){
+                location.reload();
+              });
+            }
+          }else{
+            alert("Invalid Dates selected");
+            return false;
+          }
+
+          //
+          //
+        }else{
+          alert("Start & End Dates are required for delete operation");
+        }
+      }else{
+        if($("#report_end_date").val().trim()!="" && $("#report_start_date").val().trim() ==""){
+            alert("Start & End Dates are required for delete operation");
+        }else{
+          var r1 = confirm("No records are selected. Do you want to continue? This will delete all the records");
+          if (r1 == true) {
+            $.get(delete_selected_url, function(data){
+              location.reload();
+            });
+          }
+        }
       }
     }
   }
@@ -273,10 +307,13 @@ function load_edit_data(id){
     $("#edit_col_1").val(jsdata[id]["col_1"]);
     $("#edit_col_2").val(jsdata[id]["col_2"]);
     $("#edit_col_3").val(jsdata[id]["col_3"]);
+    $("#edit_default_eir").val(jsdata[id]["default_eir"]);
+    $("#edit_cop_tagged").val(jsdata[id]["cop_tagged"]);
   }
 
   if(status == 6){
-    $("#edit_ead_os").val(jsdata[id]["ead_os"]);
+    $("#edit_tenure").val(jsdata[id]["tenure"]);
+    console.log(jsdata)
   }
 
   if(status == 7){
@@ -373,8 +410,6 @@ function move_data_bg_process(){
 
 function run_report(){
 
-  console.log("start");
-
   var account_no = $("#report_account_no").val();
 
   if(typeof account_no == 'undefined'){
@@ -386,12 +421,12 @@ function run_report(){
   var end_date = $("#report_end_date").val();
 
   if(account_no.trim() !="" || start_date.trim() !="" || end_date.trim() !=""){
-    $("form#run_report_form").submit();
+    $("form#run_report_form").prop("method", "post").submit();
   }else{
     if($('.checkbox_one:checked').length >= 1){
-      $("form#move_all_to_final").submit();
+      $("form#move_all_to_final").prop("method", "post").submit();
     }else{
-      $("form#run_report_form").submit();
+      $("form#run_report_form").prop("method", "post").submit();
     }
   }
 
@@ -411,7 +446,6 @@ function run_search(){
     account_no = "";
   }
 
-  console.log(location.href)
   var start_date = $("#report_start_date").val();
   var end_date = $("#report_end_date").val();
 

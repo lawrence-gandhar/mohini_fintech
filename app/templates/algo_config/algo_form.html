@@ -1,0 +1,178 @@
+{% load static %}
+<div class="cols-md-12">
+    <form action="{% url 'configure_pd' %}" method="post">
+        {% csrf_token %}
+        <input type="hidden" name="tab_status" value="{{tab_status}}">
+                                
+        <div class="row" style="padding:10px;">
+            <h6>
+                {{sub_title}} : <span style="color:#FF0000;">{{algorithm}}</span>
+                <button type="submit" class="btn btn-sm btn-success" style="float:right">Submit</button>
+                <button type="button" class="btn btn-sm btn-primary" style="float:right; margin-right:10px;" onclick="add_row()">Add Row</button>
+            </h6>
+            <hr/>
+        </div>
+        <div class="row" style="padding:20px 10px;">
+            <div class="col-md-12">
+                <table class="table table-bordered table-responsive" id="table_algo">
+                    <tr style="text-align:center; background-color:#cccccc; font-weight:bold;">
+                        <td>Column Name(For Reports)</td>
+                        <td>Show In Reports</td>
+                        <td>In Downloaded Reports</td>
+                        <td>Use As Factor</td>
+                        <td>Use Built-in Column</td>
+                        <td>Extra Formulas</td>
+                        <td>Action</td>
+                    </tr>
+                    {% for col in pre_defined_variables %}
+                        <tr>
+                            <td>
+                                <input value="{{col.column_name}}" name="column_name" class="form-control">
+                            </td>
+                            <td class="text-center">
+                                <input type="checkbox" id="show_in_report_checkbox_{{col.id}}" style="margin-top: 12px;" {% if col.show_in_reports %} checked {% endif %} onchange="change_value($(this))">
+                                <input type="hidden" name="show_in_report" id="show_in_report_{{col.id}}" {% if col.show_in_reports %} value="1" {% else %} value="0" {% endif %}>
+                            </td>
+                            <td class="text-center">
+                                <input type="checkbox" id="show_in_downloded_reports_checkbox_{{col.id}}" style="margin-top: 12px;" {% if col.show_in_download_reports %} checked {% endif %} onchange="change_value($(this))">
+                                <input type="hidden" name="show_in_download_reports" id="show_in_downloded_reports_{{col.id}}" {% if col.show_in_download_reports %} value="1" {% else %} value="0" {% endif %}>
+                            </td>
+                            <td class="text-center">
+                                <input type="checkbox" id="use_as_factor_checkbox_{{col.id}}" style="margin-top: 12px;" {% if col.use_as_factor %} checked {% endif %} onchange="change_value($(this))">
+                                <input type="hidden" name="use_as_factor" id="use_as_factor_{{col.id}}" {% if col.use_as_factor %} value="1" {% else %} value="0" {% endif %}>
+                            </td>
+                            <td class="text-center">
+                                <select class="form-control" name="use_built_in_column">
+                                    <option value="">-----------</option>
+                                    {% for i in algo_fields %}
+                                        <option {% if col.use_built_in_column == i %} selected {% endif %}>{{i}}</option>
+                                    {% endfor %}
+                                </select>
+                            </td>
+                            <td>
+                                <input class="form-control" type="text" name="use_formula">
+                            </td>
+                            <td class="text-center">
+                                <a href="{% url 'delete_column_algoconfig' col.id %}" type="button" class="btn btn-sm btn-danger" >
+                                    <i class="la la-trash"></i>
+                                </a>
+                            </td>
+                        </tr>
+                    {% endfor %}
+                    {% for col in algo_fields_qry %}
+                        <tr>
+                            <td>
+                                <input value="{{col.column_name}}" name="column_name" class="form-control">
+                            </td>
+                            <td class="text-center">
+                                <input type="checkbox" id="show_in_report_checkbox_{{col.id}}" style="margin-top: 12px;" {% if col.show_in_reports %} checked {% endif %} onchange="change_value($(this))">
+                                <input type="hidden" name="show_in_report" id="show_in_report_{{col.id}}" {% if col.show_in_reports %} value="1" {% else %} value="0" {% endif %}>
+                            </td>
+                            <td class="text-center">
+                                <input type="checkbox" id="show_in_downloded_reports_checkbox_{{col.id}}" style="margin-top: 12px;" {% if col.show_in_download_reports %} checked {% endif %} onchange="change_value($(this))">
+                                <input type="hidden" name="show_in_download_reports" id="show_in_downloded_reports_{{col.id}}" {% if col.show_in_download_reports %} value="1" {% else %} value="0" {% endif %}>
+                            </td>
+                            <td class="text-center">
+                                <input type="checkbox" id="use_as_factor_checkbox_{{col.id}}" style="margin-top: 12px;" {% if col.use_as_factor %} checked {% endif %} onchange="change_value($(this))">
+                                <input type="hidden" name="use_as_factor" id="use_as_factor_{{col.id}}" {% if col.use_as_factor %} value="1" {% else %} value="0" {% endif %}>
+                            </td>
+                            <td class="text-center">
+                                <select class="form-control" name="use_built_in_column">
+                                    <option value="">-----------</option>
+                                    {% for i in algo_fields %}
+                                        <option {% if col.use_built_in_column == i %} selected {% endif %}>{{i}}</option>
+                                    {% endfor %}
+                                </select>
+                            </td>
+                            <td>
+                                <input class="form-control" type="text" name="use_formula">
+                            </td>
+                            <td class="text-center">
+                                <a href="{% url 'delete_column_algoconfig' col.id %}" type="button" class="btn btn-sm btn-danger" >
+                                    <i class="la la-trash"></i>
+                                </a>
+                            </td>
+                        </tr>
+                    {% endfor %}
+                </table>
+            </div>
+        </div>
+    </form>
+</div>
+
+<script>
+
+$(document).ready(function(){});
+
+function change_value(elem){
+    attr_id = $(elem).attr("id").replace("_checkbox_", "_");
+
+    if($(elem).is(":checked") === true){
+        $("#"+attr_id).val(1);
+    } 
+    else{
+        $("#"+attr_id).val(0);
+    } 
+}
+
+//
+// 
+// 
+
+// program to generate random strings
+
+// declare all characters
+const characters ='ABCDEFGHIJKLMNOPQRSTUVWXYZabcdefghijklmnopqrstuvwxyz0123456789';
+
+function generateString(length) {
+    let result = ' ';
+    const charactersLength = characters.length;
+    for ( let i = 0; i < length; i++ ) {
+        result += characters.charAt(Math.floor(Math.random() * charactersLength));
+    }
+
+    return result;
+}
+
+// 
+// 
+
+function add_row(){
+
+    row_id = generateString(6);
+
+    html = '<tr>';
+    html += '<td>';
+    html += '<input value="" name="column_name" class="form-control">';
+    html += '</td>';
+    html += '<td class="text-center">';
+    html += '<input type="checkbox" id="show_in_report_checkbox_"'+row_id+' style="margin-top: 12px;" onchange="change_value($(this))">';
+    html += '<input type="hidden" name="show_in_report" id="show_in_report_"'+row_id+' value="0">';
+    html += '</td>';
+    html += '<td class="text-center">';
+    html += '<input type="checkbox" id="show_in_downloded_reports_checkbox_"'+row_id+' style="margin-top: 12px;" onchange="change_value($(this))">';
+    html += '<input type="hidden" name="show_in_download_reports" id="show_in_downloded_reports_"'+row_id+' value="0">';
+    html += '</td>';
+    html += '<td class="text-center">';
+    html += '<input type="checkbox" id="use_as_factor_checkbox_"'+row_id+' style="margin-top: 12px;" onchange="change_value($(this))">';
+    html += '<input type="hidden" name="use_as_factor" id="use_as_factor_"'+row_id+' value="0">';
+    html += '</td>';
+    html += '<td class="text-center">';
+    html += '<select class="form-control" name="use_built_in_column">';
+    html += '{% for i in algo_fields %}';
+    html += '<option >{{i}}</option>';
+    html += '{% endfor %}';
+    html += '</select>';
+    html += '</td>';
+    html += '<td>';
+    html += '<input class="form-control" type="text" name="use_formula">';
+    html += '</td>';
+    html += '<td class="text-center">';
+    html += '</td>';
+    html += '</tr>';
+
+    $("#table_algo").append(html);
+}
+
+
+</script>

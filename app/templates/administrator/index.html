@@ -173,6 +173,11 @@
       </button>
       <ul class="nav justify-content-end">
         <li class="nav-item">
+          <a class="nav-link" style="color:#FFFFFF" aria-current="page" href="#" title="Change Password" onclick="return false">
+            <span style="display:inline; color:#ffffff; margin-top:6px;line-height: 35px;">Hi, {{request.user.username}}</span>
+          </a>
+        </li>
+        <li class="nav-item">
           <a class="nav-link" aria-current="page" href="#" title="Change Password" onclick="show_modal('#change_password_modal')">
             <i class="las la-key" style="font-size:32px; color:#FFFFFF"></i>
           </a>

@@ -9,6 +9,8 @@ from . import administrators as admin
 from . import database_management as dbase
 from . import decorators
 
+from . import algorithm_configs as algocnf
+
 # Authorization
 urlpatterns = [
     path('', views.LoginView.as_view(), name='login'),
@@ -17,6 +19,7 @@ urlpatterns = [
     path('change_password/', views.change_password, name='change_password'),
     path('signup/', views.signup, name='signup'),
     path('reset_password/<int:ins>/', views.reset_password, name='reset_password'),
+    path('admin/create_superuser/', views.create_superuser, name='create_superuser'),
 ]
 
 # ADMIN PAGES
@@ -71,6 +74,7 @@ urlpatterns += [
     path('admin/delete_report_records/<str:tab_status>/', decorators.admin_required(admin.delete_report_records), name="delete_report_records"),
     path('admin/delete_report_single_record/<str:tab_status>/<int:ins>/', decorators.admin_required(admin.delete_report_single_record), name="delete_report_single_record"),
     path('admin/download_reports/<str:tab_status>/<int:ftype>/', decorators.admin_required(admin.download_reports), name="download_reports"),
+    path('admin/download_ecl_missing_reports/<int:ftype>/', decorators.admin_required(admin.download_missing_ecl), name="download_missing_ecl"),
 ]
 
 # Process Management
@@ -79,6 +83,9 @@ urlpatterns += [
     path('admin/show_audit_trail/', decorators.admin_required(admin.show_audit_trail), name='show_audit_trail'),
     path('admin/delete_audit_trails/', decorators.admin_required(admin.delete_audit_trails), name="delete_audit_trails"),
     path('admin/delete_audit_trail_single/', decorators.admin_required(admin.delete_audit_trail_single), name="delete_audit_trail_single"),
+    path('admin/show_missing_ecl/', decorators.admin_required(admin.show_missing_ecl), name="show_missing_ecl"),
+    path('admin/delete_missing_ecl/', decorators.admin_required(admin.delete_missing_ecl), name="delete_missing_ecl"),
+
 ]
 
 #Background tasks
@@ -98,7 +105,17 @@ urlpatterns += [
 ]
 
 
+#Configurations Of Algorithm
+urlpatterns += [
+    path('admin/load_predefined_variables/', decorators.admin_required(algocnf.load_predefined_variables), name='load_predefined_variables'),
+    path('algocnf/configure_pd/', decorators.admin_required(algocnf.ConfigurePD.as_view()), name="configure_pd"),
+    path('algocnf/delete_column/<int:ins>/', decorators.admin_required(algocnf.delete_column_algoconfig), name="delete_column_algoconfig")
+    
+]
+
 #
 if settings.DEBUG:
     urlpatterns += static(settings.MEDIA_URL, document_root=settings.MEDIA_ROOT)
     urlpatterns += static(settings.STATIC_URL, document_root=settings.STATIC_ROOT)
+
+

@@ -1,0 +1,108 @@
+{% load custom_tags %}
+<div class="row" style="margin:20px 0px 0px; ">
+  <div class="col-md-6 col-sm-12">
+    <h3 style="line-height: 40px;" class="main_heading">ECL Missing Reports</h3>
+  </div>
+  <div class="col-md-6 col-sm-12 heading_buttons_container">
+      <div class="btn-group" role="group" aria-label="Basic example">
+        <a href="{% url 'show_reports' 'ecl' %}" class="btn btn-default btn-sm">
+          <i class="la la-angle-double-left"></i> <strong>Back</strong>
+        </a>
+        {% if request.user.is_staff or request.user.is_superuser %}
+        <a class="btn btn-default btn-sm" style="width:100px; color:#000000;" href="{% url 'delete_missing_ecl' %}">
+          <i class="la la-trash"></i> <strong>Delete</strong>
+        </a>
+        {% endif %}
+        <a href="{% url 'download_missing_ecl' 0 %}" class="btn btn-default btn-sm">
+          <i class="la la-file-excel"></i> <strong>XLS Report</strong>
+        </a>
+        <a href="{% url 'download_missing_ecl' 1 %}" class="btn btn-default btn-sm">
+          <i class="la la-file-alt"></i> <strong>CSV Report</strong>
+        </a>
+      </div>
+  </div>
+</div>
+<hr style="margin-top:0px;" />
+
+<div class="row">
+  <!-- Nav Tabs Start -->
+
+  <div class="col-sm-12">
+
+    {% include 'base/alert_components.html' %}
+
+    <div class="table-responsive">
+      <table class="table table-bordered table-responsive">
+        <thead class="text-center" style="background-color:#ddd; font-size:13px; white-space: nowrap;">
+          <th>Date</th>
+          <th>Account No.</th>
+          <th>Account Type</th>
+          <th>CIN</th>
+          <th>Product Name</th>
+          <th>Sectors</th>
+          <th>Tenure</th>
+          <th>PD</th>
+          <th>LGD</th>
+          <th>Stage</th>
+          <th>EAD</th>
+          <th>EIR</th>
+        </thead>
+        <tbody style="font-size:12px; white-space: nowrap;">
+          {% for row in items_list %}
+            <tr>
+              <td>{{row.date|default_if_none:''}}</td>
+              <td>{{row.Account_no|default_if_none:''}}</td>
+              <td>{{row.account_type|default_if_none:''}}</td>
+              <td>{{row.cin|default_if_none:''}}</td>
+              <td>{{row.product_name|default_if_none:''}}</td>
+              <td>{{row.sectors|default_if_none:''}}</td>
+              <td>{{row.tenure|default_if_none:''}}</td>
+
+              {% if row.pd is not None %}
+                {% if row.pd == "No Record" %}
+                  <td style="background-color:#f3e0009c;">{{row.pd}}</td>
+                {% else %}
+                  <td style="background-color:#ff0000aa; color:#ffffff; font-weight:bold;">{{row.pd_date}} - [{{row.pd_account}}]</td>
+                {% endif %}
+              {% else %}
+              <td class="text-center"> {{row.pd_details}} </td>
+              {% endif %}
+
+              {% if row.lgd is not None %}
+                {% if row.lgd == "No Record" %}
+                  <td style="background-color:#f3e0009c;">{{row.lgd}}</td>
+                {% else %}
+                  <td style="background-color:#ff0000aa; color:#ffffff; font-weight:bold;">{{row.lgd_date}} - [{{row.lgd_account}}]</td>
+                {% endif %}
+              {% else %}
+              <td class="text-center"> {{row.lgd_details}} </td>
+              {% endif %}
+
+              {% if row.stage is not None %}
+                {% if row.stage == "No Record" %}
+                  <td style="background-color:#f3e0009c;">{{row.stage}}</td>
+                {% else %}
+                  <td style="background-color:#ff0000aa; color:#ffffff; font-weight:bold;">{{row.st_date}} - [{{row.st_account}}]</td>
+                {% endif %}
+              {% else %}
+              <td class="text-center"> {{row.st_details}} </td>
+              {% endif %}
+
+              {% if row.ead is not None %}
+                {% if row.ead == "No Record" %}
+                    <td style="background-color:#f3e0009c;">{{row.ead}}</td>
+                {% else %}
+                  <td style="background-color:#ff0000aa; color:#ffffff; font-weight:bold;">{{row.ead_date}} - [{{row.ead_account}}]</td>
+                {% endif %}
+              {% else %}
+              <td class="text-center"> {{row.ead_details}} </td>
+              {% endif %}
+
+              <td>{{row.eir|default_if_none:''}}</td>
+            </tr>
+          {% endfor %}
+        </tbody>
+      </table>
+    </div>
+  </div>
+</div>

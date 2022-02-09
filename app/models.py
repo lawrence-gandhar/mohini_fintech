@@ -3,7 +3,7 @@ from django.contrib.auth.models import User
 from django.db.models.signals import pre_delete, post_save
 from django.dispatch import receiver
 from django.core.exceptions import ObjectDoesNotExist, MultipleObjectsReturned
-
+from django.db import connection
 
 #==================================================================================
 # NEW USER SIGNUP DETAILS
@@ -98,6 +98,9 @@ class AccountMaster(models.Model):
     file_identifier = models.CharField(blank=True, null=True, max_length=255, db_index=True)
     created_on = models.DateTimeField(auto_now_add=True, db_index=True)
 
+    def __str__(self):
+        return self.account_no
+
     @classmethod
     def truncate(cls):
         with connection.cursor() as cursor:
@@ -186,6 +189,9 @@ class PD_Report(models.Model):
     zscore = models.CharField(blank=True, null=True, max_length=255, db_index=True)
     pd = models.CharField(blank=True, null=True, max_length=255, db_index=True)
 
+    def __str__(self):
+        return "[{}] - [{}]".format(self.date,self.account_no.account_no)
+
     @classmethod
     def truncate(cls):
         with connection.cursor() as cursor:
@@ -196,7 +202,7 @@ class PD_Report(models.Model):
 #==================================================================================
 class LGD_Initial(models.Model):
     date = models.DateField(auto_now_add=False, null=True, blank=True,)
-    account_no = models.ForeignKey(AccountMaster, on_delete=models.CASCADE, null=True, blank=True, db_index=True)
+    account_no = models.ForeignKey(AccountMaster, on_delete=models.SET_NULL, null=True, blank=True, db_index=True)
     account_no_temp = models.CharField(blank=True, null=True, max_length=255, db_index=True)
     ead_os = models.CharField(blank=True, null=True, max_length=255, db_index=True)
     pv_cashflows = models.CharField(blank=True, null=True, max_length=255, db_index=True)
@@ -275,6 +281,9 @@ class LGD_Report(models.Model):
     est_lgd = models.CharField(blank=True, null=True, max_length=255, db_index=True)
     final_lgd = models.CharField(blank=True, null=True, max_length=255, db_index=True)
 
+    def __str__(self):
+        return "[{}] - [{}]".format(self.date,self.account_no.account_no)
+
     @classmethod
     def truncate(cls):
         with connection.cursor() as cursor:
@@ -285,7 +294,7 @@ class LGD_Report(models.Model):
 #==================================================================================
 class Stage_Initial(models.Model):
     date = models.DateField(auto_now_add=False, null=True, blank=True,)
-    account_no = models.ForeignKey(AccountMaster, on_delete=models.CASCADE, null=True, blank=True, db_index=True)
+    account_no = models.ForeignKey(AccountMaster, on_delete=models.SET_NULL, null=True, blank=True, db_index=True)
     account_no_temp = models.CharField(blank=True, null=True, max_length=255, db_index=True)
     old_rating = models.CharField(blank=True, null=True, max_length=255, db_index=True)
     new_rating = models.CharField(blank=True, null=True, max_length=255, db_index=True)
@@ -414,6 +423,9 @@ class Stage_Report(models.Model):
     mgmt_overlay_1 = models.CharField(blank=True, null=True, max_length=255, db_index=True)
     mgmt_overlay_2 = models.CharField(blank=True, null=True, max_length=255, db_index=True)
 
+    def __str__(self):
+        return "[{}] - [{}]".format(self.date,self.account_no.account_no)
+
     @classmethod
     def truncate(cls):
         with connection.cursor() as cursor:
@@ -424,7 +436,7 @@ class Stage_Report(models.Model):
 #==================================================================================
 class EIR_Initial(models.Model):
     date = models.DateField(auto_now_add=False, null=True, blank=True,)
-    account_no = models.ForeignKey(AccountMaster, on_delete=models.CASCADE, null=True, blank=True, db_index=True)
+    account_no = models.ForeignKey(AccountMaster, on_delete=models.SET_NULL, null=True, blank=True, db_index=True)
     account_no_temp = models.CharField(blank=True, null=True, max_length=255, db_index=True)
     period = models.CharField(blank=True, null=True, max_length=255, db_index=True)
     loan_availed = models.CharField(blank=True, null=True, max_length=255, db_index=True)
@@ -439,10 +451,41 @@ class EIR_Initial(models.Model):
     col_1 = models.CharField(blank=True, null=True, max_length=255, db_index=True)
     col_2 = models.CharField(blank=True, null=True, max_length=255, db_index=True)
     col_3 = models.CharField(blank=True, null=True, max_length=255, db_index=True)
+    default_eir = models.CharField(blank=True, null=True, max_length=10, db_index=True)
+    cop_tagged = models.BooleanField(blank=True, null=True, default=False, db_index=True)
     file_identifier = models.CharField(blank=True, null=True, max_length=255, db_index=True)
     created_on = models.DateTimeField(auto_now=True, db_index=True)
     edited_by = models.ForeignKey(User, on_delete=models.SET_NULL, null=True, blank=True, db_index=True)
     edited_on = models.DateTimeField(db_index=True, null=True, blank=True)
+
+    @classmethod
+    def truncate(cls):
+        with connection.cursor() as cursor:
+            cursor.execute('TRUNCATE TABLE "{0}" SET_NULL'.format(cls._meta.db_table))
+            
+#==================================================================================
+# EIR INITIAL TABLE :: Only Raw Data
+#==================================================================================
+class EIR_Initial_RawData(models.Model):
+    date = models.DateField(auto_now_add=False, null=True, blank=True,)
+    account_no = models.CharField(blank=True, null=True, max_length=255, db_index=True)
+    period = models.CharField(blank=True, null=True, max_length=255, db_index=True)
+    loan_availed = models.CharField(blank=True, null=True, max_length=255, db_index=True)
+    cost_avail = models.CharField(blank=True, null=True, max_length=255, db_index=True)
+    rate = models.CharField(blank=True, null=True, max_length=255, db_index=True)
+    emi = models.CharField(blank=True, null=True, max_length=255, db_index=True)
+    os_principal = models.CharField(blank=True, null=True, max_length=255, db_index=True)
+    os_interest = models.CharField(blank=True, null=True, max_length=255, db_index=True)
+    fair_value = models.CharField(blank=True, null=True, max_length=255, db_index=True)
+    coupon = models.CharField(blank=True, null=True, max_length=255, db_index=True)
+    discount_factor = models.CharField(blank=True, null=True, max_length=255, db_index=True)
+    col_1 = models.CharField(blank=True, null=True, max_length=255, db_index=True)
+    col_2 = models.CharField(blank=True, null=True, max_length=255, db_index=True)
+    col_3 = models.CharField(blank=True, null=True, max_length=255, db_index=True)
+    default_eir = models.CharField(blank=True, null=True, max_length=10, db_index=True)
+    cop_tagged = models.BooleanField(blank=True, null=True, default=False, db_index=True)
+    file_identifier = models.CharField(blank=True, null=True, max_length=255, db_index=True)
+    created_on = models.DateTimeField(auto_now=True, db_index=True)
 
     @classmethod
     def truncate(cls):
@@ -468,12 +511,15 @@ class EIR_Final(models.Model):
     col_1 = models.CharField(blank=True, null=True, max_length=255, db_index=True)
     col_2 = models.CharField(blank=True, null=True, max_length=255, db_index=True)
     col_3 = models.CharField(blank=True, null=True, max_length=255, db_index=True)
+    default_eir = models.CharField(blank=True, null=True, max_length=10, db_index=True)
+    cop_tagged = models.BooleanField(blank=True, null=True, default=True, db_index=True)
     created_on = models.DateTimeField(auto_now_add=True, db_index=True)
 
     @classmethod
     def truncate(cls):
         with connection.cursor() as cursor:
             cursor.execute('TRUNCATE TABLE "{0}" SET_NULL'.format(cls._meta.db_table))
+
 
 #==================================================================================
 # EIR REPORTS TABLE
@@ -494,6 +540,8 @@ class EIR_Reports(models.Model):
     col_1 = models.CharField(blank=True, null=True, max_length=255, db_index=True)
     col_2 = models.CharField(blank=True, null=True, max_length=255, db_index=True)
     col_3 = models.CharField(blank=True, null=True, max_length=255, db_index=True)
+    default_eir = models.CharField(blank=True, null=True, max_length=10, db_index=True)
+    cop_tagged = models.BooleanField(blank=True, null=True, default=True, db_index=True)
     created_on = models.DateTimeField(auto_now_add=True, db_index=True)
 
     @classmethod
@@ -592,7 +640,7 @@ class Collateral(models.Model):
 #==================================================================================
 class EAD_Initial(models.Model):
     date = models.DateField(auto_now_add=False, null=True, blank=True,)
-    account_no = models.ForeignKey(AccountMaster, on_delete=models.CASCADE, null=True, blank=True, db_index=True)
+    account_no = models.ForeignKey(AccountMaster, on_delete=models.SET_NULL, null=True, blank=True, db_index=True)
     account_no_temp = models.CharField(blank=True, null=True, max_length=255, db_index=True)
     outstanding_amount = models.CharField(blank=True, null=True, max_length=255, db_index=True)
     undrawn_upto_1_yr = models.CharField(blank=True, null=True, max_length=255, db_index=True)
@@ -624,6 +672,8 @@ class EAD_Final(models.Model):
             cursor.execute('TRUNCATE TABLE "{0}" SET_NULL'.format(cls._meta.db_table))
 
 
+
+
 #==================================================================================
 # EAD Report TABLE
 #==================================================================================
@@ -635,6 +685,9 @@ class EAD_Report(models.Model):
     undrawn_greater_than_1_yr = models.CharField(blank=True, null=True, max_length=255, db_index=True)
     created_on = models.DateTimeField(auto_now_add=True, db_index=True)
     ead_total = models.CharField(blank=True, null=True, max_length=255, db_index=True)
+
+    def __str__(self):
+        return "[{}] - [{}]".format(self.date,self.account_no.account_no)
 
     @classmethod
     def truncate(cls):
@@ -857,7 +910,7 @@ def replace_account_nos(sender, instance, **kwargs):
 
     #
     # Update ECL INITIAL
-    #ECL_Initial.objects.filter(account_no = instance).update(account_no_temp = instance.account_no, account_no = None)
+    ECL_Initial.objects.filter(account_no = instance).update(account_no_temp = instance.account_no, account_no = None)
 
     #
     # Update EAD INITIAL
@@ -892,7 +945,7 @@ def replace_account_nos(sender, instance, **kwargs):
 
     #
     # Update ECL INITIAL
-    #ECL_Initial.objects.filter(account_no = instance).update(account_no_temp = instance.account_no, account_no = None)
+    ECL_Initial.objects.filter(account_no = instance).update(account_no_temp = instance.account_no, account_no = None)
 
     #
     # Update EAD INITIAL
@@ -923,7 +976,7 @@ class Audit_Trail(models.Model):
 #==================================================================================
 class ECL_Initial(models.Model):
     date = models.DateField(auto_now_add=False, null=True, blank=True,)
-    account_no = models.ForeignKey(AccountMaster, on_delete=models.CASCADE, null=True, blank=True, db_index=True)
+    account_no = models.ForeignKey(AccountMaster, on_delete=models.SET_NULL, null=True, blank=True, db_index=True)
     account_no_temp = models.CharField(blank=True, null=True, max_length=255, db_index=True)
     tenure = models.CharField(blank=True, null=True, max_length=255, db_index=True)
     file_identifier = models.CharField(blank=True, null=True, max_length=255, db_index=True)
@@ -968,3 +1021,87 @@ class ECL_Reports(models.Model):
     def truncate(cls):
         with connection.cursor() as cursor:
             cursor.execute('TRUNCATE TABLE "{0}" SET_NULL'.format(cls._meta.db_table))
+
+
+#==================================================================================
+# ECL MISSING REPORT TABLE
+#==================================================================================
+class ECL_Missing_Reports(models.Model):
+    date = models.DateField(auto_now_add=False, null=True, blank=True,)
+    account_no = models.ForeignKey(AccountMaster, on_delete=models.CASCADE, null=True, blank=True, db_index=True)
+    tenure = models.CharField(blank=True, null=True, max_length=20, db_index=True)
+    pd = models.CharField(blank=True, null=True, max_length=20, db_index=True)
+    lgd = models.CharField(blank=True, null=True, max_length=20, db_index=True)
+    stage = models.CharField(blank=True, null=True, max_length=20, db_index=True)
+    ead = models.CharField(blank=True, null=True, max_length=20, db_index=True)
+    eir = models.CharField(blank=True, null=True, max_length=20, db_index=True)
+    created_on = models.DateTimeField(auto_now_add=True, db_index=True)
+
+    @classmethod
+    def truncate(cls):
+        with connection.cursor() as cursor:
+            cursor.execute('TRUNCATE TABLE "{0}" SET_NULL'.format(cls._meta.db_table))
+
+
+#==================================================================================
+# EIR - ACCOUNT MAPPER
+#==================================================================================
+class EIR_Accounts_Mapper(models.Model):
+    account_no = models.ForeignKey(AccountMaster, on_delete=models.CASCADE)
+
+    @classmethod
+    def truncate(cls):
+        with connection.cursor() as cursor:
+            cursor.execute('TRUNCATE TABLE "{0}" SET_NULL'.format(cls._meta.db_table))
+
+
+#==================================================================================
+# Predifined TABLE
+#==================================================================================
+class Pre_Defined_Variables(models.Model):    
+    SECTION_CHOICES = (
+        ('master', 'master'), 
+        ('product', 'product'), 
+        ('collateral', 'collateral'), 
+        ('pd', 'PD'), 
+        ('lgd', 'LGD'), 
+        ('ead', 'EAD'), 
+        ('stage', 'STAGE'), 
+        ('ecl', 'ECL'), 
+        ('eir', 'EIR')
+    )
+    
+    tab_status = models.CharField(max_length=255, blank=True, null=True, db_index=True, choices=SECTION_CHOICES)
+    column_name = models.CharField(max_length=255, blank=True, null=True, db_index=True)
+    show_in_reports = models.BooleanField(default=True, db_index=True)
+    show_in_download_reports = models.BooleanField(default=True, db_index=True)
+    column_name_in_reports = models.CharField(max_length=255, blank=True, null=True, db_index=True)
+    
+    @classmethod
+    def truncate(cls):
+        with connection.cursor() as cursor:
+            cursor.execute('TRUNCATE TABLE "{0}" SET_NULL'.format(cls._meta.db_table))
+            
+            
+#==================================================================================
+# PD CONFIG TABLE
+#==================================================================================
+class Algo_Config(models.Model):
+    
+    SECTION_CHOICES = (('pd', 'PD'), ('lgd', 'LGD'), ('ead', 'EAD'), ('stage', 'STAGE'), ('ecl', 'ECL'), ('eir', 'EIR'))
+    
+    tab_status = models.CharField(max_length=255, blank=True, null=True, db_index=True, choices=SECTION_CHOICES)
+    column_name = models.CharField(max_length=255, blank=True, null=True, db_index=True)
+    use_in_import = models.BooleanField(default=False, db_index=True)
+    show_in_reports = models.BooleanField(default=True, db_index=True)
+    show_in_download_reports = models.BooleanField(default=True, db_index=True)
+    use_as_factor = models.BooleanField(default=False, db_index=True)
+    use_formula = models.CharField(max_length=255, blank=True, null=True, db_index=True)
+    use_built_in_column = models.ForeignKey(Pre_Defined_Variables, blank=True, null=True, db_index=True, on_delete=models.SET_NULL)
+    
+    @classmethod
+    def truncate(cls):
+        with connection.cursor() as cursor:
+            cursor.execute('TRUNCATE TABLE "{0}" SET_NULL'.format(cls._meta.db_table))
+            
+    

@@ -23,8 +23,144 @@ import math
 from sklearn.linear_model import LogisticRegression, LinearRegression
 import os
 from collections import defaultdict
-
+import datetime
 import random
+
+
+#**********************************************************************
+# METHOD TO INSERT RAW DATA INTO EIR MODEL
+#**********************************************************************
+
+def raw_data_insert(data_set, file_identifier=None):
+    
+    row_num = 0
+    row_failed = 0
+    total_rows = 0
+    
+    # Queries
+    #===========================================================
+    insert_query = ["insert into app_eir_initial_rawdata ('date', 'account_no', 'period', 'loan_availed', 'cost_avail', 'rate', 'emi', 'os_principal', 'os_interest', 'fair_value', 'coupon', 'discount_factor', 'col_1', 'col_2', 'col_3', 'default_eir', 'cop_tagged', 'file_identifier', 'created_on') values "]
+    
+    delete_before_initial_sqlite = """
+    delete from app_eir_initial where account_no_id in(
+        select id from app_accountmaster where account_no in(
+            select account_no from 
+                (select count(id), account_no from app_eir_initial_rawdata group by account_no) 
+        )
+    ) 
+    """
+    
+    delete_before_initial_others = """
+    delete from app_eir_initial where account_no_id in (select id from app_accountmaster where account_no in(select distict(account_no) from app_eir_initial_rawdata)) 
+    """
+    
+    move_to_initial = """
+    insert into app_eir_initial ('date', 'account_no_id', 'account_no_temp', 'period', 'loan_availed', 'cost_avail', 'rate', 'emi', 'os_principal', 'os_interest', 'fair_value', 'coupon', 'discount_factor', 'col_1', 'col_2', 'col_3', 'default_eir', 'cop_tagged', 'file_identifier', 'created_on')
+    select RW.date, (CASE WHEN AC.account_no=RW.account_no THEN AC.id ELSE NULL END) as account_no_id,  
+    (CASE WHEN (select count(id)  from app_accountmaster where app_accountmaster.account_no = RW.account_no)=0  THEN RW.account_no ELSE NULL END) as account_no_temp,
+    RW.period, RW.loan_availed,  RW.cost_avail,  RW.rate,  RW.emi, RW.os_principal, RW.os_interest, RW.fair_value, 
+    RW.coupon, RW.discount_factor, RW.col_1, RW.col_2, RW.col_3, RW.default_eir, RW.cop_tagged, RW.file_identifier, RW.created_on 
+    from app_eir_initial_rawdata RW left join app_accountmaster AC on RW.account_no = AC.account_no
+    """
+    
+    missing_accounts_query = """
+    insert into app_accountmissing (account_no, file_identifier, created_on)
+    select account_no_temp, file_identifier, created_on from app_eir_initial where account_no_temp is not null and not exists(
+        select account_no from app_accountmissing
+    )
+    """
+    
+    map_account_eir_others = """
+    insert into app_eir_accounts_mapper (account_no_id) 
+    select distinct(account_no_id) from app_eir_initial where account_no_id is not null
+    """
+    
+    map_account_eir_sqlite = """
+    insert into app_eir_accounts_mapper (account_no_id) 
+    select t.account_no_id from (select count(id), account_no_id from app_eir_initial where account_no_id is not null group by account_no_id) t
+    """
+    
+    
+    # create insert query
+    #===========================================================
+    insert_query_val = []
+
+    for row in data_set:
+        val_query = ""
+        
+        formatted_data = [
+            row['date'], row['account_no'], row['period'], row['loan_availed'], row['cost_avail'], row['rate'], row['emi'], row['os_principal'], row['os_interest'], row['fair_value'], row['coupon'], row['discount_factor'], row['col_1'], row['col_2'], row['col_3'], row['default_eir'], row['cop_tagged']
+        ]
+        
+        if formatted_data[1].strip() !="":
+        
+            try:
+                formatted_data[0] = datetime.datetime.strptime(formatted_data[0],"%m/%d/%Y").strftime("%Y-%m-%d")
+            except ValueError:
+                pass
+            
+            formatted_data.append(file_identifier)
+            formatted_data.append(timezone.now())
+
+            value_params = "'{}', "*(len(formatted_data))
+            value_params = value_params.rstrip(', ')
+
+            val_query = val_query+"({}),".format(value_params)
+            insert_query_val.append(val_query.rstrip(', ').format(*formatted_data))
+            
+            row_num += 1    
+        
+    insert_query.append(','.join(insert_query_val))
+    
+    # Execute queries
+    #===========================================================
+    with connection.cursor() as cursor:
+        
+        # Truncate EIR_Accounts_Mapper
+        if EIR_Accounts_Mapper.objects.all().count()>0:
+            try:
+                truncate_others = """truncate app_eir_accounts_mapper"""
+                cursor.execute(truncate_others)
+            except:
+                truncate_sqlite = """delete from app_eir_accounts_mapper"""
+                cursor.execute(truncate_sqlite)
+        
+        # truncate table before insert into raw table
+        try:
+            cursor.execute('trucate app_eir_initial_rawdata')
+        except:
+            cursor.execute('delete from app_eir_initial_rawdata')
+        
+        # insert raw data
+        try:
+            cursor.execute(''.join(insert_query))
+        except:
+            pass  
+        
+        # delete for existing account numbers
+        try:
+            cursor.execute(delete_before_initial_others)
+        except:
+            cursor.execute(delete_before_initial_sqlite)
+            
+        # insert into initial table    
+        try:    
+            cursor.execute(move_to_initial)
+            cursor.execute(missing_accounts_query)
+        except:
+            pass
+        
+        try:
+            cursor.execute(map_account_eir_others)
+        except:
+            cursor.execute(map_account_eir_sqlite)
+
+    # Get counters
+    #===========================================================
+    total_rows = EIR_Initial_RawData.objects.all().count()
+    row_failed = total_rows - row_num
+    
+    return row_num, row_failed, total_rows
 
 
 #**********************************************************************
@@ -35,206 +171,216 @@ def insert_data(data_set, import_type, file_identifier=None):
     row_num = 0
     row_failed = 0
     total_rows = 0
+    
+    if import_type == "eir":
+        return raw_data_insert(data_set, file_identifier)
+    else:
+        for row in data_set:
+            total_rows += 1
+            col_names = row.keys()
+            
 
-    for row in data_set:
-        total_rows += 1
-        col_names = row.keys()
-
-        try:
-            account_ins = AccountMaster.objects.get(account_no = row["account_no"].strip())
-        except ObjectDoesNotExist:
-            account_ins = None
-        except KeyError:
-            account_ins = None
-
-        try:
-            if import_type == "master":
-                if account_ins is None:
-                    raise Exception("exception")
-                else:
-                    update_record(account_ins, import_type, row, file_identifier)
-
-            elif import_type == "product" and row["product_code"].strip()!="":
-                ins_const = constants.TAB_ACTIVE[import_type][3].get(product_code = row["product_code"].strip())
-            elif import_type == "collateral" and row["basel_collateral_code"].strip()!="":
-                ins_const = constants.TAB_ACTIVE[import_type][3].get(basel_collateral_code = row["basel_collateral_code"].strip())
-            else:
-                if account_ins is not None:
-                    ins_const = constants.TAB_ACTIVE[import_type][3].get(account_no = account_ins, date = row["date"])
-                else:
-                    ins_const = constants.TAB_ACTIVE[import_type][3].get(account_no_temp = row["account_no"].strip(), date = row["date"].strip())
-
-                update_record(ins_const, import_type, row, file_identifier)
-            row_num += 1
-        except:
-
-            #
-            # MASTER ENTRY
-            if import_type == "master" and account_ins is None:
-                ins = AccountMaster.objects.create(
-                    cin = row["cin"] if row["cin"].strip()!="" else None if "cin" in col_names else None,
-                    account_no = row["account_no"] if row["account_no"].strip()!="" else None if "account_no" in col_names else None,
-                    account_type = row["account_type"] if row["account_type"].strip()!="" else None if "account_type" in col_names else None,
-                    account_status = row["account_status"] if row["account_status"].strip()!="" else None if "account_status" in col_names else None,
-                    sectors = row["sectors"] if row["sectors"].strip()!="" else None if "sectors" in col_names else None,
-                    customer_name = row["customer_name"] if row["customer_name"].strip()!="" else None if "customer_name" in col_names else None,
-                    contact_no = row["contact_no"] if row["contact_no"].strip()!="" else None if "contact_no" in col_names else None,
-                    email = row["email"] if row["email"].strip()!="" else None if "email" in col_names else None,
-                    pan = row["pan"] if row["pan"].strip()!="" else None if "pan" in col_names else None,
-                    aadhar_no = row["aadhar_no"] if row["aadhar_no"].strip()!="" else None if "aadhar_no" in col_names else None,
-                    customer_addr = row["customer_addr"] if row["customer_addr"].strip()!="" else None if "customer_addr" in col_names else None,
-                    pin = row["pin"] if row["pin"].strip()!="" else None if "pin" in col_names else None,
-                )
-
-            #
-            # BASEL PRODUCT ENTRY
-            if import_type == "product" and row["product_code"].strip()!="":
-                ins = Basel_Product_Master.objects.create(
-                    product_name = row["product_name"] if row["product_name"].strip()!="" else None if "product_name" in col_names else None,
-                    product_code = row["product_code"] if row["product_code"].strip()!="" else None if "product_code" in col_names else None,
-                    product_catgory = row["product_catgory"] if row["product_catgory"].strip()!="" else None if "product_catgory" in col_names else None,
-                    basel_product = row["basel_product"] if row["basel_product"].strip()!="" else None if "basel_product" in col_names else None,
-                    basel_product_code = row["basel_product_code"] if row["basel_product_code"].strip()!="" else None if "basel_product_code" in col_names else None,
-                    drawn_cff = row["drawn_cff"] if row["drawn_cff"].strip()!="" else None if "drawn_cff" in col_names else None,
-                    cff_upto_1_yr = row["cff_upto_1_yr"] if row["cff_upto_1_yr"].strip()!="" else None if "cff_upto_1_yr" in col_names else None,
-                    cff_gt_1_yr = row["cff_gt_1_yr"] if row["cff_gt_1_yr"].strip()!="" else None if "cff_gt_1_yr" in col_names else None,
-                )
-
-            #
-            # BASEL COLLATERAL ENTRY
-            if import_type == "collateral" and row["basel_collateral_code"].strip()!="":
-                ins = Basel_Collateral_Master.objects.create(
-                    basel_collateral_code = row["basel_collateral_code"] if row["basel_collateral_code"].strip()!="" else None if "basel_collateral_code" in col_names else None,
-                    collateral_code = row["collateral_code"] if row["collateral_code"].strip()!="" else None if "collateral_code" in col_names else None,
-                    collateral_type = row["collateral_type"] if row["collateral_type"].strip()!="" else None if "collateral_type" in col_names else None,
-                    issuer_type = row["issuer_type"] if row["issuer_type"].strip()!="" else None if "issuer_type" in col_names else None,
-                    collateral_eligibity = row["collateral_eligibity"] if row["collateral_eligibity"].strip()!="" else None if "collateral_eligibity" in col_names else None,
-                    rating_available = row["rating_available"] if row["rating_available"].strip()!="" else None if "rating_available" in col_names else None,
-                    collateral_rating = row["collateral_rating"] if row["collateral_rating"].strip()!="" else None if "collateral_rating" in col_names else None,
-                    residual_maturity = row["residual_maturity"] if row["residual_maturity"].strip()!="" else None if "residual_maturity" in col_names else None,
-                    basel_collateral_type = row["basel_collateral_type"] if row["basel_collateral_type"].strip()!="" else None if "basel_collateral_type" in col_names else None,
-                    basel_collateral_subtype = row["basel_collateral_subtype"] if row["basel_collateral_subtype"].strip()!="" else None if "basel_collateral_subtype" in col_names else None,
-
-                    basel_collateral_rating = row["basel_collateral_rating"] if row["basel_collateral_rating"].strip()!="" else None if "basel_collateral_rating" in col_names else None,
-                    soverign_issuer = row["soverign_issuer"] if row["soverign_issuer"].strip()!="" else None if "soverign_issuer" in col_names else None,
-                    other_issuer = row["other_issuer"] if row["other_issuer"].strip()!="" else None if "other_issuer" in col_names else None,
-                )
-
-            #
-            # PD
-            if import_type == "pd":
-
-                ins = PD_Initial.objects.create(
-                 date = helpers.clean_data(row["date"]) if "date" in col_names else None,
-                 factor_1 = helpers.clean_data(row["factor_1"]) if "factor_1" in col_names else None,
-                 factor_2 = helpers.clean_data(row["factor_2"]) if "factor_2" in col_names else None,
-                 factor_3 = helpers.clean_data(row["factor_3"]) if "factor_3" in col_names else None,
-                 factor_4 = helpers.clean_data(row["factor_4"]) if "factor_4" in col_names else None,
-                 factor_5 = helpers.clean_data(row["factor_5"]) if "factor_5" in col_names else None,
-                 factor_6 = helpers.clean_data(row["factor_6"]) if "factor_6" in col_names else None,
-                 default_col = helpers.clean_data(row["default_col"]) if "default_col" in col_names else None,
-                 mgmt_overlay_1 = helpers.clean_data(row["mgmt_overlay_1"]) if "mgmt_overlay_1" in col_names else None,
-                 mgmt_overlay_2 = helpers.clean_data(row["mgmt_overlay_2"]) if "mgmt_overlay_2" in col_names else None,
-                )
-
-            #
-            # LGD
-            if import_type == "lgd":
-                ins = LGD_Initial.objects.create(
-                 date = helpers.clean_data(row["date"]) if "date" in col_names else None,
-                 ead_os = helpers.clean_data(row["ead_os"]) if "ead_os" in col_names else None,
-                 pv_cashflows = helpers.clean_data(row["pv_cashflows"]) if "pv_cashflows" in col_names else None,
-                 pv_cost = helpers.clean_data(row["pv_cost"]) if "pv_cost" in col_names else None,
-                 beta_value = helpers.clean_data(row["beta_value"]) if "beta_value" in col_names else None,
-                 sec_flag = helpers.clean_data(row["sec_flag"]) if "sec_flag" in col_names else None,
-                 factor_4 = helpers.clean_data(row["factor_4"]) if "factor_4" in col_names else None,
-                 factor_5 = helpers.clean_data(row["factor_5"]) if "factor_5" in col_names else None,
-                 avg_1 = helpers.clean_data(row["avg_1"]) if "avg_1" in col_names else None,
-                 avg_2 = helpers.clean_data(row["avg_2"]) if "avg_2" in col_names else None,
-                 avg_3 = helpers.clean_data(row["avg_3"]) if "avg_3" in col_names else None,
-                 avg_4 = helpers.clean_data(row["avg_4"]) if "avg_4" in col_names else None,
-                 avg_5 = helpers.clean_data(row["avg_5"]) if "avg_5" in col_names else None,
-                 mgmt_overlay_1 = helpers.clean_data(row["mgmt_overlay_1"]) if "mgmt_overlay_1" in col_names else None,
-                 mgmt_overlay_2 = helpers.clean_data(row["mgmt_overlay_2"]) if "mgmt_overlay_2" in col_names else None,
-                )
-
-            #
-            # STAGE
-            if import_type == "stage":
-                ins = Stage_Initial.objects.create(
-                 date = helpers.clean_data(row["date"]) if "date" in col_names else None,
-                 old_rating = helpers.clean_data(row["old_rating"]) if "old_rating" in col_names else None,
-                 new_rating = helpers.clean_data(row["new_rating"]) if "new_rating" in col_names else None,
-                 rating_3 = helpers.clean_data(row["rating_3"]) if "rating_3" in col_names else None,
-                 rating_4 = helpers.clean_data(row["rating_4"]) if "rating_4" in col_names else None,
-                 rating_5 = helpers.clean_data(row["rating_5"]) if "rating_5" in col_names else None,
-                 rating_6 = helpers.clean_data(row["rating_6"]) if "rating_6" in col_names else None,
-                 rating_7 = helpers.clean_data(row["rating_7"]) if "rating_7" in col_names else None,
-                 day_bucket_1 = helpers.clean_data(row["day_bucket_1"]) if "day_bucket_1" in col_names else None,
-                 day_bucket_2 = helpers.clean_data(row["day_bucket_2"]) if "day_bucket_2" in col_names else None,
-                 day_bucket_3 = helpers.clean_data(row["day_bucket_3"]) if "day_bucket_3" in col_names else None,
-                 day_bucket_4 = helpers.clean_data(row["day_bucket_4"]) if "day_bucket_4" in col_names else None,
-                 day_bucket_5 = helpers.clean_data(row["day_bucket_5"]) if "day_bucket_5" in col_names else None,
-                 day_bucket_6 = helpers.clean_data(row["day_bucket_6"]) if "day_bucket_6" in col_names else None,
-                 day_bucket_7 = helpers.clean_data(row["day_bucket_7"]) if "day_bucket_7" in col_names else None,
-                 day_bucket_8 = helpers.clean_data(row["day_bucket_8"]) if "day_bucket_8" in col_names else None,
-                 day_bucket_9 = helpers.clean_data(row["day_bucket_9"]) if "day_bucket_9" in col_names else None,
-                 day_bucket_10 = helpers.clean_data(row["day_bucket_10"]) if "day_bucket_10" in col_names else None,
-                 day_bucket_11 = helpers.clean_data(row["day_bucket_11"]) if "day_bucket_11" in col_names else None,
-                 day_bucket_12 = helpers.clean_data(row["day_bucket_12"]) if "day_bucket_12" in col_names else None,
-                 day_bucket_13 = helpers.clean_data(row["day_bucket_13"]) if "day_bucket_13" in col_names else None,
-                 day_bucket_14 = helpers.clean_data(row["day_bucket_14"]) if "day_bucket_14" in col_names else None,
-                 day_bucket_15 = helpers.clean_data(row["day_bucket_15"]) if "day_bucket_15" in col_names else None,
-                 criteria = helpers.clean_data(row["criteria"]) if "criteria" in col_names else None,
-                 cooling_period_1 = helpers.clean_data(row["cooling_period_1"]) if "cooling_period_1" in col_names else None,
-                 cooling_period_2 = helpers.clean_data(row["cooling_period_2"]) if "cooling_period_2" in col_names else None,
-                 cooling_period_3 = helpers.clean_data(row["cooling_period_3"]) if "cooling_period_3" in col_names else None,
-                 cooling_period_4 = helpers.clean_data(row["cooling_period_4"]) if "cooling_period_4" in col_names else None,
-                 cooling_period_5 = helpers.clean_data(row["cooling_period_5"]) if "cooling_period_5" in col_names else None,
-                 rbi_window = helpers.clean_data(row["rbi_window"]) if "rbi_window" in col_names else None,
-                 mgmt_overlay_1 = helpers.clean_data(row["mgmt_overlay_1"]) if "mgmt_overlay_1" in col_names else None,
-                 mgmt_overlay_2 = helpers.clean_data(row["mgmt_overlay_2"]) if "mgmt_overlay_2" in col_names else None,
-                )
-
-            #
-            #
-            if import_type == "ead":
-                ins = EAD_Initial.objects.create(
-                    date = helpers.clean_data(row["date"]) if "date" in col_names else None,
-                    outstanding_amount = helpers.clean_data(row["outstanding_amount"]) if "outstanding_amount" in col_names else None,
-                    undrawn_upto_1_yr = helpers.clean_data(row["undrawn_upto_1_yr"]) if "undrawn_upto_1_yr" in col_names else None,
-                    undrawn_greater_than_1_yr = helpers.clean_data(row["undrawn_greater_than_1_yr"]) if "undrawn_greater_than_1_yr" in col_names else None
-                )
-
-            #
-            #
-            if import_type == "ecl":
-                ins = ECL_Initial.objects.create(
-                    date = helpers.clean_data(row["date"]) if "date" in col_names else None,
-                    tenure = helpers.clean_data(row["tenure"]) if "tenure" in col_names else None,
-                )
-
-            #
-            # Fetch Account Number Instance
-            if account_ins is not None and (import_type not in ["master", "product", "collateral"]):
-                ins.account_no = account_ins
-            else:
-                if "account_no" in col_names and (import_type not in ["master", "product", "collateral"]):
-                    if row["account_no"].strip()!="":
-                        ins.account_no_temp = row["account_no"]
-                        _, created = AccountMissing.objects.update_or_create(
-                            account_no = row["account_no"]
-                        )
-            #
-            # add file Identifier
             try:
-                ins.file_identifier = file_identifier
-                ins.save()
+                account_ins = AccountMaster.objects.get(account_no = row["account_no"].strip())
+            except ObjectDoesNotExist:
+                account_ins = None
+            except KeyError:
+                account_ins = None
+
+            try:
+                if import_type == "master":
+                    if account_ins is None:
+                        raise Exception("exception")
+                    else:
+                        update_record(account_ins, import_type, row, file_identifier)
+
+                elif import_type == "product" and row["product_code"].strip()!="":
+                    ins_const = constants.TAB_ACTIVE[import_type][3].get(product_code = row["product_code"].strip())
+                elif import_type == "collateral" and row["basel_collateral_code"].strip()!="":
+                    ins_const = constants.TAB_ACTIVE[import_type][3].get(basel_collateral_code = row["basel_collateral_code"].strip())
+                else:
+                    if account_ins is not None:
+                        ins_const = constants.TAB_ACTIVE[import_type][3].get(account_no = account_ins, date = row["date"])
+                    else:
+                        ins_const = constants.TAB_ACTIVE[import_type][3].get(account_no_temp = row["account_no"].strip(), date = row["date"].strip())
+
+                    update_record(ins_const, import_type, row, file_identifier)
                 row_num += 1
             except:
-                row_failed += 1
+
+                ins = None
+                
+                #
+                # MASTER ENTRY
+                if import_type == "master" and account_ins is None:
+                    ins = AccountMaster.objects.create(
+                        cin = row["cin"] if row["cin"].strip()!="" else None if "cin" in col_names else None,
+                        account_no = row["account_no"] if row["account_no"].strip()!="" else None if "account_no" in col_names else None,
+                        account_type = row["account_type"] if row["account_type"].strip()!="" else None if "account_type" in col_names else None,
+                        account_status = row["account_status"] if row["account_status"].strip()!="" else None if "account_status" in col_names else None,
+                        sectors = row["sectors"] if row["sectors"].strip()!="" else None if "sectors" in col_names else None,
+                        customer_name = row["customer_name"] if row["customer_name"].strip()!="" else None if "customer_name" in col_names else None,
+                        contact_no = row["contact_no"] if row["contact_no"].strip()!="" else None if "contact_no" in col_names else None,
+                        email = row["email"] if row["email"].strip()!="" else None if "email" in col_names else None,
+                        pan = row["pan"] if row["pan"].strip()!="" else None if "pan" in col_names else None,
+                        aadhar_no = row["aadhar_no"] if row["aadhar_no"].strip()!="" else None if "aadhar_no" in col_names else None,
+                        customer_addr = row["customer_addr"] if row["customer_addr"].strip()!="" else None if "customer_addr" in col_names else None,
+                        pin = row["pin"] if row["pin"].strip()!="" else None if "pin" in col_names else None,
+                    )
+
+                #
+                # BASEL PRODUCT ENTRY
+                if import_type == "product" and row["product_code"].strip()!="":
+                    ins = Basel_Product_Master.objects.create(
+                        product_name = row["product_name"] if row["product_name"].strip()!="" else None if "product_name" in col_names else None,
+                        product_code = row["product_code"] if row["product_code"].strip()!="" else None if "product_code" in col_names else None,
+                        product_catgory = row["product_catgory"] if row["product_catgory"].strip()!="" else None if "product_catgory" in col_names else None,
+                        basel_product = row["basel_product"] if row["basel_product"].strip()!="" else None if "basel_product" in col_names else None,
+                        basel_product_code = row["basel_product_code"] if row["basel_product_code"].strip()!="" else None if "basel_product_code" in col_names else None,
+                        drawn_cff = row["drawn_cff"] if row["drawn_cff"].strip()!="" else None if "drawn_cff" in col_names else None,
+                        cff_upto_1_yr = row["cff_upto_1_yr"] if row["cff_upto_1_yr"].strip()!="" else None if "cff_upto_1_yr" in col_names else None,
+                        cff_gt_1_yr = row["cff_gt_1_yr"] if row["cff_gt_1_yr"].strip()!="" else None if "cff_gt_1_yr" in col_names else None,
+                    )
+
+                #
+                # BASEL COLLATERAL ENTRY
+                if import_type == "collateral" and row["basel_collateral_code"].strip()!="":
+                    ins = Basel_Collateral_Master.objects.create(
+                        basel_collateral_code = row["basel_collateral_code"] if row["basel_collateral_code"].strip()!="" else None if "basel_collateral_code" in col_names else None,
+                        collateral_code = row["collateral_code"] if row["collateral_code"].strip()!="" else None if "collateral_code" in col_names else None,
+                        collateral_type = row["collateral_type"] if row["collateral_type"].strip()!="" else None if "collateral_type" in col_names else None,
+                        issuer_type = row["issuer_type"] if row["issuer_type"].strip()!="" else None if "issuer_type" in col_names else None,
+                        collateral_eligibity = row["collateral_eligibity"] if row["collateral_eligibity"].strip()!="" else None if "collateral_eligibity" in col_names else None,
+                        rating_available = row["rating_available"] if row["rating_available"].strip()!="" else None if "rating_available" in col_names else None,
+                        collateral_rating = row["collateral_rating"] if row["collateral_rating"].strip()!="" else None if "collateral_rating" in col_names else None,
+                        residual_maturity = row["residual_maturity"] if row["residual_maturity"].strip()!="" else None if "residual_maturity" in col_names else None,
+                        basel_collateral_type = row["basel_collateral_type"] if row["basel_collateral_type"].strip()!="" else None if "basel_collateral_type" in col_names else None,
+                        basel_collateral_subtype = row["basel_collateral_subtype"] if row["basel_collateral_subtype"].strip()!="" else None if "basel_collateral_subtype" in col_names else None,
+
+                        basel_collateral_rating = row["basel_collateral_rating"] if row["basel_collateral_rating"].strip()!="" else None if "basel_collateral_rating" in col_names else None,
+                        soverign_issuer = row["soverign_issuer"] if row["soverign_issuer"].strip()!="" else None if "soverign_issuer" in col_names else None,
+                        other_issuer = row["other_issuer"] if row["other_issuer"].strip()!="" else None if "other_issuer" in col_names else None,
+                    )
+
+                #
+                # PD
+                if import_type == "pd":
+
+                    ins = PD_Initial.objects.create(
+                    date = helpers.clean_data(row["date"]) if "date" in col_names else None,
+                    factor_1 = helpers.clean_data(row["factor_1"]) if "factor_1" in col_names else None,
+                    factor_2 = helpers.clean_data(row["factor_2"]) if "factor_2" in col_names else None,
+                    factor_3 = helpers.clean_data(row["factor_3"]) if "factor_3" in col_names else None,
+                    factor_4 = helpers.clean_data(row["factor_4"]) if "factor_4" in col_names else None,
+                    factor_5 = helpers.clean_data(row["factor_5"]) if "factor_5" in col_names else None,
+                    factor_6 = helpers.clean_data(row["factor_6"]) if "factor_6" in col_names else None,
+                    default_col = helpers.clean_data(row["default_col"]) if "default_col" in col_names else None,
+                    mgmt_overlay_1 = helpers.clean_data(row["mgmt_overlay_1"]) if "mgmt_overlay_1" in col_names else None,
+                    mgmt_overlay_2 = helpers.clean_data(row["mgmt_overlay_2"]) if "mgmt_overlay_2" in col_names else None,
+                    )
+
+                #
+                # LGD
+                if import_type == "lgd":
+                    ins = LGD_Initial.objects.create(
+                    date = helpers.clean_data(row["date"]) if "date" in col_names else None,
+                    ead_os = helpers.clean_data(row["ead_os"]) if "ead_os" in col_names else None,
+                    pv_cashflows = helpers.clean_data(row["pv_cashflows"]) if "pv_cashflows" in col_names else None,
+                    pv_cost = helpers.clean_data(row["pv_cost"]) if "pv_cost" in col_names else None,
+                    beta_value = helpers.clean_data(row["beta_value"]) if "beta_value" in col_names else None,
+                    sec_flag = helpers.clean_data(row["sec_flag"]) if "sec_flag" in col_names else None,
+                    factor_4 = helpers.clean_data(row["factor_4"]) if "factor_4" in col_names else None,
+                    factor_5 = helpers.clean_data(row["factor_5"]) if "factor_5" in col_names else None,
+                    avg_1 = helpers.clean_data(row["avg_1"]) if "avg_1" in col_names else None,
+                    avg_2 = helpers.clean_data(row["avg_2"]) if "avg_2" in col_names else None,
+                    avg_3 = helpers.clean_data(row["avg_3"]) if "avg_3" in col_names else None,
+                    avg_4 = helpers.clean_data(row["avg_4"]) if "avg_4" in col_names else None,
+                    avg_5 = helpers.clean_data(row["avg_5"]) if "avg_5" in col_names else None,
+                    mgmt_overlay_1 = helpers.clean_data(row["mgmt_overlay_1"]) if "mgmt_overlay_1" in col_names else None,
+                    mgmt_overlay_2 = helpers.clean_data(row["mgmt_overlay_2"]) if "mgmt_overlay_2" in col_names else None,
+                    )
+
+                #
+                # STAGE
+                if import_type == "stage":
+                    ins = Stage_Initial.objects.create(
+                    date = helpers.clean_data(row["date"]) if "date" in col_names else None,
+                    old_rating = helpers.clean_data(row["old_rating"]) if "old_rating" in col_names else None,
+                    new_rating = helpers.clean_data(row["new_rating"]) if "new_rating" in col_names else None,
+                    rating_3 = helpers.clean_data(row["rating_3"]) if "rating_3" in col_names else None,
+                    rating_4 = helpers.clean_data(row["rating_4"]) if "rating_4" in col_names else None,
+                    rating_5 = helpers.clean_data(row["rating_5"]) if "rating_5" in col_names else None,
+                    rating_6 = helpers.clean_data(row["rating_6"]) if "rating_6" in col_names else None,
+                    rating_7 = helpers.clean_data(row["rating_7"]) if "rating_7" in col_names else None,
+                    day_bucket_1 = helpers.clean_data(row["day_bucket_1"]) if "day_bucket_1" in col_names else None,
+                    day_bucket_2 = helpers.clean_data(row["day_bucket_2"]) if "day_bucket_2" in col_names else None,
+                    day_bucket_3 = helpers.clean_data(row["day_bucket_3"]) if "day_bucket_3" in col_names else None,
+                    day_bucket_4 = helpers.clean_data(row["day_bucket_4"]) if "day_bucket_4" in col_names else None,
+                    day_bucket_5 = helpers.clean_data(row["day_bucket_5"]) if "day_bucket_5" in col_names else None,
+                    day_bucket_6 = helpers.clean_data(row["day_bucket_6"]) if "day_bucket_6" in col_names else None,
+                    day_bucket_7 = helpers.clean_data(row["day_bucket_7"]) if "day_bucket_7" in col_names else None,
+                    day_bucket_8 = helpers.clean_data(row["day_bucket_8"]) if "day_bucket_8" in col_names else None,
+                    day_bucket_9 = helpers.clean_data(row["day_bucket_9"]) if "day_bucket_9" in col_names else None,
+                    day_bucket_10 = helpers.clean_data(row["day_bucket_10"]) if "day_bucket_10" in col_names else None,
+                    day_bucket_11 = helpers.clean_data(row["day_bucket_11"]) if "day_bucket_11" in col_names else None,
+                    day_bucket_12 = helpers.clean_data(row["day_bucket_12"]) if "day_bucket_12" in col_names else None,
+                    day_bucket_13 = helpers.clean_data(row["day_bucket_13"]) if "day_bucket_13" in col_names else None,
+                    day_bucket_14 = helpers.clean_data(row["day_bucket_14"]) if "day_bucket_14" in col_names else None,
+                    day_bucket_15 = helpers.clean_data(row["day_bucket_15"]) if "day_bucket_15" in col_names else None,
+                    criteria = helpers.clean_data(row["criteria"]) if "criteria" in col_names else None,
+                    cooling_period_1 = helpers.clean_data(row["cooling_period_1"]) if "cooling_period_1" in col_names else None,
+                    cooling_period_2 = helpers.clean_data(row["cooling_period_2"]) if "cooling_period_2" in col_names else None,
+                    cooling_period_3 = helpers.clean_data(row["cooling_period_3"]) if "cooling_period_3" in col_names else None,
+                    cooling_period_4 = helpers.clean_data(row["cooling_period_4"]) if "cooling_period_4" in col_names else None,
+                    cooling_period_5 = helpers.clean_data(row["cooling_period_5"]) if "cooling_period_5" in col_names else None,
+                    rbi_window = helpers.clean_data(row["rbi_window"]) if "rbi_window" in col_names else None,
+                    mgmt_overlay_1 = helpers.clean_data(row["mgmt_overlay_1"]) if "mgmt_overlay_1" in col_names else None,
+                    mgmt_overlay_2 = helpers.clean_data(row["mgmt_overlay_2"]) if "mgmt_overlay_2" in col_names else None,
+                    )
+
+                #
+                #
+                if import_type == "ead":
+                    ins = EAD_Initial.objects.create(
+                        date = helpers.clean_data(row["date"]) if "date" in col_names else None,
+                        outstanding_amount = helpers.clean_data(row["outstanding_amount"]) if "outstanding_amount" in col_names else None,
+                        undrawn_upto_1_yr = helpers.clean_data(row["undrawn_upto_1_yr"]) if "undrawn_upto_1_yr" in col_names else None,
+                        undrawn_greater_than_1_yr = helpers.clean_data(row["undrawn_greater_than_1_yr"]) if "undrawn_greater_than_1_yr" in col_names else None
+                    )
+
+                #
+                #
+                if import_type == "ecl":
+                    ins = ECL_Initial.objects.create(
+                        date = helpers.clean_data(row["date"]) if "date" in col_names else None,
+                        tenure = helpers.clean_data(row["tenure"]) if "tenure" in col_names else None,
+                    )
+                
+                
+                #
+                # Fetch Account Number Instance
+                if ins is not None:
+                    if account_ins is not None and (import_type not in ["master", "product", "collateral"]):
+                        ins.account_no = account_ins
+                    else:
+                        if "account_no" in col_names and (import_type not in ["master", "product", "collateral"]):
+                            if row["account_no"].strip()!="":
+                                ins.account_no_temp = row["account_no"]
+                                _, created = AccountMissing.objects.update_or_create(
+                                    account_no = row["account_no"]
+                                )
+                #
+                # add file Identifier
+                try:
+                    ins.file_identifier = file_identifier
+                    ins.save()
+                    row_num += 1
+                except:
+                    row_failed += 1
 
     return row_num, row_failed, total_rows
+
+
 #**********************************************************************
 # METHOD TO UPDATE DATA INTO RELEVANT MODELS
 #**********************************************************************
@@ -379,6 +525,26 @@ def update_record(ins_const=None, import_type=None, row=None, file_identifier=No
         ins_const.tenure = helpers.clean_data(row["tenure"]) if "tenure" in col_names else None
 
     #
+    #
+    if import_type == "eir":
+        ins_const.date = helpers.clean_data(row["date"]) if "date" in col_names else None
+        ins_const.period = helpers.clean_data(row["period"]) if "period" in col_names else None
+        ins_const.loan_availed = helpers.clean_data(row["loan_availed"]) if "loan_availed" in col_names else None
+        ins_const.cost_avail = helpers.clean_data(row["cost_avail"]) if "cost_avail" in col_names else None
+        ins_const.rate = helpers.clean_data(row["rate"]) if "rate" in col_names else None
+        ins_const.emi = helpers.clean_data(row["emi"]) if "emi" in col_names else None
+        ins_const.os_principal = helpers.clean_data(row["os_principal"]) if "os_principal" in col_names else None
+        ins_const.os_interest = helpers.clean_data(row["os_interest"]) if "os_interest" in col_names else None
+        ins_const.fair_value = helpers.clean_data(row["fair_value"]) if "fair_value" in col_names else None
+        ins_const.coupon = helpers.clean_data(row["coupon"]) if "coupon" in col_names else None
+        ins_const.discount_factor = helpers.clean_data(row["discount_factor"]) if "discount_factor" in col_names else None
+        ins_const.col_1 = helpers.clean_data(row["col_1"]) if "col_1" in col_names else None
+        ins_const.col_2 = helpers.clean_data(row["col_2"]) if "col_2" in col_names else None
+        ins_const.col_3 = helpers.clean_data(row["col_3"]) if "col_3" in col_names else None
+        ins_const.default_eir = helpers.clean_data(row["default_eir"]) if "default_eir" in col_names else None
+
+
+    #
     # Fetch Account Number Instance
     if "account_no" in col_names and (import_type not in ["master", "product", "collateral"]):
         if row["account_no"].strip()!="":
@@ -404,8 +570,21 @@ def update_record(ins_const=None, import_type=None, row=None, file_identifier=No
 def move_record(request, tab_status=None, obj=None):
 
     created = None
+
     try:
-        ins = constants.TAB_ACTIVE[tab_status][4].get(date = obj.date, account_no = obj.account_no)
+        if tab_status == "ead":
+            try:
+                ins = constants.TAB_ACTIVE[tab_status][4].get(date = obj.ead_date, account_no = obj.account_no)
+            except AttributeError:
+                ins = constants.TAB_ACTIVE[tab_status][4].get(date = obj.date, account_no = obj.account_no)
+        elif tab_status == "ecl":
+            try:
+                ins = constants.TAB_ACTIVE[tab_status][4].get(date = obj.ecl_date, account_no = obj.account_no)
+            except AttributeError:
+                ins = constants.TAB_ACTIVE[tab_status][4].get(date = obj.date, account_no = obj.account_no)
+        else:
+            ins = constants.TAB_ACTIVE[tab_status][4].get(date = obj.date, account_no = obj.account_no)
+
     except ObjectDoesNotExist:
         ins = None
 
@@ -463,7 +642,7 @@ def move_record(request, tab_status=None, obj=None):
                 mgmt_overlay_2 = obj.mgmt_overlay_2,
             )
         else:
-            ins.date = obj.date,
+            ins.date = obj.date
             ins.account_no = obj.account_no
             ins.ead_os = obj.ead_os
             ins.pv_cashflows = obj.pv_cashflows
@@ -556,34 +735,104 @@ def move_record(request, tab_status=None, obj=None):
 
     elif tab_status == "ead" and obj is not None:
 
-        if ins is None:
-            created = constants.TAB_ACTIVE[tab_status][4].create(
-                date = obj.ead_date,
-                account_no = obj.account_no,
-                outstanding_amount = obj.outstanding_amount,
-                undrawn_upto_1_yr = obj.undrawn_upto_1_yr,
-                undrawn_greater_than_1_yr = obj.undrawn_greater_than_1_yr
-            )
-        else:
-            ins.date = obj.ead_date
-            ins.account_no = obj.account_no
-            ins.outstanding_amount = obj.outstanding_amount
-            ins.undrawn_upto_1_yr = obj.undrawn_upto_1_yr
-            ins.undrawn_greater_than_1_yr = obj.undrawn_greater_than_1_yr
-            ins.save()
+        try:
+            if ins is None:
+                created = constants.TAB_ACTIVE[tab_status][4].create(
+                    date = obj.ead_date,
+                    account_no = obj.account_no,
+                    outstanding_amount = obj.outstanding_amount,
+                    undrawn_upto_1_yr = obj.undrawn_upto_1_yr,
+                    undrawn_greater_than_1_yr = obj.undrawn_greater_than_1_yr
+                )
+            else:
+                ins.date = obj.ead_date
+                ins.account_no = obj.account_no
+                ins.outstanding_amount = obj.outstanding_amount
+                ins.undrawn_upto_1_yr = obj.undrawn_upto_1_yr
+                ins.undrawn_greater_than_1_yr = obj.undrawn_greater_than_1_yr
+                ins.save()
+        except AttributeError:
+            if ins is None:
+                created = constants.TAB_ACTIVE[tab_status][4].create(
+                    date = obj.date,
+                    account_no = obj.account_no,
+                    outstanding_amount = obj.outstanding_amount,
+                    undrawn_upto_1_yr = obj.undrawn_upto_1_yr,
+                    undrawn_greater_than_1_yr = obj.undrawn_greater_than_1_yr
+                )
+            else:
+                ins.date = obj.date
+                ins.account_no = obj.account_no
+                ins.outstanding_amount = obj.outstanding_amount
+                ins.undrawn_upto_1_yr = obj.undrawn_upto_1_yr
+                ins.undrawn_greater_than_1_yr = obj.undrawn_greater_than_1_yr
+                ins.save()
 
 
     elif tab_status == "ecl" and obj is not None:
+        try:
+            if ins is None:
+                created = constants.TAB_ACTIVE[tab_status][4].create(
+                    date = obj.ecl_date,
+                    account_no = obj.account_no,
+                    tenure = obj.tenure,
+                )
+            else:
+                ins.date = obj.ecl_date
+                ins.account_no = obj.account_no
+                ins.tenure = obj.tenure
+                ins.save()
+        except AttributeError:
+            if ins is None:
+                created = constants.TAB_ACTIVE[tab_status][4].create(
+                    date = obj.date,
+                    account_no = obj.account_no,
+                    tenure = obj.tenure,
+                )
+            else:
+                ins.date = obj.date
+                ins.account_no = obj.account_no
+                ins.tenure = obj.tenure
+                ins.save()
+                
+    elif tab_status == "ecl" and obj is not None:
+        
         if ins is None:
             created = constants.TAB_ACTIVE[tab_status][4].create(
                 date = obj.date,
                 account_no = obj.account_no,
-                tenure = obj.tenure,
+                period = obj.period,
+                loan_availed = obj.loan_availed,
+                cost_avail = obj.cost_avail,
+                rate = obj.rate,
+                emi = obj.emi,
+                os_principal = obj.os_principal,
+                os_interest = obj.os_interest,
+                fair_value = obj.fair_value, 
+                coupon = obj.coupon,
+                discount_factor = obj.discount_factor,
+                col_1 = obj.col_1,
+                col_2 = obj.col_2,
+                col_3 = obj.col_3,
+                default_eir = obj.default_eir,
             )
         else:
             ins.date = obj.date
             ins.account_no = obj.account_no
-            ins.tenure = obj.tenure
+            ins.period = obj.period
+            ins.loan_availed = obj.loan_availed
+            ins.cost_avail = obj.cost_avail
+            ins.rate = obj.rate
+            ins.emi = obj.emi
+            ins.os_principal = obj.os_principal
+            ins.os_interest = obj.os_interest
+            ins.fair_value = obj.fair_value
+            ins.coupon = obj.coupon
+            ins.discount_factor = obj.discount_factor
+            ins.col_1 = obj.col_1
+            ins.col_2 = obj.col_2
+            ins.col_3 = obj.col_3
+            ins.default_eir = obj.default_eir
             ins.save()
 
     #
@@ -643,11 +892,13 @@ def move_data_bg_process(request, tab_status=None):
 
         if tab_status == "ecl":
             result_set = qry.values_list('id', 'date', 'account_no', 'tenure')
+            
+        if tab_status == "eir":
+            result_set = qry.values_list('id', 'date', 'account_no', 'period', 'loan_availed', 'cost_avail', 'rate', 'emi', 'os_principal', 'os_interest', 'fair_value', 'coupon', 'discount_factor', 'col_1', 'col_2', 'col_3', 'default_eir', 'cop_tagged')
 
         #
         # If valid records found : then capture & iterate to insert
         if records_valid > 0:
-
 
             #
             # Iterate over each row & insert
@@ -692,6 +943,14 @@ def move_data_bg_process(request, tab_status=None):
 
                     update_qry = """
                         update {0} set tenure='{3}', created_on='{6}' where date='{1}' and account_no_id='{2}'
+                    """
+                    
+                if tab_status == "eir":
+                    insert_qry = """
+                        insert into {0} (date, account_no_id, period, loan_availed, cost_avail, rate, emi, os_principal, os_interest, fair_value, coupon, discount_factor, col_1, col_2, col_3, default_eir, cop_tagged, created_on)""".format(constants.TAB_ACTIVE[tab_status][6])
+
+                    update_qry = """
+                        update {0} set period='{3}', loan_availed='{4}', cost_avail='{5}' , rate='{6}', emi='{7}', os_principal='{8}', os_interest='{9}', fair_value='{10}', coupon='{11}', discount_factor='{12}', col_1='{13}', col_2='{14}', col_3='{15}', default_eir='{16}', cop_tagged ='{17}', created_on='{18}' where date='{1}' and account_no_id='{2}'
                     """
 
 
@@ -747,8 +1006,6 @@ def move_data_bg_process(request, tab_status=None):
 
                         main_query = insert_qry+"values({})".format(value_params)
                         main_query = main_query.format(*formatted_data)
-
-                        print(main_query)
 
                         ret_val = False
                         try:
@@ -1050,6 +1307,8 @@ def lgd_report(request, account_no=None, start_date=None, end_date=None, s_type 
                 acc = AccountMaster.objects.get(pk = int(row["account_no_id"]))
             except ObjectDoesNotExist:
                 return False
+            except:
+                return False
 
             try:
                 lgd_report = LGD_Report.objects.get(date = row["date"], account_no = acc)
@@ -1289,9 +1548,8 @@ def stage_report(request, account_no=None, start_date=None, end_date=None, s_typ
         return True
 
 
-
 # **********************************************************************
-# PD REPORT CALCULATION & DATA LOAD
+# EAD REPORT CALCULATION & DATA LOAD
 # **********************************************************************
 
 def ead_report(request, account_no=None, start_date=None, end_date=None, s_type = 0, id_selected=None):
@@ -1484,7 +1742,7 @@ def ead_report(request, account_no=None, start_date=None, end_date=None, s_type 
 
 
 # **********************************************************************
-# STAGE REPORT CALCULATION & DATA LOAD
+# ECL REPORT CALCULATION & DATA LOAD
 # **********************************************************************
 
 def ecl_report(request, account_no=None, start_date=None, end_date=None, s_type = 0, id_selected=None):
@@ -1492,7 +1750,6 @@ def ecl_report(request, account_no=None, start_date=None, end_date=None, s_type 
     #
     # Loading the data
 
-    where_clause = False
     dates_cond = ""
     acc_cond = ""
 
@@ -1513,55 +1770,79 @@ def ecl_report(request, account_no=None, start_date=None, end_date=None, s_type 
         else:
             if start_date is not None:
                 if end_date is not None:
-                    dates_cond = " where ECL.date >='{}' and ECL.date <='{}'".format(start_date, end_date)
-                    where_clause = True
+                    dates_cond = " and ECL.date >='{}' and ECL.date <='{}'".format(start_date, end_date)
+
                 else:
-                    dates_cond = " where ECL.date >='{}'".format(start_date)
-                    where_clause = True
+                    dates_cond = " and ECL.date >='{}'".format(start_date)
+
 
         if account_no is not None:
-            if where_clause:
-                acc_cond = " and ECL.account_no_id = {}".format(account_no)
-            else:
-                acc_cond = " where ECL.account_no_id = {}".format(account_no)
+            acc_cond = " and ECL.account_no_id = {}".format(account_no)
     else:
-        acc_cond = " where ECL.id in ({})".format(','.join(id_selected))
+        acc_cond = " and ECL.id in ({})".format(','.join(id_selected))
 
     #
     #
     #
     if s_type == 1:
-        qry = """select BP.product_name, BP.product_code, AC.account_no as Account_no, AC.cin, AC.sectors, AC.account_type, ECL.id as id, ECL.tenure, PD.pd, LGD.final_lgd, ST.stage, EAD.ead_total, ECL.account_no_id
+        qry = """select BP.product_name, BP.product_code, AC.account_no as Account_no, AC.cin, AC.sectors, AC.account_type, ECL.id as id, ECL.tenure, PD.pd, LGD.final_lgd, ST.stage, EAD.ead_total, ECL.account_no_id, ECL.date as ecl_date, PD.id as pd_id, LGD.id as lgd_id, ST.id as stage_id, EAD.id as ead_id
         from app_ecl_initial ECL
         left join (select * from app_collateral group by account_no_id) C1 on ECL.account_no_id = C1.account_no_id
 		left join app_accountmaster AC on ECL.account_no_id = AC.id
         left join app_basel_product_master BP on C1.product_id = BP.id
-        left join app_pd_report PD on PD.account_no_id = ECL.account_no_id and PD.date = ECL.date
-        left join app_lgd_report LGD on LGD.account_no_id = ECL.account_no_id and LGD.date = ECL.date
-        left join app_stage_report ST on ST.account_no_id = ECL.account_no_id and ST.date = ECL.date
-        left join app_ead_report EAD on EAD.account_no_id = ECL.account_no_id and EAD.date = ECL.date
-        {} {} and ECL.account_no_id is not null order by ECL.id
+        left join app_pd_report PD on (PD.account_no_id = ECL.account_no_id and PD.date = ECL.date)
+        left join app_lgd_report LGD on (LGD.account_no_id = ECL.account_no_id and LGD.date = ECL.date)
+        left join app_stage_report ST on (ST.account_no_id = ECL.account_no_id and ST.date = ECL.date)
+        left join app_ead_report EAD on (EAD.account_no_id = ECL.account_no_id and EAD.date = ECL.date)
+        where ECL.account_no_id is not null and ECL.date is not null
+        {} {} order by ECL.id
         """.format(dates_cond, acc_cond)
 
-        qs = constants.TAB_ACTIVE["ecl"][4].raw(qry)
+        qs = constants.TAB_ACTIVE["ecl"][3].raw(qry)
+
+        params["params"]["handler_table"] =  "initial"
+
+
+        qry_2 = """select BP.product_name, BP.product_code, AC.account_no as Account_no, AC.cin, AC.sectors, AC.account_type, ECL.id as id, ECL.tenure, PD.pd, LGD.final_lgd, ST.stage, EAD.ead_total, ECL.account_no_id, ECL.date as ecl_date, PD.id as pd_id, LGD.id as lgd_id, ST.id as stage_id, EAD.id as ead_id
+        from app_ecl_initial ECL
+        left join (select * from app_collateral group by account_no_id) C1 on ECL.account_no_id = C1.account_no_id
+		left join app_accountmaster AC on ECL.account_no_id = AC.id
+        left join app_basel_product_master BP on C1.product_id = BP.id
+        left join app_pd_report PD on (PD.account_no_id = ECL.account_no_id and PD.date = ECL.date)
+        left join app_lgd_report LGD on (LGD.account_no_id = ECL.account_no_id and LGD.date = ECL.date)
+        left join app_stage_report ST on (ST.account_no_id = ECL.account_no_id and ST.date = ECL.date)
+        left join app_ead_report EAD on (EAD.account_no_id = ECL.account_no_id and EAD.date = ECL.date)
+        where ECL.account_no_id is not null
+        and ECL.date is not null
+        and PD.pd is not null
+        and LGD.final_lgd is not null
+        and ST.stage is not null
+        and EAD.ead_total is not null
+        {} {} order by ECL.id
+        """.format(dates_cond, acc_cond)
+
+        qs_2 = constants.TAB_ACTIVE["ecl"][3].raw(qry_2)
 
 
     else:
-        qry = """select BP.product_name, BP.product_code, AC.account_no as Account_no, AC.cin, AC.sectors, AC.account_type, ECL.id as id, ECL.tenure, PD.pd, LGD.final_lgd, ST.stage, EAD.ead_total, ECL.account_no_id
+        qry = """
+        select BP.product_name, BP.product_code, AC.account_no as Account_no, AC.cin, AC.sectors, AC.account_type, ECL.id as id, ECL.tenure, PD.pd, LGD.final_lgd, ST.stage, EAD.ead_total, ECL.account_no_id, ECL.date as ecl_date, PD.id as pd_id, LGD.id as lgd_id, ST.id as stage_id, EAD.id as ead_id
         from app_ecl_final ECL
         left join (select * from app_collateral group by account_no_id) C1 on ECL.account_no_id = C1.account_no_id
 		left join app_accountmaster AC on ECL.account_no_id = AC.id
         left join app_basel_product_master BP on C1.product_id = BP.id
-        left join app_pd_report PD on PD.account_no_id = ECL.account_no_id and PD.date = ECL.date
-        left join app_lgd_report LGD on LGD.account_no_id = ECL.account_no_id and LGD.date = ECL.date
-        left join app_stage_report ST on ST.account_no_id = ECL.account_no_id and ST.date = ECL.date
-        left join app_ead_report EAD on EAD.account_no_id = ECL.account_no_id and EAD.date = ECL.date {} {}
-        order by ECL.id
+        left join app_pd_report PD on (PD.account_no_id = ECL.account_no_id and PD.date = ECL.date)
+        left join app_lgd_report LGD on (LGD.account_no_id = ECL.account_no_id and LGD.date = ECL.date)
+        left join app_stage_report ST on (ST.account_no_id = ECL.account_no_id and ST.date = ECL.date)
+        left join app_ead_report EAD on (EAD.account_no_id = ECL.account_no_id and EAD.date = ECL.date)
+        where ECL.date is not null
+        {} {} order by ECL.id
         """.format(dates_cond, acc_cond)
 
         qs = constants.TAB_ACTIVE["ecl"][4].raw(qry)
 
         params["params"]["handler_table"] =  "final"
+
 
     #
     # Audit Trail
@@ -1572,49 +1853,178 @@ def ecl_report(request, account_no=None, start_date=None, end_date=None, s_type 
     #=============================================================
     for row in qs:
 
+        run_rep = True
+        final_ecl = 0
+        Tenure = float(row.tenure) if (row.tenure is not None or row.tenure !="") else 1
+
         #
         # Load data into Report Table
         try:
             acc = AccountMaster.objects.get(pk = int(row.account_no_id))
         except:
-            return False
-
-        PD = float(row.pd) if row.pd is not None and row.pd !="" else 1
-        LGD = float(row.final_lgd) if row.final_lgd is not None and row.final_lgd !="" else 1
-        EAD = float(row.ead_total) if row.ead_total is not None and row.ead_total !="" else 1
-        EIR = random.random() * 10
-        Tenure = float(row.tenure) if row.tenure is not None and row.tenure !="" else 1
+            run_rep = False
 
         #
         #
 
-        final_ecl = 0
-        if row.stage == "1":
-            final_ecl = round(PD * LGD * EAD, 5)
-        elif row.stage == "2":
-            final_ecl = round((PD * LGD * EAD)/(1+EIR) ** Tenure, 5)
-        elif row.stage == "3":
-            final_ecl = round((1 * LGD * EAD)/(1+EIR) ** Tenure, 5)
+        if run_rep:
 
-        try:
-            # Edit
-            ecl_report = ECL_Reports.objects.get(date = row.date, account_no = acc)
-            ecl_report.tenure = row.tenure
-            ecl_report.final_ecl = final_ecl
-            ecl_report.eir = "{}%".format(round(EIR,2))
-            ecl_report.save()
-        except:
-            ECL_Reports.objects.create(
-                date = row.date,
-                account_no = acc,
-                tenure = row.tenure,
-                eir = "{}%".format(round(EIR,2)),
-                final_ecl = final_ecl
-            )
+            EIR = round(random.random() * 10, 2)
+
+            if not all([row.pd, row.final_lgd, row.ead_total, row.stage]):
+                run_rep = False
+
+                try:
+                    ins = ECL_Missing_Reports.objects.get(date = row.ecl_date, account_no = acc)
+                except:
+                    ins = ECL_Missing_Reports(date = row.ecl_date, account_no = acc)
+
+                if row.pd is None or row.pd =="":
+                    ins.pd = row.pd_id if row.pd_id is not None else "No Record"
+                else:
+                    ins.pd = None
+
+                if row.final_lgd is None or row.final_lgd =="":
+                    ins.lgd = row.lgd_id if row.lgd_id is not None else "No Record"
+                else:
+                    ins.lgd = None
+
+                if row.ead_total is None or row.ead_total =="":
+                    ins.ead = row.ead_id if row.ead_id is not None else "No Record"
+                else:
+                    ins.ead = None
+
+                if row.stage is None or row.stage =="":
+                    ins.stage = row.stage_id if row.stage_id is not None else "No Record"
+                else:
+                    ins.stage = None
+
+                ins.tenure = row.tenure
+                ins.eir = "{}%".format(EIR)
+
+                ins.save()
+
+                constants.TAB_ACTIVE["ecl"][9].filter(date = row.ecl_date, account_no_id = row.account_no_id).delete()
+            else:
+                PD = float(row.pd) if row.pd is not None and row.pd !="" else 1
+                LGD = float(row.final_lgd) if row.final_lgd is not None and row.final_lgd !="" else 1
+                EAD = float(row.ead_total) if row.ead_total is not None and row.ead_total !="" else 1
+
+                try:
+                    ECL_Missing_Reports.objects.get(date = row.ecl_date, account_no = acc).delete()
+                except:
+                    pass
+        #
+        #
+        if run_rep:
+
+            if row.stage == "1":
+                final_ecl = round(PD * LGD * EAD, 5)
+            elif row.stage == "2":
+                final_ecl = round((PD * LGD * EAD)/((1+(EIR/100)) ** Tenure), 5)
+                #print("2 ==> ", 100+EIR, Tenure, (PD * LGD * EAD), (1+(EIR/100)) ** Tenure, (PD * LGD * EAD)/((1+(EIR/100)) ** Tenure))
+            elif row.stage == "3":
+                final_ecl = round((1 * LGD * EAD)/((1+(EIR/100)) ** Tenure), 5)
+                #print("3 ==> ", 100+EIR, Tenure, (1 * LGD * EAD) , (1+(EIR/100)) ** Tenure, (1 * LGD * EAD)/((1+(EIR/100)) ** Tenure))
+
+            try:
+                # Edit
+                ecl_report = ECL_Reports.objects.get(date = row.ecl_date, account_no = acc)
+                ecl_report.tenure = row.tenure
+                ecl_report.final_ecl = round(final_ecl,2)
+                ecl_report.eir = "{}%".format(EIR)
+                ecl_report.save()
+            except:
+                ECL_Reports.objects.create(
+                    date = row.ecl_date,
+                    account_no = acc,
+                    tenure = row.tenure,
+                    eir = "{}%".format(EIR),
+                    final_ecl = round(final_ecl,2)
+                )
 
     if s_type == 1:
-        for row_mov in qs:
+        for row_mov in qs_2:
+
             move_record(request, "ecl", row_mov)
+    return True
+
+
+# **********************************************************************
+# EIR REPORT CALCULATION & DATA LOAD
+# **********************************************************************
+
+def eir_report(request, account_no=None, start_date=None, end_date=None, s_type = 0, id_selected=None):
+    #
+    # Loading the data
+    #=============================================================
+    if s_type == 1:
+        results = constants.TAB_ACTIVE["eir"][3].raw(""" select account_no_id, date from app_eir_initial where account_no_id is not null group by account_no_id""")
+
+        params = {
+            "parent" : "eir",
+            "report_run" : True,
+            "params":{"handler_table": "initial", "start_date":start_date, "end_date":end_date, "account_no":account_no, "selected_ids":id_selected, "all":False}
+        }
+
+    else:
+        results = constants.TAB_ACTIVE["eir"][4].raw(""" select account_no_id, date from app_eir_final group by account_no_id""")
+
+        params = {
+            "parent" : "eir",
+            "report_run" : True,
+            "params":{"handler_table": "final", "start_date":start_date, "end_date":end_date, "account_no":account_no, "selected_ids":id_selected, "all":False}
+        }
+        
+    print(results.query)
+    #
+    #
+    #=============================================================
+    if id_selected is None or len(id_selected) == 0:
+
+        if start_date is None and end_date is None and account_no is None:
+            
+            params["params"]["all"] = True
+
+        if start_date is not None:
+            if end_date is not None:
+                pass
+            else:
+                pass
+
+        if account_no is not None:
+            pass
+    else:
+        if s_type == 0:
+            pass
+
+    #
+    # Audit Trail
+    #=============================================================
+    helpers.audit_trail(request, params)
+
+
+    #
+    #
+    #=============================================================
+    move_res = results
+    
+    
+
+    """
+    if results.exists() is False:
+        return False
+    else:
+        
+        for row in results:
+            pass
+        
+        if s_type == 1:
+            for row_mov in move_res:
+                move_record(request, "eir", row_mov)
+
+        return True
+    """
     return True
 
 
@@ -1644,10 +2054,91 @@ def download_reports(tab_status=None, start_date=None, end_date=None, ftype=0):
 
         results = results.extra(select={'product_name': product_qry}).select_related('account_no').values('id', 'date', 'account_no__account_no', 'account_no__cin', 'account_no__account_type', 'account_no__sectors', 'product_name', 'ead_os', 'pv_cashflows', 'pv_cost', 'beta_value', 'factor_5', 'sec_flag', 'factor_4', 'factor_5', 'avg_1', 'avg_2', 'avg_3', 'avg_4', 'avg_5', 'mgmt_overlay_2', 'rec_rate', 'est_rr', 'est_lgd', 'final_lgd')
 
-    df = pd.DataFrame(results)
-    df = df.set_index('id')
+    if tab_status == "stage":
+        product_qry = """select product_name from app_basel_product_master where id = (select distinct(product_id) from app_collateral where account_no_id = app_stage_report.account_no_id)"""
 
-    df.rename({'account_no__account_no':'account_no', 'account_no__cin':'cin', 'account_no__account_type':'account_type', 'account_no__sectors':'sectors'}, axis=1, inplace=True)
+        results = results.extra(select={'product_name': product_qry}).select_related('account_no').values('id', 'date', 'account_no__account_no', 'account_no__cin', 'account_no__account_type', 'account_no__sectors', 'product_name', 'state', 'stage', 'old_rating', 'new_rating', 'rating_3', 'rating_4', 'rating_5', 'rating_6', 'rating_7', 'day_bucket_1', 'day_bucket_2', 'day_bucket_3', 'day_bucket_4', 'day_bucket_5', 'day_bucket_6', 'day_bucket_7', 'day_bucket_8', 'day_bucket_9', 'day_bucket_10', 'day_bucket_11', 'day_bucket_12', 'day_bucket_13', 'day_bucket_14', 'day_bucket_15', 'criteria', 'cooling_period_1', 'cooling_period_2', 'cooling_period_3', 'cooling_period_4', 'cooling_period_5', 'rbi_window', 'mgmt_overlay_1', 'mgmt_overlay_2')
+
+    if tab_status == "ead":
+        qry = """select ED.date, ED.id, ED.outstanding_amount, ED.undrawn_upto_1_yr, ED.undrawn_greater_than_1_yr, AC.account_no as Account_no, AC.account_type, AC.sectors, AC.cin, C.collateral_value, C.collateral_rating as c_rating, C.collateral_residual_maturity as c_r_maturity, BP.product_name, BP.product_code, BC.collateral_code, BC.collateral_type, BC.issuer_type, BC.collateral_eligibity, BC.rating_available, BC.collateral_rating as b_c_rating, BC.residual_maturity, BC.basel_collateral_type, BC.basel_collateral_subtype, BC.basel_collateral_code, BC.basel_collateral_rating, BC.soverign_issuer, BC.other_issuer, ED.ead_total, BC.residual_maturity as b_c_maturity
+        from app_ead_report ED
+        left join app_accountmaster AC on AC.id = ED.account_no_id
+        left join app_collateral C on C.account_no_id = AC.id
+        left join app_basel_product_master BP on BP.id = C.product_id
+        left join app_basel_collateral_master BC on BC.id = C.collateral_code_id
+        """
+
+    if tab_status == "ecl":
+        qry = """select BP.product_name, BP.product_code, AC.account_no as Account_no, AC.cin, AC.sectors, AC.account_type, ECL.date, ECL.id as id, ECL.tenure, PD.pd, LGD.final_lgd, ST.stage, EAD.ead_total, ECL.final_ecl, ECL.eir
+        from app_ecl_reports ECL
+        left join (select * from app_collateral group by account_no_id) C1 on ECL.account_no_id = C1.account_no_id
+        left join app_accountmaster AC on ECL.account_no_id = AC.id
+        left join app_basel_product_master BP on C1.product_id = BP.id
+        left join app_pd_report PD on PD.account_no_id = ECL.account_no_id
+        left join app_lgd_report LGD on LGD.account_no_id = ECL.account_no_id
+        left join app_stage_report ST on ST.account_no_id = ECL.account_no_id
+        left join app_ead_report EAD on EAD.account_no_id = ECL.account_no_id
+        where PD.date = ECL.date
+        and LGD.date = ECL.date
+        and ST.date = ECL.date
+        and EAD.date = ECL.date order by ECL.id
+        """
+
+
+    if tab_status not in ("ead", "ecl"):
+        df = pd.DataFrame(results)
+        df = df.set_index('id')
+
+        df.rename({'account_no__account_no':'account_no', 'account_no__cin':'cin', 'account_no__account_type':'account_type', 'account_no__sectors':'sectors'}, axis=1, inplace=True)
+    else:
+
+        results = results.raw(qry)
+
+        if tab_status == "ead":
+            items_list = []
+
+            for row in results:
+                items_list.append({
+                    "id":row.id,
+                    "date":row.date,
+                    "Account_no":row.Account_no,
+                    "account_type":row.account_type,
+                    "cin":row.cin,
+                    "sectors":row.sectors,
+                    "outstanding_amount":row.outstanding_amount,
+                    "undrawn_upto_1_yr":row.undrawn_upto_1_yr,
+                    "undrawn_greater_than_1_yr":row.undrawn_greater_than_1_yr,
+                    "product_name":row.product_name,
+                    "product_code":row.product_code,
+                    "collaterals":[],
+                    "ead_total":row.ead_total,
+                })
+
+            df = pd.DataFrame(items_list)
+
+        if tab_status == "ecl":
+            items_list = []
+
+            for row in results:
+                items_list.append({
+                    "id":row.id,
+                    "date":row.date,
+                    "Account_no":row.Account_no,
+                    "account_type":row.account_type,
+                    "cin":row.cin,
+                    "sectors":row.sectors,
+                    "product_name":row.product_name,
+                    "product_code":row.product_code,
+                    "tenure":row.tenure,
+                    "PD":row.pd,
+                    "LGD":row.final_lgd,
+                    "Stage":row.stage,
+                    "EIR":row.eir,
+                    "EAD":row.ead_total,
+                    "ECL":row.final_ecl
+                })
+
+            df = pd.DataFrame(items_list)
 
     if ftype == 0:
         file_name = os.path.join(settings.REPORTS_DIR, "output.xlsx")
@@ -1655,3 +2146,5 @@ def download_reports(tab_status=None, start_date=None, end_date=None, ftype=0):
         return file_name
     else:
         return df
+
+

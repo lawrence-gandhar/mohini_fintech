@@ -4,6 +4,7 @@
 # Project Date : 14th Sept 2021
 #
 
+from django.views import View
 from django.contrib.auth.models import User
 from django.contrib.auth.hashers import make_password
 from django.contrib import messages
@@ -14,7 +15,7 @@ from django.shortcuts import render, redirect
 
 from django.core.paginator import Paginator, EmptyPage, PageNotAnInteger
 from django.core.serializers.json import DjangoJSONEncoder
-from django.core.exceptions import ObjectDoesNotExist
+from django.core.exceptions import ObjectDoesNotExist, MultipleObjectsReturned
 
 from django.utils import timezone
 
@@ -37,6 +38,9 @@ import time
 import json
 from collections import defaultdict, Counter
 import os
+
+import pandas as pd
+from django.conf import settings
 
 
 
@@ -66,11 +70,11 @@ def user_dashboard(request):
     final_ecl_sum = 0
 
     for row in ead_total:
-        ead_total_sum = row.id
-        final_ecl_sum = row.final_ecl_sum
+        ead_total_sum = row.id if row.id is not None else 0
+        final_ecl_sum = row.final_ecl_sum if row.final_ecl_sum is not None else 0
 
-    data["ead_total_sum"] = ead_total_sum
-    data["final_ecl_sum"] = final_ecl_sum
+    data["ead_total_sum"] = round(ead_total_sum)
+    data["final_ecl_sum"] = round(final_ecl_sum)
 
 
     #
@@ -86,12 +90,12 @@ def user_dashboard(request):
     """)
 
 
-    sector_chart_data = [['x'],['EAD'],['ECL']]
+    sector_chart_data = [['x'],['ECL'],['EAD']]
 
     for row in sector_data_qry:
         sector_chart_data[0].append(row.sector)
-        sector_chart_data[1].append(row.final_ecl)
-        sector_chart_data[2].append(row.ead_total)
+        sector_chart_data[1].append(round(row.ead_total))
+        sector_chart_data[2].append(round(row.final_ecl))
 
     data["sector_chart_data"] = sector_chart_data
 
@@ -109,10 +113,15 @@ def user_dashboard(request):
 
     stage_chart_data = []
 
+    total_ecl = 0
     for row in stage_data_qry:
-        stage_chart_data.append(['STAGE {}'.format(row.stage), row.final_ecl])
+        total_ecl += abs(round(row.final_ecl))
+
+    for row in stage_data_qry:
+        stage_chart_data.append(['STAGE {}'.format(row.stage), round((abs(row.final_ecl)/total_ecl)*100)])
 
     data["stage_chart_data"] = stage_chart_data
+
 
     #
     #
@@ -127,12 +136,12 @@ def user_dashboard(request):
         ) DS group by DS.product_name
     """)
 
-    product_chart_data = [['x'],['EAD'],['ECL']]
+    product_chart_data = [['x'],['ECL'],['EAD']]
 
     for row in product_data_qry:
         product_chart_data[0].append(row.product_name)
-        product_chart_data[1].append(row.final_ecl)
-        product_chart_data[2].append(row.ead_total)
+        product_chart_data[1].append(round(row.ead_total))
+        product_chart_data[2].append(round(row.final_ecl))
 
     data["product_chart_data"] = product_chart_data
 
@@ -165,11 +174,11 @@ def dashboard(request):
     final_ecl_sum = 0
 
     for row in ead_total:
-        ead_total_sum = row.id
-        final_ecl_sum = row.final_ecl_sum
+        ead_total_sum = row.id if row.id is not None else 0
+        final_ecl_sum = row.final_ecl_sum if row.final_ecl_sum is not None else 0
 
-    data["ead_total_sum"] = ead_total_sum
-    data["final_ecl_sum"] = final_ecl_sum
+    data["ead_total_sum"] = round(ead_total_sum)
+    data["final_ecl_sum"] = round(final_ecl_sum)
 
 
     #
@@ -189,8 +198,8 @@ def dashboard(request):
 
     for row in sector_data_qry:
         sector_chart_data[0].append(row.sector)
-        sector_chart_data[1].append(row.final_ecl)
-        sector_chart_data[2].append(row.ead_total)
+        sector_chart_data[1].append(round(row.ead_total))
+        sector_chart_data[2].append(round(row.final_ecl))
 
     data["sector_chart_data"] = sector_chart_data
 
@@ -208,10 +217,16 @@ def dashboard(request):
 
     stage_chart_data = []
 
+    total_ecl = 0
+
     for row in stage_data_qry:
-        stage_chart_data.append(['STAGE {}'.format(row.stage), row.final_ecl])
+        total_ecl += abs(round(row.final_ecl))
+
+    for row in stage_data_qry:
+        stage_chart_data.append(['STAGE {}'.format(row.stage), round((abs(row.final_ecl)/total_ecl)*100)])
 
     data["stage_chart_data"] = stage_chart_data
+
 
     #
     #
@@ -230,8 +245,8 @@ def dashboard(request):
 
     for row in product_data_qry:
         product_chart_data[0].append(row.product_name)
-        product_chart_data[1].append(row.final_ecl)
-        product_chart_data[2].append(row.ead_total)
+        product_chart_data[1].append(round(row.ead_total))
+        product_chart_data[2].append(round(row.final_ecl))
 
     data["product_chart_data"] = product_chart_data
 
@@ -623,7 +638,7 @@ def manage_imports(request, tab_status=None):
     data["tab_status"] = tab_status
     data["tab_active"] = constants.TAB_ACTIVE[tab_status][0]
     data["content_template"] = constants.TAB_ACTIVE[tab_status][1]
-    data["js_files"] = ['custom_js/imports.js']
+    data["js_files"] = ['custom_js/imports.js?version=1.1']
     data["sidebar_active"] = 3
 
     #
@@ -961,6 +976,32 @@ def edit_record(request, tab_status=None):
 
         #
         #
+        if tab_status == "eir":
+            obj.date = request.POST["date"] if request.POST["date"].strip()!="" else None
+            obj.period = request.POST["period"] if request.POST["period"].strip()!="" else None
+            obj.loan_availed = request.POST["loan_availed"] if request.POST["loan_availed"].strip()!="" else None
+            obj.cost_avail = request.POST["cost_avail"] if request.POST["cost_avail"].strip()!="" else None
+            obj.rate = request.POST["rate"] if request.POST["rate"].strip()!="" else None
+            obj.emi = request.POST["emi"] if request.POST["emi"].strip()!="" else None
+            obj.os_principal = request.POST["os_principal"] if request.POST["os_principal"].strip()!="" else None
+            obj.os_interest = request.POST["os_interest"] if request.POST["os_interest"].strip()!="" else None
+            obj.fair_value = request.POST["fair_value"] if request.POST["fair_value"].strip()!="" else None
+            obj.coupon = request.POST["coupon"] if request.POST["coupon"].strip()!="" else None
+            obj.discount_factor = request.POST["discount_factor"] if request.POST["discount_factor"].strip()!="" else None
+            obj.col_1 = request.POST["col_1"] if request.POST["col_1"].strip()!="" else None
+            obj.col_2 = request.POST["col_2"] if request.POST["col_2"].strip()!="" else None
+            obj.col_3 = request.POST["col_3"] if request.POST["col_3"].strip()!="" else None
+            obj.default_eir = request.POST["default_eir"] if request.POST["default_eir"].strip()!="" else None
+            obj.default_eir = request.POST["default_eir"] if request.POST["default_eir"].strip()!="" else None
+
+        #
+        #
+        if tab_status == "ecl":
+            obj.date = request.POST["date"] if request.POST["date"].strip()!="" else None
+            obj.tenure = request.POST["tenure"] if request.POST["tenure"].strip()!="" else None
+
+        #
+        #
         obj.edited_by = request.user
         obj.edited_on = timezone.now()
 
@@ -1084,8 +1125,6 @@ def show_final_records(request, tab_status=None):
         if account_no_search !="":
             acc_no_ins = AccountMaster.objects.filter(account_no__icontains = account_no_search)
 
-
-    print(request.GET, acc_no_ins, start_date, end_date)
 
     #
     # TAB- PD
@@ -1250,7 +1289,7 @@ def show_final_records(request, tab_status=None):
     #==============================================================
     if tab_status == "eir":
 
-        product_qry = """select product_name from app_basel_product_master where id = (select distinct(product_id) from app_collateral where account_no_id = app_ecl_final.account_no_id)"""
+        product_qry = """select product_name from app_basel_product_master where id = (select distinct(product_id) from app_collateral where account_no_id = app_eir_final.account_no_id)"""
 
         results = constants.TAB_ACTIVE[tab_status][4].extra(select={'product_name': product_qry}).select_related("account_no")
 
@@ -1265,7 +1304,8 @@ def show_final_records(request, tab_status=None):
             if end_date !="":
                 results = results.filter(date__lte = end_date)
 
-
+        results = results.values('id', 'date', 'account_no_id', 'product_name', 'period', 'loan_availed', 'cost_avail', 'rate', 'emi', 'os_principal', 'os_interest', 'fair_value', 'coupon', 'discount_factor', 'col_1', 'col_2', 'col_3', 'default_eir', 'cop_tagged', Account_No = F('account_no__account_no'), cin = F('account_no__cin'), sectors = F('account_no__sectors'), account_type = F('account_no__account_type')).order_by("id")
+        
     #
     # TAB- ECL
     #==============================================================
@@ -1314,7 +1354,7 @@ def show_final_records(request, tab_status=None):
     data["tab_status"] = tab_status
     data["tab_active"] = constants.TAB_ACTIVE[tab_status][0]
     data["content_template"] = constants.TAB_ACTIVE[tab_status][7]
-    data["js_files"] = ['custom_js/imports.js?version=1.1.1']
+    data["js_files"] = ['custom_js/imports.js?version=1.1.2']
     data["sidebar_active"] = 4
     data["items_list"] = results
 
@@ -1399,34 +1439,79 @@ def pd_report(request, s_type=0):
         id_selected = None
 
 
-    #
-    #
+    #==================================================================================
+    # check if one is selected or with a single default
+    #==================================================================================
 
-    ret = background_tasks.pd_report(request, start_date = start_date, end_date = end_date, account_no = account_no, s_type = s_type, id_selected = id_selected)
-    if ret:
+    do_process = True
 
-        results = PD_Report.objects
+    if s_type == 1:
+        results = constants.TAB_ACTIVE["pd"][3].filter(account_no__isnull = False)
+    else:
+        results = constants.TAB_ACTIVE["pd"][4]
 
-        if id_selected is not None:
-            if len(id_selected) > 0:
-                results = results.filter(id__in = id_selected)
+    if id_selected is None or len(id_selected) == 0:
+
+        if start_date is None and end_date is None and account_no is None:
+            results = results.all()
+
+        if start_date is not None:
+            if end_date is not None:
+                results = results.filter(date__gte = start_date, date__lte = end_date)
+            else:
+                results = results.filter(date__gte = start_date)
+
+        if account_no is not None:
+            results = results.filter(account_no__account_no__in = account_no)
+    else:
+        results = results.filter(id__in = id_selected)
+
+    results = results.values('default_col')
+
+    defaults = set([row["default_col"] for row in results])
+
+
+    if len(defaults) <= 1:
+        messages.error(request, "Operation not permitted. Try with multiple rows selected with different default values.")
+
+        if account_no is None and start_date is not None and end_date is not None and id_selected is not None:
+            rev = reverse("show_reports")
+            params = request.POST.urlencode()
+            rev = '{}{}?{}'.format(rev, "pd", params)
+            return redirect(rev)
         else:
-            if start_date is None and end_date is None and account_no is None:
-                results = results.all()
+            return redirect("show_reports", "pd")
 
-            if start_date is not None:
-                if end_date is not None:
-                    results = results.filter(date__gte = start_date, date__lte = end_date)
-                else:
-                    results = results.filter(date__gte = start_date)
+    #
+    #
+    #=============================================================================
 
-            if account_no is not None:
-                results = results.filter(account_no__account_no__in = account_no)
+    if do_process:
+        ret = background_tasks.pd_report(request, start_date = start_date, end_date = end_date, account_no = account_no, s_type = s_type, id_selected = id_selected)
+        if ret:
+
+            results = PD_Report.objects
+
+            if id_selected is not None:
+                if len(id_selected) > 0:
+                    results = results.filter(id__in = id_selected)
+            else:
+                if start_date is None and end_date is None and account_no is None:
+                    results = results.all()
+
+                if start_date is not None:
+                    if end_date is not None:
+                        results = results.filter(date__gte = start_date, date__lte = end_date)
+                    else:
+                        results = results.filter(date__gte = start_date)
+
+                if account_no is not None:
+                    results = results.filter(account_no__account_no__in = account_no)
 
 
-        product_qry = """select product_name from app_basel_product_master where id = (select distinct(product_id) from app_collateral where account_no_id = app_pd_report.account_no_id)"""
+            product_qry = """select product_name from app_basel_product_master where id = (select distinct(product_id) from app_collateral where account_no_id = app_pd_report.account_no_id)"""
 
-        results = results.extra(select={'product_name': product_qry}).select_related('account_no').values('id', 'date' ,'product_name', 'factor_1', 'factor_2', 'factor_3', 'factor_4', 'factor_5', 'factor_6', 'default_col', 'mgmt_overlay_1', 'mgmt_overlay_2', 'intercept', 'coeff_fact1', 'coeff_fact2', 'coeff_fact3', 'coeff_fact4', 'zscore', 'pd', Account_no = F('account_no__account_no'), cin = F('account_no__cin'), account_type = F('account_no__account_type'), sectors = F('account_no__sectors'))
+            results = results.extra(select={'product_name': product_qry}).select_related('account_no').values('id', 'date' ,'product_name', 'factor_1', 'factor_2', 'factor_3', 'factor_4', 'factor_5', 'factor_6', 'default_col', 'mgmt_overlay_1', 'mgmt_overlay_2', 'intercept', 'coeff_fact1', 'coeff_fact2', 'coeff_fact3', 'coeff_fact4', 'zscore', 'pd', Account_no = F('account_no__account_no'), cin = F('account_no__cin'), account_type = F('account_no__account_type'), sectors = F('account_no__sectors'))
 
 
     if request.is_ajax():
@@ -1440,7 +1525,7 @@ def pd_report(request, s_type=0):
         if account_no is None and start_date is not None and end_date is not None and id_selected is not None:
             rev = reverse("show_reports")
             params = request.POST.urlencode()
-            rev = '{}?{}'.format(rev, params)
+            rev = '{}{}?{}'.format(rev, "pd", params)
             return redirect(rev)
         else:
             return redirect("show_reports", "pd")
@@ -1513,7 +1598,7 @@ def lgd_report(request, s_type=0):
         if account_no is None and start_date is not None and end_date is not None and id_selected is not None:
             rev = reverse("show_reports")
             params = request.POST.urlencode()
-            rev = '{}?{}'.format(rev, params)
+            rev = '{}{}?{}'.format(rev, "lgd", params)
             return redirect(rev)
         else:
             return redirect("show_reports", "lgd")
@@ -1586,7 +1671,7 @@ def stage_report(request, s_type=0):
         if account_no is None and start_date is not None and end_date is not None and id_selected is not None:
             rev = reverse("show_reports")
             params = request.POST.urlencode()
-            rev = '{}?{}'.format(rev, params)
+            rev = '{}{}?{}'.format(rev, "stage", params)
             return redirect(rev)
         else:
             return redirect("show_reports", "stage")
@@ -1627,7 +1712,6 @@ def ead_report(request, s_type=0):
 
     #
     #
-
 
     ret = background_tasks.ead_report(request, start_date = start_date, end_date = end_date, account_no = account_no, s_type = s_type, id_selected = id_selected)
     if ret:
@@ -1692,9 +1776,9 @@ def ead_report(request, s_type=0):
         messages.success(request, "Report Generated Successfully")
 
         if account_no is None and start_date is not None and end_date is not None and id_selected is not None:
-            rev = reverse("show_reports")
+            rev = reverse("show_reports", "ead")
             params = request.POST.urlencode()
-            rev = '{}?{}'.format(rev, params)
+            rev = '{}{}?{}'.format(rev, "ead", params)
             return redirect(rev)
         else:
             return redirect("show_reports", "ead")
@@ -1730,6 +1814,14 @@ def eir_report(request, s_type=0):
     except AttributeError:
         pass
 
+    #
+    #
+
+    results = None
+    ret = background_tasks.eir_report(request, start_date = start_date, end_date = end_date, account_no = account_no, s_type = s_type, id_selected = id_selected)
+    if ret:
+        pass
+
 
 
     if request.is_ajax():
@@ -1743,7 +1835,7 @@ def eir_report(request, s_type=0):
         if account_no is None and start_date is not None and end_date is not None and id_selected is not None:
             rev = reverse("show_reports")
             params = request.POST.urlencode()
-            rev = '{}?{}'.format(rev, params)
+            rev = '{}{}?{}'.format(rev, "eir", params)
             return redirect(rev)
         else:
             return redirect("show_reports", "eir")
@@ -1808,7 +1900,7 @@ def ecl_report(request, s_type=0):
         if account_no is None and start_date is not None and end_date is not None and id_selected is not None:
             rev = reverse("show_reports")
             params = request.POST.urlencode()
-            rev = '{}?{}'.format(rev, params)
+            rev = '{}{}?{}'.format(rev, "ecl", params)
             return redirect(rev)
         else:
             return redirect("show_reports", "ecl")
@@ -2100,7 +2192,7 @@ def show_reports(request, tab_status=None):
     data["tab_status"] = tab_status
     data["tab_active"] = constants.TAB_ACTIVE[tab_status][0]
     data["content_template"] = constants.TAB_ACTIVE[tab_status][8]
-    data["js_files"] = ['custom_js/imports.js']
+    data["js_files"] = ['custom_js/imports.js?version=1.2.2']
     data["sidebar_active"] = 7
     data["items_list"] = results
 
@@ -2113,6 +2205,9 @@ def show_reports(request, tab_status=None):
 
 def collateral_upload(request):
     csv_file = request.FILES['formFile']
+    insert_type = request.POST.get('insert_type')
+    
+    
 
     if not csv_file.name.endswith('.csv'):
         messages.error(request, 'THIS IS NOT A CSV FILE')
@@ -2131,7 +2226,7 @@ def collateral_upload(request):
     # Dictionary for mapping errors
     err_msg = {"account_nos":[], "product_code":[], "collateral_code":[]}
 
-    # Delete null records
+    # Delete null records 
     Collateral.objects.filter(Q(account_no__isnull = True) | Q(product__isnull = True) | Q(collateral_code__isnull = True)).delete()
 
     # Iterate through CSV
@@ -2156,31 +2251,65 @@ def collateral_upload(request):
         # Collateral.objects.filter(account_no = account_ins).delete()
 
         only_product = []
-
+        
         #
         # INSERT COLLATERAL
         #===================================================================
+        
+        col_val = []
         for x in collateral_cols:
-
+            
             #
             #
             if row[x].strip() != "":
-                #
-                #
-
+                
                 collateral_values = row[x].strip().split("|")
+                
+                collateral_ins = None
 
                 try:
-
                     collateral_ins = Basel_Collateral_Master.objects.get(basel_collateral_code = collateral_values[0])
+                except ObjectDoesNotExist:
+                    if row[x].strip() != "":
+                        err_msg["collateral_code"].append(row[x])
+                        
+                col_val.append(collateral_ins)
+                
+                # Run only if accoun_ins, product_ins and collateral_ins is not None
+                # =================================================================
+                if all([account_ins, product_ins, collateral_ins]):
+                    
+                    obj =  None
+                    
+                    #
+                    # Insert depending on insert_type : 0 - Insert, 1 - Update
 
-                    if account_ins is not None and product_ins is not None:
+                    if int(insert_type) == 0:
                         obj = Collateral.objects.create(
                             account_no = account_ins,
                             product = product_ins,
                             collateral_code = collateral_ins
                         )
+                    
+                    elif int(insert_type) == 1:
+                        try:
+                            obj = Collateral.objects.get( account_no = account_ins, product = product_ins, collateral_code = collateral_ins)
+                            
+                        except MultipleObjectsReturned:
+                            Collateral.objects.filter(account_no = account_ins, product = product_ins, collateral_code = collateral_ins).delete()
+                            obj = Collateral.objects.create(
+                                account_no = account_ins,
+                                product = product_ins,
+                                collateral_code = collateral_ins
+                            )
+                            
+                        except ObjectDoesNotExist:
+                            pass
+                        
+                    # 
+                    #  Skip if obj is None
 
+                    if obj is not None:
                         try:
                             obj.collateral_value = collateral_values[1] if collateral_values[1].strip() !="" else None
                         except IndexError:
@@ -2190,30 +2319,41 @@ def collateral_upload(request):
                             obj.collateral_rating = collateral_values[2] if collateral_values[2].strip() !="" else None
                         except IndexError:
                             pass
-
-
-
+                        
+                        try:
+                            obj.collateral_residual_maturity = collateral_values[3] if collateral_values[3].strip() !="" else None
+                        except IndexError:
+                            pass
+                        
                         obj.save()
 
-                except ObjectDoesNotExist:
-                    if row[x].strip() != "":
-                        err_msg["collateral_code"].append(row[x])
-            else:
-                only_product.append(None)
-
         #
-        #
-        only_product = list(filter(None, only_product))
+        # =================================================================
+        only_product = list(filter(None, col_val))
 
         if len(only_product) == 0:
             if account_ins is not None and product_ins is not None:
-                try:
-                    obj = Collateral.objects.update_or_create(
-                        account_no = account_ins,
-                        product = product_ins
-                    )
-                except:
-                    pass
+                
+                #
+                # Insert depending on insert_type : 1 - Insert, 2 - Update
+
+                if int(insert_type) == 0:
+                    try:
+                        obj = Collateral.objects.create(
+                            account_no = account_ins,
+                            product = product_ins
+                        )
+                    except:
+                        pass
+                    
+                else:
+                    try:
+                        obj = Collateral.objects.update_or_create(
+                            account_no = account_ins,
+                            product = product_ins
+                        )
+                    except:
+                        pass
 
     # Mapping Errors into message framework
     #=================================================================
@@ -2448,6 +2588,7 @@ def download_reports(request, tab_status=None, ftype=0):
 #**********************************************************************
 # ENDPOINT: SHOW COLLATERALS
 #**********************************************************************
+
 def show_collateral_mapping(request):
 
     data = defaultdict()
@@ -2488,6 +2629,7 @@ def show_collateral_mapping(request):
 #**********************************************************************
 # EDIT COLLATERAL
 #**********************************************************************
+
 def edit_collateral(request):
     pass
 
@@ -2495,6 +2637,7 @@ def edit_collateral(request):
 #**********************************************************************
 # DELETE AUDIT TRAILS ALL
 #**********************************************************************
+
 def delete_audit_trails(request):
     Audit_Trail.objects.all().delete()
     messages.success(request, "Records Deleted Successfully")
@@ -2504,6 +2647,7 @@ def delete_audit_trails(request):
 #**********************************************************************
 # DELETE AUDIT TRAILS SINGLE
 #**********************************************************************
+
 def delete_audit_trail_single(request):
     Audit_Trail.objects.get(pk=int(request.GET["id"])).delete()
     messages.success(request, "Records Deleted Successfully")
@@ -2514,11 +2658,12 @@ def delete_audit_trail_single(request):
 #**********************************************************************
 # ENDPOINT: SHOW AUDIT TRAILS
 #**********************************************************************
+
 def show_audit_trail(request):
 
     data = defaultdict()
 
-    audit_list = Audit_Trail.objects.all().select_related("user")
+    audit_list = Audit_Trail.objects.all().select_related("user").order_by("-id")
 
     data["items_list"] = defaultdict()
     data["content_template"] = "administrator/show_audit_trails.html"
@@ -2655,3 +2800,161 @@ def show_audit_trail(request):
 
 
     return render(request, "administrator/index.html", data)
+
+
+#**********************************************************************
+# ENDPOINT: SHOW MISSING ECL
+#**********************************************************************
+
+def show_missing_ecl(request):
+
+    data = defaultdict()
+
+    qry = """
+    select EM.*,
+    PD.date as pd_date, A_PD.account_no as pd_account, PD.pd as pd_details,
+    LGD.date as lgd_date, A_LGD.account_no as lgd_account, LGD.final_lgd as lgd_details,
+    ST.date as st_date, A_ST.account_no as st_account, ST.stage as st_details,
+    EAD.date as ead_date, A_EAD.account_no as ead_account, EAD.ead_total as ead_details,
+    BP.product_name, BP.product_code, AC.account_no as Account_no, AC.cin, AC.sectors, AC.account_type
+    from app_ecl_missing_reports EM
+    left join (select * from app_collateral group by account_no_id) C1 on EM.account_no_id = C1.account_no_id
+	left join app_basel_product_master BP on C1.product_id = BP.id
+    left join app_accountmaster AC on EM.account_no_id = AC.id
+	left join app_pd_report PD on ((PD.account_no_id = EM.account_no_id and PD.date = EM.date) or PD.id = EM.pd)
+    left join app_lgd_report LGD on ((LGD.account_no_id = EM.account_no_id and LGD.date = EM.date) or LGD.id = EM.lgd)
+    left join app_stage_report ST on ((ST.account_no_id = EM.account_no_id and ST.date = EM.date) or ST.id = EM.pd)
+    left join app_ead_report EAD on ((EAD.account_no_id = EM.account_no_id and EAD.date = EM.date) or EAD.id = EM.pd)
+    left join app_accountmaster A_PD on A_PD.id = PD.account_no_id
+    left join app_accountmaster A_LGD on A_LGD.id = LGD.account_no_id
+    left join app_accountmaster A_ST on A_ST.id = ST.account_no_id
+    left join app_accountmaster A_EAD on A_EAD.id = EAD.account_no_id
+    """
+
+    results = ECL_Missing_Reports.objects.raw(qry)
+
+    data["items_list"] = defaultdict()
+    data["content_template"] = "reports/show_missing_ecl_reports.html"
+    data["js_files"] = []
+    data["sidebar_active"] = 7
+
+    data["items_list"] = results
+
+    return render(request, "administrator/index.html", data)
+
+
+#**********************************************************************
+# ENDPOINT: DELETE MISSING ECL
+#**********************************************************************
+
+def delete_missing_ecl(request):
+    ECL_Missing_Reports.objects.all().delete()
+    return redirect("show_missing_ecl")
+
+
+#**********************************************************************
+# ENDPOINT: DELETE MISSING ECL
+#**********************************************************************
+
+def download_missing_ecl(request, ftype=0):
+    qry = """
+    select EM.*,
+    PD.date as pd_date, A_PD.account_no as pd_account, PD.pd as pd_details,
+    LGD.date as lgd_date, A_LGD.account_no as lgd_account, LGD.final_lgd as lgd_details,
+    ST.date as st_date, A_ST.account_no as st_account, ST.stage as st_details,
+    EAD.date as ead_date, A_EAD.account_no as ead_account, EAD.ead_total as ead_details,
+    BP.product_name, BP.product_code, AC.account_no as Account_no, AC.cin, AC.sectors, AC.account_type
+    from app_ecl_missing_reports EM
+    left join (select * from app_collateral group by account_no_id) C1 on EM.account_no_id = C1.account_no_id
+	left join app_basel_product_master BP on C1.product_id = BP.id
+    left join app_accountmaster AC on EM.account_no_id = AC.id
+	left join app_pd_report PD on ((PD.account_no_id = EM.account_no_id and PD.date = EM.date) or PD.id = EM.pd)
+    left join app_lgd_report LGD on ((LGD.account_no_id = EM.account_no_id and LGD.date = EM.date) or LGD.id = EM.lgd)
+    left join app_stage_report ST on ((ST.account_no_id = EM.account_no_id and ST.date = EM.date) or ST.id = EM.pd)
+    left join app_ead_report EAD on ((EAD.account_no_id = EM.account_no_id and EAD.date = EM.date) or EAD.id = EM.pd)
+    left join app_accountmaster A_PD on A_PD.id = PD.account_no_id
+    left join app_accountmaster A_LGD on A_LGD.id = LGD.account_no_id
+    left join app_accountmaster A_ST on A_ST.id = ST.account_no_id
+    left join app_accountmaster A_EAD on A_EAD.id = EAD.account_no_id
+    """
+
+    results = ECL_Missing_Reports.objects.raw(qry)
+    
+    items_list = []
+
+    for row in results:
+        
+        data_dict = {
+            "id":row.id,
+            "date":row.date,
+            "Account_no":row.Account_no,
+            "account_type":row.account_type,
+            "cin":row.cin,
+            "sectors":row.sectors,
+            "product_name":row.product_name,
+            "product_code":row.product_code,
+            "tenure":row.tenure,
+            "PD": "", 
+            "LGD": "",
+            "Stage":"",
+            "EIR":row.eir,
+            "EAD":"",
+            "ECL":""
+        }
+        
+        if row.pd is not None:
+            if row.pd == "No Record":
+                data_dict["PD"] = row.pd
+            else:
+                data_dict["PD"] = "{} - [{}]".format(row.pd_date,row.pd_account)
+        else:
+            data_dict["PD"] = row.pd_details
+        
+        if row.lgd is not None:
+            if row.lgd == "No Record":
+                data_dict["LGD"] = row.pd
+            else:
+                data_dict["LGD"] = "{} - [{}]".format(row.lgd_date,row.lgd_account)
+        else:
+            data_dict["LGD"] = row.lgd_details
+        
+        if row.stage is not None:
+            if row.stage == "No Record":
+                data_dict["Stage"] = row.stage
+            else:
+                data_dict["Stage"] = "{} - [{}]".format(row.st_date,row.st_account)
+        else:
+            data_dict["Stage"] = row.st_details
+        
+        if row.ead is not None:
+            if row.ead == "No Record":
+                data_dict["EAD"] = row.ead
+            else:
+                data_dict["EAD"] = "{} - [{}]".format(row.ead_date,row.ead_account)
+        else:
+            data_dict["EAD"] = row.ead_details
+        
+        items_list.append(data_dict)
+
+    #
+    #
+    df = pd.DataFrame(items_list)
+
+    if ftype == 0:
+        file_name = os.path.join(settings.REPORTS_DIR, "output.xlsx")
+        df.to_excel(file_name, sheet_name='Sheet_name_1', float_format='%.5f', index=False)
+        if os.path.exists(file_name):
+            with open(file_name, "rb") as report:
+                data = report.read()
+                response = HttpResponse(data,content_type='application/vnd.openxmlformats-officedocument.spreadsheetml.sheet')
+                response['Content-Disposition'] = 'attachment; filename={}_Report.xlsx'.format("EIR_Missing_Report")
+                return response
+    elif ftype == 1:
+        response = HttpResponse(content_type='text/csv')
+        response['Content-Disposition'] = 'attachment; filename={}.csv'.format("EIR_Missing_Report")
+        df.to_csv(path_or_buf=response, float_format='%.5f', index=False)
+        return response
+    else:
+        return redirect("show_missing_ecl")
+    
+   

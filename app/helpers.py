@@ -84,24 +84,6 @@ def remove_html_tags(text):
     return re.sub(clean, '', text)
 
 
-# *************************************************************************************
-# CHECK EXAM AND QUESTION VALIDITY
-# *************************************************************************************
-
-def check_exam_question(request, exam_id, ques_id):
-    try:
-        profile = Profile.objects.get(user=request.user)
-        exam = Examinations.objects.get(pk=int(exam_id), is_active=True, class_name__in=(profile.class_name.all()),
-                                        subject__in=(profile.subject.all()))
-    except:
-        return None, None
-
-    try:
-        question = Questions.objects.get(exam=exam, pk=int(ques_id), is_active=True)
-        return exam, question
-    except:
-        None, None
-
 
 # ******************************************************************************
 # User Creation Form Errors Mapping
@@ -159,6 +141,7 @@ def format_errors(err_msg):
 def queryset_row_to_json(queryset):
     items_list_json = {}
     for row in queryset:
+        
         try:
             xx = row.__dict__  # get all attributes of the object
             items_list_json[row.id] = {x:y for (x,y) in xx.items() if x not in ["_state", "id"]}  # discard _state, id (key:value) pair
@@ -167,8 +150,7 @@ def queryset_row_to_json(queryset):
 
         if "account_no_id" in items_list_json[row.id].keys():
             if items_list_json[row.id]["account_no_id"] is not None:
-                acc_ins = AccountMaster.objects.get(pk = items_list_json[row.id]["account_no_id"])
-                items_list_json[row.id]["account_no_id_related"] = acc_ins.account_no
+                items_list_json[row.id]["account_no_id_related"] = row.account_no.account_no
             else:
                 items_list_json[row.id]["account_no_id_related"] = None
 

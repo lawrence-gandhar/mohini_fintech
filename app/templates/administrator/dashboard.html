@@ -9,9 +9,8 @@
     <h3 style="line-height: 40px;" class="main_heading">Dashboard</h3>
   </div>
 </div>
-<hr style="margin-top:0px;" />
 
-<div class="row">
+<div class="row" style="margin-top:0px; padding-top:20px; background-color: #cfcdcd;">
   <!-- Nav Tabs Start -->
 
   <div class="col-md-6 col-sm-12">
@@ -38,7 +37,7 @@
 </div>
 
 
-<div class="row" style="margin-top:10px">
+<div class="row" style="padding:20px 0px; background-color: #cfcdcd;">
   <!-- Nav Tabs Start -->
 
   <div class="col-md-6 col-sm-12">
@@ -81,8 +80,8 @@
       bindto: '#chart',
       data: {
         columns: [
-          ['ECL', {{final_ecl_sum}}],
-          ['EAD', {{ead_total_sum}}]
+          ['EAD', {{ead_total_sum}}],
+          ['ECL', {{final_ecl_sum}}]
         ],
         type: 'bar'
       },

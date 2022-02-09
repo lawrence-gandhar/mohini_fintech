@@ -59,7 +59,7 @@
         <a class="nav-link" href="{% url 'manage_imports' 'collateral' %}" id="tab_collateral">Basel Collateral</a>
       </li>
       <li class="nav-item">
-        <a class="nav-link active" href="{% url 'manage_imports' 'pd' %}" id="tab_pd">PD</a>
+        <a class="nav-link " href="{% url 'manage_imports' 'pd' %}" id="tab_pd">PD</a>
       </li>
       <li class="nav-item">
         <a class="nav-link" href="{% url 'manage_imports' 'lgd' %}" id="tab_lgd">LGD</a>
@@ -74,7 +74,7 @@
         <a class="nav-link" href="{% url 'manage_imports' 'eir' %}" id="tab_eir">EIR</a>
       </li>
       <li class="nav-item">
-        <a class="nav-link" href="{% url 'manage_imports' 'ecl' %}" id="tab_ecl">ECL</a>
+        <a class="nav-link active" href="{% url 'manage_imports' 'ecl' %}" id="tab_ecl">ECL</a>
       </li>
     </ul>
 
@@ -227,7 +227,7 @@
             <div class="col">
               <div class="form-group">
                 <label for="formFile" class="form-label">Account no.</label>
-                <input class="form-control" type="text" name="account_no" id="edit_account_no">
+                <input class="form-control" type="text" name="account_no" id="edit_account_no" readonly>
               </div>
             </div>
           </div>
@@ -240,65 +240,8 @@
             </div>
             <div class="col">
               <div class="form-group">
-                <label for="formFile" class="form-label">Default</label>
-                <input class="form-control" type="text" name="default_col" id="edit_default_col">
-              </div>
-            </div>
-          </div>
-          <div class="row mb-3">
-            <div class="col">
-              <div class="form-group">
-                <label for="formFile" class="form-label">Factor 1</label>
-                <input class="form-control" type="text" name="factor_1" id="edit_factor_1">
-              </div>
-            </div>
-            <div class="col">
-              <div class="form-group">
-                <label for="formFile" class="form-label">Factor 2</label>
-                <input class="form-control" type="text" name="factor_2" id="edit_factor_2">
-              </div>
-            </div>
-          </div>
-          <div class="row mb-3">
-            <div class="col">
-              <div class="form-group">
-                <label for="formFile" class="form-label">Factor 3</label>
-                <input class="form-control" type="text" name="factor_3" id="edit_factor_3">
-              </div>
-            </div>
-            <div class="col">
-              <div class="form-group">
-                <label for="formFile" class="form-label">Factor 4</label>
-                <input class="form-control" type="text" name="factor_4" id="edit_factor_4">
-              </div>
-            </div>
-          </div>
-          <div class="row mb-3">
-            <div class="col">
-              <div class="form-group">
-                <label for="formFile" class="form-label">Factor 5</label>
-                <input class="form-control" type="text" name="factor_5" id="edit_factor_5">
-              </div>
-            </div>
-            <div class="col">
-              <div class="form-group">
-                <label for="formFile" class="form-label">Factor 6</label>
-                <input class="form-control" type="text" name="factor_6" id="edit_factor_6">
-              </div>
-            </div>
-          </div>
-
-          <div class="row mb-3">
-            <div class="col">
-              <div class="form-group">
-                <label for="formFile" class="form-label">Management Overlay 1</label>
-                <input class="form-control" type="text" name="mgmt_overlay_1" id="edit_mgmt_overlay_1">
-              </div>
-            </div>
-            <div class="col">
-              <div class="form-group">
-                <label for="formFile" class="form-label">Management Overlay 2</label>
-                <input class="form-control" type="text" name="mgmt_overlay_2" id="edit_mgmt_overlay_2">
+                <label for="formFile" class="form-label">Tenure</label>
+                <input class="form-control" type="text" name="tenure" id="edit_tenure">
               </div>
             </div>
           </div>

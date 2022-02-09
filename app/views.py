@@ -5,16 +5,37 @@
 #
 
 from django.views import View
-from django.contrib.auth import login, authenticate
+from django.contrib.auth import login, authenticate, update_session_auth_hash
 from django.shortcuts import render, redirect
 from django.contrib import messages
 from django.http import HttpResponse
 from collections import defaultdict
 from . forms import NewUserForm
 from django.contrib.auth.models import User
+from django.conf import settings
 
-# Create your views here.
-#
+
+#======================================================================
+# Create Super user
+#======================================================================
+
+def create_superuser(request, ins=None):
+    try:
+        User.objects.create_superuser(username = settings.DJANGO_SUPERUSER_USERNAME,
+                password = settings.DJANGO_SUPERUSER_PASSWORD,
+                email = settings.DJANGO_SUPERUSER_EMAIL
+        )
+    except:
+        pass
+    
+    data = defaultdict()
+    data["username"] = settings.DJANGO_SUPERUSER_USERNAME
+    data["password"] = settings.DJANGO_SUPERUSER_PASSWORD
+    data["email"] = settings.DJANGO_SUPERUSER_EMAIL
+    
+    return render(request, "auth_templates/admin_details.html", data)
+
+
 # ******************************************************************************
 # LOGIN
 # ******************************************************************************
@@ -69,7 +90,6 @@ def page_403(request):
 #======================================================================
 # Change Password
 #======================================================================
-#
 
 def change_password(request):
     if request.POST:
@@ -85,7 +105,6 @@ def change_password(request):
 #======================================================================
 # Validate Password
 #======================================================================
-#
 
 def validate_password(password):
     if len(password) < 8:
@@ -96,7 +115,7 @@ def validate_password(password):
 #======================================================================
 # Signup
 #======================================================================
-#
+
 def signup(request):
     if request.POST:
         form = NewUserForm(request.POST)
@@ -112,6 +131,7 @@ def signup(request):
 #======================================================================
 # Reset Password
 #======================================================================
+
 def reset_password(request, ins=None):
     if ins is not None:
         password = User.objects.make_random_password()
