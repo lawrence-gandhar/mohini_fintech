@@ -1,0 +1,28 @@
+#Importing libraries
+library(quantmod)
+library(readxl)
+library(xlsx)
+library(csv)
+library(lattice)
+library(timeSeries)
+library(rugarch)
+
+#Taking the input for ECL Computation
+Input<-read.csv("C:\\Users\\mohin\\eclipse-workspace\\JavaRintegration\\eclexport.csv")
+
+#Compuation of ECL
+
+Input['ECL']<-0
+for (i in 1:length(Input$Accountcode)){
+  if (Input$Stage[i]==1){
+    Input$ECL[i]<-Input$PD[i]*Input$LGD[i]*Input$EAD[i]
+  }
+  if (Input$Stage[i]==2){
+    Input$ECL[i]<-(Input$PD[i]*Input$LGD[i]*Input$EAD[i])/(1+Input$EIR[i])^(Input$Tenure[i])
+  }
+  if (Input$Stage[i]==3){
+    Input$ECL[i]<-(1*Input$LGD[i]*Input$EAD[i])/(1+Input$EIR[i])^(Input$Tenure[i])
+  }}
+
+write.csv(Input,file = "C:\\Users\\mohin\\eclipse-workspace\\JavaRintegration\\ECLOutput.csv",row.names = FALSE)
+

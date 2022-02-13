@@ -1076,12 +1076,31 @@ class Pre_Defined_Variables(models.Model):
     show_in_reports = models.BooleanField(default=True, db_index=True)
     show_in_download_reports = models.BooleanField(default=True, db_index=True)
     column_name_in_reports = models.CharField(max_length=255, blank=True, null=True, db_index=True)
+    default_factor = models.BooleanField(default=False, db_index=True)
     
     @classmethod
     def truncate(cls):
         with connection.cursor() as cursor:
             cursor.execute('TRUNCATE TABLE "{0}" SET_NULL'.format(cls._meta.db_table))
-            
+
+#==================================================================================
+# CONFIG TEMPLATE TABLE
+#==================================================================================
+class ConfigTemplate(models.Model):
+    
+    SECTION_CHOICES = (('pd', 'PD'), ('lgd', 'LGD'), ('ead', 'EAD'), ('stage', 'STAGE'), ('ecl', 'ECL'), ('eir', 'EIR'))
+    
+    tab_status = models.CharField(max_length=255, blank=True, null=True, db_index=True, choices=SECTION_CHOICES)
+    user = models.ForeignKey(User, blank=True, null=True, db_index=True, on_delete=models.CASCADE)
+    template = models.CharField(max_length=255, blank=True, null=True, db_index=True)
+    set_as_default = models.BooleanField(default=True,null=True, db_index=True, blank=True)
+    algorithm = models.IntegerField(default=0, null=True, db_index=True, blank=True)
+    is_active = models.BooleanField(default=True, null=True, db_index=True, blank=True)
+        
+    @classmethod
+    def truncate(cls):
+        with connection.cursor() as cursor:
+            cursor.execute('TRUNCATE TABLE "{0}" SET_NULL'.format(cls._meta.db_table))         
             
 #==================================================================================
 # PD CONFIG TABLE
@@ -1098,6 +1117,7 @@ class Algo_Config(models.Model):
     use_as_factor = models.BooleanField(default=False, db_index=True)
     use_formula = models.CharField(max_length=255, blank=True, null=True, db_index=True)
     use_built_in_column = models.ForeignKey(Pre_Defined_Variables, blank=True, null=True, db_index=True, on_delete=models.SET_NULL)
+    template = models.ForeignKey(ConfigTemplate, blank=True, null=True, db_index=True, on_delete=models.CASCADE)
     
     @classmethod
     def truncate(cls):

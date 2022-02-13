@@ -1,0 +1,21 @@
+Date,CIN,ProductCode,Accountcode,Sectors,Tenure,Stage,EIR,PD,LGD,EAD
+,,1,AA12,Materials,1,1,7.90%,0.23%,55%,50000
+,,2,AA13,Industrials,3,1,7.90%,0.24%,51%,50000
+,,3,AA14,Financials,5,1,7.90%,0.24%,45%,50000
+,,4,AA15,Energy,4,1,7.90%,0.26%,60%,150000
+,,5,AA16,Consumer discretionary,2,1,7.90%,0.28%,39%,150000
+,,6,AA17,Information technology,0.5,1,7.90%,1.29%,50%,150000
+,,7,AA18,Communication services,5,2,7.90%,2.25%,50%,150000
+,,8,AA19,Real estate,2,1,7.90%,0.58%,65%,150000
+,,9,AA20,Health care,3,1,7.90%,0.59%,53%,250000
+,,10,AA21,Consumer staples,1,1,7.90%,0.59%,49%,250000
+,,11,AA22,Utilities,2,2,7.90%,2.38%,47%,250000
+,,12,AA23,Materials,2,2,7.90%,2.40%,55%,350000
+,,13,AA24,Industrials,3,2,7.90%,2.65%,51%,450000
+,,14,AA25,Financials,4,3,7.90%,2.95%,45%,450000
+,,15,AA26,Energy,7,3,7.90%,3.02%,60%,450000
+,,16,AA27,Consumer discretionary,5,1,7.90%,0.62%,39%,550000
+,,17,AA28,Information technology,2,1,7.90%,0.63%,50%,650000
+,,18,AA29,Communication services,3,1,7.90%,0.63%,50%,650000
+,,19,AA30,Real estate,5,1,7.90%,0.64%,65%,650000
+,,20,AA31,Health care,3,1,7.90%,0.64%,53%,750000

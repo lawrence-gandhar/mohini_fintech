@@ -277,3 +277,6 @@ REPORT_HEADERS = {
     'soverign_issuer':"Soverign Issuer", 
     'other_issuer':"Other Issuer",
 }
+
+PD_SOLVERS_LIST = ['liblinear', 'newton-cg', 'lbfgs', 'sag', 'saga']
+        

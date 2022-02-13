@@ -1055,7 +1055,7 @@ def move_data_bg_process(request, tab_status=None):
 # **********************************************************************
 # PD REPORT CALCULATION & DATA LOAD
 # **********************************************************************
-def pd_report(request, account_no=None, start_date=None, end_date=None, s_type = 0, id_selected=None):
+def pd_report(request, account_no=None, start_date=None, end_date=None, s_type = 0, id_selected=None, algo_type=0):
 
     #
     # Loading the data
@@ -1129,7 +1129,8 @@ def pd_report(request, account_no=None, start_date=None, end_date=None, s_type =
 
         #
         # Extracting intercept and coefficient terms
-        logit = LogisticRegression(solver='newton-cg',random_state=0).fit(x,y)
+        
+        logit = LogisticRegression(solver=constants.PD_SOLVERS_LIST[algo_type],random_state=0).fit(x,y)
 
         intercept = logit.intercept_
         coeff = pd.DataFrame(logit.coef_)

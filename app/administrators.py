@@ -267,7 +267,6 @@ def manage_users(request):
     data["model_show"] = False
     data["sidebar_active"] = 2
 
-
     main_qry = """
     select U.id, U.username, U.email, U.first_name, U.last_name, U.is_staff, U.is_superuser, AM.upload_master_table, AM.edit_master_table, AM.delete_master_table, AM.upload_basel_product, AM.edit_basel_product, AM.delete_basel_product, AM.upload_basel_collateral, AM.edit_basel_collateral, AM.delete_basel_collateral, AM.upload_collateral_mapper, AM.edit_collateral_mapper, AM.delete_collateral_mapper, AM.upload_pd, AM.upload_lgd, AM.upload_ead, AM.upload_ecl, AM.upload_eir, AM.upload_stage, AM.edit_import_pd, AM.edit_import_lgd, AM.edit_import_ead, AM.edit_import_ecl, AM.edit_import_eir, AM.edit_import_stage, AM.delete_import_pd, AM.delete_import_lgd, AM.delete_import_ead, AM.delete_import_ecl, AM.delete_import_eir, AM.delete_import_stage, AM.edit_final_pd, AM.edit_final_lgd, AM.edit_final_ead, AM.edit_final_ecl, AM.edit_final_eir, AM.edit_final_stage, AM.delete_final_pd, AM.delete_final_lgd, AM.delete_final_ead, AM.delete_final_ecl, AM.delete_final_eir, AM.delete_final_stage, AM.run_final_pd, AM.run_final_lgd, AM.run_final_ead, AM.run_final_ecl, AM.run_final_eir, AM.run_final_stage,
     AM.download_reports_pd, AM.download_reports_lgd, AM.download_reports_ead, AM.download_reports_ecl, AM.download_reports_eir, AM.download_reports_stage from auth_user U left join app_accessmanage AM on U.id = AM.user_id

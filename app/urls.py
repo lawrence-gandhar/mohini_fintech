@@ -108,9 +108,13 @@ urlpatterns += [
 #Configurations Of Algorithm
 urlpatterns += [
     path('admin/load_predefined_variables/', decorators.admin_required(algocnf.load_predefined_variables), name='load_predefined_variables'),
-    path('algocnf/configure_pd/', decorators.admin_required(algocnf.ConfigurePD.as_view()), name="configure_pd"),
-    path('algocnf/delete_column/<int:ins>/', decorators.admin_required(algocnf.delete_column_algoconfig), name="delete_column_algoconfig")
-    
+    path('algocnf/configure_templates/', decorators.admin_required(algocnf.ConfigureTemplates.as_view()), name="configure_templates"),
+    path('algocnf/configure_templates/<str:tab_status>/', decorators.admin_required(algocnf.ConfigureTemplates.as_view()), name="configure_templates"),
+    path('algocnf/configure_templates/<str:tab_status>/<int:template_id>/', decorators.admin_required(algocnf.ConfigureTemplates.as_view()), name="configure_templates"),
+    path('algocnf/configure_templates/<int:ins>/delete/', decorators.admin_required(algocnf.delete_template), name="delete_template"),
+    path('algocnf/delete_column/<int:ins>/', decorators.admin_required(algocnf.delete_column_algoconfig), name="delete_column_algoconfig"),
+    path('admin/pd_module_testing/', decorators.admin_required(algocnf.pd_module_testing), name='pd_module_testing'),
+    path('admin/pd_module_testing/<int:algo_type>/', decorators.admin_required(algocnf.pd_module_testing), name='pd_module_testing'),
 ]
 
 #

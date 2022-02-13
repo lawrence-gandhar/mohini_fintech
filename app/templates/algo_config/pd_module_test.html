@@ -1,0 +1,87 @@
+{% load custom_tags %}
+<div class="row" style="margin:20px 0px 0px; ">
+  <div class="col-md-6 col-sm-12">
+    <h3 style="line-height: 40px;" class="main_heading">
+      Configure Import, Report & Algorithm Parameters
+    </h3>
+  </div>
+</div>
+<hr style="margin-top:0px;" />
+
+<div class="row">
+  <!-- Nav Tabs Start -->
+
+    <div class="col-sm-12">
+
+        {% include 'base/alert_components.html' %}
+
+        <!-- -->
+        <ul class="nav nav-tabs" role="tablist">
+          <li class="nav-item">
+            <a class="nav-link active" href="" id="tab_pd">PD</a>
+          </li>
+          <li class="nav-item">
+            <a class="nav-link" href="" id="tab_lgd">LGD</a>
+          </li>
+          <li class="nav-item">
+            <a class="nav-link" href="" id="tab_stage">Stage</a>
+          </li>
+          <li class="nav-item">
+            <a class="nav-link" href="" id="tab_ead">EAD</a>
+          </li>
+          <li class="nav-item">
+            <a class="nav-link" href="" id="tab_eir">EIR</a>
+          </li>
+          <li class="nav-item">
+            <a class="nav-link" href="" id="tab_ecl">ECL</a>
+          </li>
+        </ul>
+
+        <!-- -->
+
+        <!-- Tab panes start -->
+        <div class="tab-content" style="padding:10px 0px;">
+          <div class="table-responsive" style="overflow:auto;">
+            <a href="{% url 'configure_templates' 'pd' %}" class="btn btn-primary mb-3 btn-sm" style="float:right;">Set Pre Defined Variables</a>
+            <a href="{% url 'configure_templates' 'pd' %}" class="btn btn-primary mb-3 btn-sm" style="float:right; margin-right:10px;">New Template</a>
+            
+            <table class="table table-bordered" style="margin-bottom: 100px;">
+                <tr style="text-align:center; background-color:#cccccc; font-weight:bold; font-size:13px;">
+                    <td>Template Name</td>
+                    <td>Process</td>
+                    <td>Algorithm</td>
+                    <td>Is Active</td>
+                    <td>Default Template</td>
+                    <td>Action</td>
+                </tr>
+                {% for row in templates_list %}
+                <tr style="font-size:13px; line-height:30px;">
+                    <td>{{row.template}}</td>
+                    <td>PD - Probability Of Default</td>
+                    <td>Logistic Regression</td>
+                    <td class="text-center">{% tick_mark row.is_active %}</td>
+                    <td class="text-center">{% tick_mark row.set_as_default %}</td>
+                    <td>
+                        <a href="{% url 'configure_templates' 'pd' row.id %}" class="btn btn-primary btn-sm">Edit</a>
+                        <a href="{% url 'delete_template' row.id %}" class="btn btn-danger btn-sm">Remove</a>
+                        <button type="button" class="btn btn-success btn-sm">Set As Default</button>
+                         
+                        {% for btn in alorithm_buttons %}
+                            <div class="btn-group btn-group-sm" role="group">
+                                <button id="btnGroupDrop1" type="button btn-sm" class="btn btn-warning dropdown-toggle" data-bs-toggle="dropdown" aria-expanded="false">
+                                    Test Model {{forloop.counter}}
+                                </button>
+                                <ul class="dropdown-menu" aria-labelledby="btnGroupDrop1">
+                                    <li><a class="dropdown-item" href="{% url 'pd_module_testing' btn %}" target="_blank">Test Run</a></li>
+                                    <li><a class="dropdown-item" href="#">Set As Default</a></li>
+                                </ul>
+                            </div>
+                        {% endfor %}
+                    </td>
+                </tr>
+                {% endfor %}
+            </table>
+          </div>
+        </div>
+    </div>
+</div>

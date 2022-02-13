@@ -223,7 +223,9 @@
       <a class="nav-link {% if sidebar_active == 7 %} sidebar_active {% endif %}" aria-current="page" href="{% url 'show_reports' %}" data-toggle="tooltip" data-placement="right" title="Reports">
         <i class="las la-table" style="font-size:48px; color:{% if sidebar_active == 7 %} #000000 {% else %} #FFFFFF {% endif %}  !important;"></i>
       </a>
-
+      <a class="nav-link {% if sidebar_active == 8 %} sidebar_active {% endif %}" aria-current="page" href="{% url 'pd_module_testing' %}" data-toggle="tooltip" data-placement="right" title="Template Configurations">
+        <i class="las la-random" style="font-size:48px; color:{% if sidebar_active == 7 %} #000000 {% else %} #FFFFFF {% endif %}  !important;"></i>
+      </a>
     </nav>
   </div>
   <div class="col-md-11" style="height:100%; width:95%; margin-left:80px; padding:20px 20px 10px 21px; overflow:auto;">
