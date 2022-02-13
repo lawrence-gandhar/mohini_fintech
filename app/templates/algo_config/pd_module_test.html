@@ -42,7 +42,7 @@
         <!-- Tab panes start -->
         <div class="tab-content" style="padding:10px 0px;">
           <div class="table-responsive" style="overflow:auto;">
-            <a href="{% url 'configure_templates' 'pd' %}" class="btn btn-primary mb-3 btn-sm" style="float:right;">Set Pre Defined Variables</a>
+            <a href="{% url 'append_predefined_variables' 'pd' %}" class="btn btn-primary mb-3 btn-sm" style="float:right;">Set Pre Defined Variables</a>
             <a href="{% url 'configure_templates' 'pd' %}" class="btn btn-primary mb-3 btn-sm" style="float:right; margin-right:10px;">New Template</a>
             
             <table class="table table-bordered" style="margin-bottom: 100px;">
@@ -64,7 +64,7 @@
                     <td>
                         <a href="{% url 'configure_templates' 'pd' row.id %}" class="btn btn-primary btn-sm">Edit</a>
                         <a href="{% url 'delete_template' row.id %}" class="btn btn-danger btn-sm">Remove</a>
-                        <button type="button" class="btn btn-success btn-sm">Set As Default</button>
+                        <a href="{% url 'template_set_as_default' tab_status row.id %}"class="btn btn-success btn-sm">Set As Default</a>
                          
                         {% for btn in alorithm_buttons %}
                             <div class="btn-group btn-group-sm" role="group">

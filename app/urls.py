@@ -107,11 +107,16 @@ urlpatterns += [
 
 #Configurations Of Algorithm
 urlpatterns += [
+    path('algocnf/append_predefined_variables/', decorators.admin_required(algocnf.PredefinedVariarbles.as_view()), name="append_predefined_variables"),
+    path('algocnf/append_predefined_variables/<str:tab_status>/', decorators.admin_required(algocnf.PredefinedVariarbles.as_view()), name="append_predefined_variables"),
+    path('algocnf/predefined_variables/change_status/', decorators.admin_required(algocnf.change_status), name='predefined_variables_change_status'),
+    path('algocnf/predefined_variables/change_status/<int:ins>/<int:status>/', decorators.admin_required(algocnf.change_status), name='predefined_variables_change_status'),
     path('admin/load_predefined_variables/', decorators.admin_required(algocnf.load_predefined_variables), name='load_predefined_variables'),
     path('algocnf/configure_templates/', decorators.admin_required(algocnf.ConfigureTemplates.as_view()), name="configure_templates"),
     path('algocnf/configure_templates/<str:tab_status>/', decorators.admin_required(algocnf.ConfigureTemplates.as_view()), name="configure_templates"),
     path('algocnf/configure_templates/<str:tab_status>/<int:template_id>/', decorators.admin_required(algocnf.ConfigureTemplates.as_view()), name="configure_templates"),
     path('algocnf/configure_templates/<int:ins>/delete/', decorators.admin_required(algocnf.delete_template), name="delete_template"),
+    path('algocnf/configure_templates/<str:tab_status>/<int:template_id>/set_as_default/', decorators.admin_required(algocnf.template_set_as_default), name="template_set_as_default"),
     path('algocnf/delete_column/<int:ins>/', decorators.admin_required(algocnf.delete_column_algoconfig), name="delete_column_algoconfig"),
     path('admin/pd_module_testing/', decorators.admin_required(algocnf.pd_module_testing), name='pd_module_testing'),
     path('admin/pd_module_testing/<int:algo_type>/', decorators.admin_required(algocnf.pd_module_testing), name='pd_module_testing'),

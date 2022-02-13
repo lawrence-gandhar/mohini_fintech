@@ -1,0 +1,90 @@
+{% load static %}
+
+{% include 'base/alert_components.html' %}
+
+<div class="cols-md-12">
+    <form action="{% url 'configure_templates' tab_status %}" method="post">
+        {% csrf_token %}
+        <input type="hidden" name="tab_status" value="{{tab_status}}">
+        <input type="hidden" name="template_id" value="{{template_id}}">
+                                
+        <div class="row" style="padding:10px;">
+            <h6>
+                {{tab_status|upper}} :: Pre-Defined Variables
+            </h6>
+            <hr/>
+        </div>
+        <div class="row" style="padding:10px;">
+            <div class="row" style="padding:20px 10px;">        
+                <div class="col-md-12">
+                    <table class="table table-bordered table-responsive" id="table_algo">
+                        <tr style="text-align:center; background-color:#cccccc; font-weight:bold;">
+                            <td>Column Name</td>
+                            <td>Column Name(For Reports)</td>
+                            <td>Show In Reports</td>
+                            <td>In Downloaded Reports</td>
+                            <td>Use As Factor</td>
+                            <td>Action</td>
+                        </tr>
+                        {% for col in pre_defined_variables %}
+                            <tr>
+                                <td>
+                                    <input value="{{col.column_name}}" name="column_name" class="form-control">
+                                </td>
+                                <td>
+                                    <input value="{{col.column_name_in_reports}}" name="column_name_in_reports" class="form-control">
+                                </td>
+                                <td class="text-center">
+                                    <input type="checkbox" id="show_in_report_checkbox_{{col.id}}" style="margin-top: 12px;" {% if col.show_in_reports %} checked {% endif %} onchange="change_value($(this))">
+                                    <input type="hidden" name="show_in_report" id="show_in_report_{{col.id}}" {% if col.show_in_reports %} value="1" {% else %} value="0" {% endif %}>
+                                </td>
+                                <td class="text-center">
+                                    <input type="checkbox" id="show_in_downloded_reports_checkbox_{{col.id}}" style="margin-top: 12px;" {% if col.show_in_download_reports %} checked {% endif %} onchange="change_value($(this))">
+                                    <input type="hidden" name="show_in_download_reports" id="show_in_downloded_reports_{{col.id}}" {% if col.show_in_download_reports %} value="1" {% else %} value="0" {% endif %}>
+                                </td>
+                                <td class="text-center">
+                                    <input type="checkbox" id="use_as_factor_checkbox_{{col.id}}" style="margin-top: 12px;" {% if col.default_factor %} checked {% endif %} onchange="change_value($(this))">
+                                    <input type="hidden" name="default_factor" id="use_as_factor_{{col.id}}" {% if col.default_factor %} value="1" {% else %} value="0" {% endif %}>
+                                </td>
+                                <td class="text-center">
+                                    {% if col.is_active %}
+                                        <button type="button" onclick="predefined_var_status_change({{col.id}}, 0)" class="btn btn-sm btn-danger" title="Deactivate">
+                                            Deactivate
+                                        </button>
+                                    {% else %}
+                                        <button type="button" onclick="predefined_var_status_change({{col.id}}, 1)" class="btn btn-sm btn-success" title="Activate">
+                                            Activate
+                                        </button>
+                                    {% endif %}
+                                </td>
+                            </tr>
+                        {% endfor %}
+                    </table>
+                </div>
+            </div>
+        </div>
+    </form>
+</div>
+
+<script>
+
+    //
+    //========================================================================
+    function predefined_var_status_change(id, status){
+
+        if(status == 0){
+            r = confirm("Deactivating the predefined variable will effect all the templates for all the users. Do you want to continue?")
+        }else{
+            r = confirm("Activating the predefined variable will effect all the templates for all the users. Do you want to continue?")
+        }
+        
+        if(r === true){
+            window.location.href = "{% url 'predefined_variables_change_status' %}"+id+"/"+status+"/";
+        }
+    }
+
+    //
+    //
+
+
+</script>

@@ -1077,11 +1077,13 @@ class Pre_Defined_Variables(models.Model):
     show_in_download_reports = models.BooleanField(default=True, db_index=True)
     column_name_in_reports = models.CharField(max_length=255, blank=True, null=True, db_index=True)
     default_factor = models.BooleanField(default=False, db_index=True)
+    is_active = models.BooleanField(default=True, db_index=True, null=True, blank=True)
     
     @classmethod
     def truncate(cls):
         with connection.cursor() as cursor:
             cursor.execute('TRUNCATE TABLE "{0}" SET_NULL'.format(cls._meta.db_table))
+
 
 #==================================================================================
 # CONFIG TEMPLATE TABLE
@@ -1101,6 +1103,7 @@ class ConfigTemplate(models.Model):
     def truncate(cls):
         with connection.cursor() as cursor:
             cursor.execute('TRUNCATE TABLE "{0}" SET_NULL'.format(cls._meta.db_table))         
+            
             
 #==================================================================================
 # PD CONFIG TABLE

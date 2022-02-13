@@ -46,7 +46,6 @@ from django.conf import settings
 #**********************************************************************
 # LOAD PREDEFINED VARIABES
 #**********************************************************************
-
 def load_predefined_variables(request):
     
     # Date
@@ -106,26 +105,45 @@ def load_predefined_variables(request):
 #**********************************************************************
 # PREDEFINED VARIABES VIEW
 #********************************************************************** 
- 
 class PredefinedVariarbles(View):
     
     data = defaultdict()
-    data["content_template"] = "algo_config/index.html"
+    data["content_template"] = "algo_config/predefined_variables.html"
     data["js_files"] = []
     data["sidebar_active"] = 8
     data["tab_status"] = "pd"
     data["report_headers"] = constants.REPORT_HEADERS
     
     def get(self, request, tab_status=None):
-        pass
+        self.data["pre_defined_variables"] = Pre_Defined_Variables.objects.filter(tab_status=tab_status)
+        return render(request, "administrator/index.html", self.data)
 
     def post(self, request):
         pass
  
+ 
+#**********************************************************************
+# PREDEFINED VARIABES - DELETE
+#********************************************************************** 
+def change_status(request, ins=None, status=1):
+    try:
+        obj = Pre_Defined_Variables.objects.get(pk=int(ins))
+        obj.is_active = bool(int(status))
+        obj.save()
+        
+        if bool(int(status)):
+            messages.success(request, "Variable Activated Successfully")
+        else:
+            messages.success(request, "Variable Deactivated Successfully") 
+    except:
+        messages.error(request, "Variable Status Change Failed")
+    
+    return redirect(request.META.get('HTTP_REFERER'))
+ 
+ 
 #**********************************************************************
 # PD - Configuring the algorithm
 #**********************************************************************
-
 class ConfigureTemplates(View):
     
     data = defaultdict()
@@ -144,7 +162,7 @@ class ConfigureTemplates(View):
         
         self.data["tab_status"] = self.data["tab_status"] if tab_status is not None else self.data["tab_status"]
         
-        self.data["pre_defined_variables"] = Pre_Defined_Variables.objects.filter(Q(tab_status__isnull=True) | Q(tab_status="master") | Q(tab_status=self.data["tab_status"]))
+        self.data["pre_defined_variables"] = Pre_Defined_Variables.objects.filter(Q(tab_status__isnull=True) | Q(tab_status="master") | Q(tab_status=self.data["tab_status"])).filter(is_active=True)
         
         self.data["built_in_fields"] = self.data["pre_defined_variables"] 
         
@@ -239,11 +257,29 @@ class ConfigureTemplates(View):
             messages.error(request, "Template name is required")
         return redirect(request.META.get('HTTP_REFERER'))
         
+        
+#**********************************************************************
+# Template - Set As Default
+#**********************************************************************    
+def template_set_as_default(request, tab_status=None, template_id=None):
+    if template_id is not None and tab_status is not None:
+        ConfigTemplate.objects.filter(tab_status=tab_status, user=request.user).update(set_as_default=False)
+
+        try:
+            obj = ConfigTemplate.objects.get(pk=int(template_id))
+            obj.set_as_default = True
+            obj.save()
+            messages.success(request, "Template Set As Default successfully")
+        except:
+            messages.error(request, "Operation On Template failed")       
+    else:
+        messages.error(request, "Operation On Template failed")    
+    return redirect(request.META.get('HTTP_REFERER'))
+
     
 #**********************************************************************
 # Delete Template
 #**********************************************************************    
-    
 def delete_template(request, ins=None):
     if ins is not None:
         try:
@@ -251,13 +287,15 @@ def delete_template(request, ins=None):
             messages.success(request, "Template deleted successfully")
         except:
             messages.error(request, "Template delete failed")       
-    
+    else:
+        messages.error(request, "Operation On Template failed")    
+        
     return redirect("pd_module_testing")
+    
     
 #**********************************************************************
 # Delete Columns algorithm
 #**********************************************************************
-
 def delete_column_algoconfig(request, ins=None):
     try:
         Algo_Config.objects.get(pk = int(ins)).delete()
@@ -271,7 +309,6 @@ def delete_column_algoconfig(request, ins=None):
 #**********************************************************************
 # PD Template & Module Testing
 #**********************************************************************
-
 def pd_module_testing(request, algo_type=None):
     data = defaultdict()
     data["items_list"] = defaultdict()
